@@ -71,7 +71,7 @@ function SignUpForm() {
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
               {/* User Type Selection */}
               <div className="space-y-4">
-                <label className="block text-sm font-semibold text-gray-900 mb-4">
+                <label className="block text-base font-semibold text-gray-900 mb-4">
                   I am a
                   <span className="text-red-500 ml-1">*</span>
                 </label>
@@ -170,8 +170,8 @@ function SignUpForm() {
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                   </div>
-                  <div className="ml-3 text-sm">
-                    <label htmlFor="terms" className="text-gray-600">
+                  <div className="ml-3 text-base">
+                    <label htmlFor="terms" className="text-gray-700">
                       I agree to the{' '}
                       <Link href="/terms" className="text-primary-600 hover:text-primary-700 font-medium">
                         Terms of Service
@@ -196,7 +196,7 @@ function SignUpForm() {
             </form>
 
             <div className="px-8 pb-8 text-center border-t border-gray-200 pt-6">
-              <p className="text-sm text-gray-600">
+              <p className="text-base text-gray-700">
                 Already have an account?{' '}
                 <Link
                   href={ROUTES.LOGIN}
