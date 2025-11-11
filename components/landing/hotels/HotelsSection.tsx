@@ -18,7 +18,7 @@ export default function HotelsSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
           <div>
             <h3 className="text-3xl font-bold text-gray-900 mb-6">
-              Why Choose Vayada?
+              Why Choose vayada?
             </h3>
             <div className="space-y-6">
               {HOTELS_SECTION.advantages.map((advantage, index) => {

@@ -43,7 +43,7 @@ export default function CreatorsSection() {
 
           <div className="order-1 lg:order-2">
             <h3 className="text-3xl font-bold text-gray-900 mb-6">
-              Why Join Vayada?
+              Why Join vayada?
             </h3>
             <div className="space-y-6">
               {CREATORS_SECTION.advantages.map((advantage, index) => {
