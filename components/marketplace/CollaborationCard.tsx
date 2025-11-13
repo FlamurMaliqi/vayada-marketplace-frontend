@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Collaboration, Hotel, Creator, CollaborationStatus } from '@/lib/types'
+import { Collaboration, Hotel, Creator, CollaborationStatus, UserType } from '@/lib/types'
 import { Button } from '@/components/ui'
 import { 
   MapPinIcon, 
@@ -17,7 +17,7 @@ interface CollaborationCardProps {
     creator?: Creator
   }
   onStatusUpdate?: (id: string, status: CollaborationStatus) => void
-  currentUserType?: 'hotel' | 'creator'
+  currentUserType?: UserType
 }
 
 const statusConfig: Record<CollaborationStatus, { label: string; color: string; icon: any }> = {
