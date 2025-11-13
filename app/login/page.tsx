@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ROUTES } from '@/lib/constants/routes'
 import { Button, Input } from '@/components/ui'
 import { Navigation, Footer } from '@/components/layout'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -24,6 +26,26 @@ export default function LoginPage() {
     e.preventDefault()
     // Form submission logic will be added later
     console.log('Sign in:', formData)
+    
+    // For development: Set user as logged in and check profile status
+    // In production, this would come from the auth API response
+    if (typeof window !== 'undefined') {
+      // Check if user has a profile (for demo purposes, you can set this manually)
+      // In production, this would be checked via API
+      const hasProfile = localStorage.getItem('hasProfile') === 'true'
+      localStorage.setItem('isLoggedIn', 'true')
+      
+      // Set profile completion status
+      // In production, this would come from the user's profile data
+      if (hasProfile) {
+        localStorage.setItem('profileComplete', 'true')
+      } else {
+        localStorage.setItem('profileComplete', 'false')
+      }
+    }
+    
+    // After successful login, redirect to marketplace
+    router.push(ROUTES.MARKETPLACE)
   }
 
   return (

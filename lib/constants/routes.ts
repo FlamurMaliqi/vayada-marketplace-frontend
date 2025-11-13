@@ -5,6 +5,8 @@
 export const ROUTES = {
   // Public routes
   HOME: '/',
+  MARKETPLACE: '/marketplace',
+  COLLABORATIONS: '/collaborations',
   ABOUT: '/about',
   CONTACT: '/contact',
   BLOG: '/blog',
@@ -15,6 +17,8 @@ export const ROUTES = {
   SIGNUP: '/signup',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
+  PROFILE: '/profile',
+  PROFILE_EDIT: '/profile/edit',
   
   // Hotel routes
   HOTEL_DASHBOARD: '/hotel/dashboard',

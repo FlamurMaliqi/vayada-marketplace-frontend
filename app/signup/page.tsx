@@ -52,8 +52,17 @@ function SignUpForm() {
     setPasswordError('')
     // Form submission logic will be added later
     console.log('Sign up:', formData)
-    // After successful signup, redirect to profile completion or dashboard
-    // router.push(ROUTES.DASHBOARD)
+    
+    // For development: Set user as logged in but profile incomplete
+    // In production, this would come from the auth API response
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('isLoggedIn', 'true')
+      localStorage.setItem('profileComplete', 'false')
+      localStorage.setItem('hasProfile', 'false')
+    }
+    
+    // After successful signup, redirect to marketplace
+    router.push(ROUTES.MARKETPLACE)
   }
 
   return (
