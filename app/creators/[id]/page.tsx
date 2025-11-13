@@ -174,16 +174,14 @@ export default function CreatorDetailPage() {
                   >
                     Request Collaboration
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={() => {
-                      console.log('Contact creator', creator.id)
-                      // TODO: Implement contact functionality
-                    }}
-                  >
-                    Contact Creator
-                  </Button>
+                  <Link href={`${ROUTES.CHATS}?startChat=${creator.id}`}>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                    >
+                      Contact Creator
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>

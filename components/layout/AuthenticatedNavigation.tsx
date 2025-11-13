@@ -12,6 +12,7 @@ import {
   XMarkIcon,
   UserGroupIcon,
   UserIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline'
 
 export default function AuthenticatedNavigation() {
@@ -46,6 +47,11 @@ export default function AuthenticatedNavigation() {
       href: ROUTES.COLLABORATIONS,
       label: 'Collaborations',
       icon: UserGroupIcon,
+    },
+    {
+      href: ROUTES.CHATS,
+      label: 'Chats',
+      icon: ChatBubbleLeftRightIcon,
     },
     {
       href: ROUTES.PROFILE,

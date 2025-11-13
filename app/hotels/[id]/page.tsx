@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import type { UserType } from '@/lib/types'
 import Link from 'next/link'
 import { AuthenticatedNavigation, Footer } from '@/components/layout'
 import { Button, Input, Textarea } from '@/components/ui'
@@ -25,6 +26,7 @@ export default function HotelDetailPage() {
   const [hotel, setHotel] = useState<Hotel | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [userType, setUserType] = useState<UserType>('creator')
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requesting, setRequesting] = useState(false)
   const [requestForm, setRequestForm] = useState({
@@ -32,6 +34,14 @@ export default function HotelDetailPage() {
     proposedDates: '',
     collaborationType: '',
   })
+
+  useEffect(() => {
+    // Get user type from localStorage
+    const storedUserType = typeof window !== 'undefined'
+      ? (localStorage.getItem('userType') as UserType) || 'creator'
+      : 'creator'
+    setUserType(storedUserType)
+  }, [])
 
   useEffect(() => {
     loadHotel()
@@ -153,25 +163,35 @@ export default function HotelDetailPage() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="bg-white text-primary-700 hover:bg-primary-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  onClick={() => setShowRequestModal(true)}
-                >
-                  Request Collaboration
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-2 border-white/50 text-white hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  onClick={() => {
-                    console.log('Contact hotel', hotel.id)
-                    // TODO: Implement contact functionality
-                  }}
-                >
-                  Contact Hotel
-                </Button>
+                {userType === 'creator' ? (
+                  <Link href={`${ROUTES.CHATS}?startChat=${hotel.id}`}>
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      className="bg-white text-primary-700 hover:bg-primary-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    >
+                      Start Chat
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="bg-white text-primary-700 hover:bg-primary-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    onClick={() => setShowRequestModal(true)}
+                  >
+                    Request Collaboration
+                  </Button>
+                )}
+                <Link href={`${ROUTES.CHATS}?startChat=${hotel.id}`}>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-2 border-white/50 text-white hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
+                    Contact Hotel
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
