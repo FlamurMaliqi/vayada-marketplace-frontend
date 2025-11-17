@@ -58,6 +58,7 @@ export interface Hotel {
   accommodationType?: string // Hotel, Resort, Boutique Hotel, Lodge, Apartment, Villa
   collaborationType?: 'Kostenlos' | 'Bezahlt' // Free, Paid
   availability?: string[] // Array of months
+  platforms?: string[] // Array of platform names: 'Instagram', 'TikTok', 'YouTube', 'Facebook'
   status: UserStatus
   createdAt: Date
   updatedAt: Date
