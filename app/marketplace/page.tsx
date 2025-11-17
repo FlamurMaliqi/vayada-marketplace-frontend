@@ -23,11 +23,10 @@ export default function MarketplacePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOption, setSortOption] = useState<string>('relevance')
   const [filters, setFilters] = useState<{
-    accommodationType?: string
-    collaborationType?: string
+    hotelType?: string
+    offering?: string
     availability?: string
-    followerRange?: string
-    platform?: string
+    budget?: string
   }>({})
 
   useEffect(() => {
@@ -60,14 +59,19 @@ export default function MarketplacePage() {
       if (!matchesSearch) return false
     }
 
-    // Accommodation type filter
-    if (filters.accommodationType && hotel.accommodationType !== filters.accommodationType) {
+    // Hotel type filter
+    if (filters.hotelType && hotel.accommodationType !== filters.hotelType) {
       return false
     }
 
-    // Collaboration type filter
-    if (filters.collaborationType && hotel.collaborationType !== filters.collaborationType) {
-      return false
+    // Offering filter
+    if (filters.offering) {
+      if (filters.offering === 'Free' && hotel.collaborationType !== 'Free') {
+        return false
+      }
+      if (filters.offering === 'Paid' && hotel.collaborationType !== 'Paid') {
+        return false
+      }
     }
 
     // Availability filter
@@ -75,6 +79,11 @@ export default function MarketplacePage() {
       const hasAvailability = hotel.availability.includes(filters.availability)
       if (!hasAvailability) return false
     }
+
+    // Budget filter (placeholder - will be implemented based on discussion)
+    // if (filters.budget) {
+    //   // Budget filtering logic to be added
+    // }
 
     return true
   })
@@ -233,11 +242,6 @@ export default function MarketplacePage() {
             {/* Hotels Section */}
             {(viewType === 'all' || viewType === 'hotels') && (
               <div className="mb-12">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    Hotels {sortedHotels.length > 0 && <span className="text-primary-600">({sortedHotels.length})</span>}
-                  </h2>
-                </div>
                 {sortedHotels.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {sortedHotels.map((hotel) => (
@@ -252,14 +256,14 @@ export default function MarketplacePage() {
               </div>
             )}
 
+            {/* Divider between Hotels and Creators */}
+            {viewType === 'all' && sortedHotels.length > 0 && sortedCreators.length > 0 && (
+              <div className="my-12 border-t border-gray-200"></div>
+            )}
+
             {/* Creators Section */}
             {(viewType === 'all' || viewType === 'creators') && (
               <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    Creator & Influencer {sortedCreators.length > 0 && <span className="text-primary-600">({sortedCreators.length})</span>}
-                  </h2>
-                </div>
                 {sortedCreators.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {sortedCreators.map((creator) => (
