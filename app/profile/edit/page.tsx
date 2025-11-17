@@ -6,7 +6,7 @@ import { AuthenticatedNavigation, Footer, ProfileWarningBanner } from '@/compone
 import { Button, Input, Textarea } from '@/components/ui'
 import { ROUTES } from '@/lib/constants/routes'
 import { hotelService, creatorService } from '@/services/api'
-import type { Hotel, Creator, UserType, Platform } from '@/lib/types'
+import type { Hotel, Creator, UserType, Platform, HotelProfile } from '@/lib/types'
 import {
   PlusIcon,
   XMarkIcon,
@@ -30,17 +30,28 @@ export default function ProfileEditPage() {
     name: '',
   })
 
-  // Hotel form data
-  const [hotelData, setHotelData] = useState({
+  // Hotel Profile form data
+  const [hotelProfileData, setHotelProfileData] = useState({
+    name: '',
+    description: '',
+    logo: '',
+  })
+  
+  // Listings management
+  const [listings, setListings] = useState<Hotel[]>([])
+  const [editingListing, setEditingListing] = useState<Hotel | null>(null)
+  const [showListingForm, setShowListingForm] = useState(false)
+  const [listingFormData, setListingFormData] = useState({
     name: '',
     location: '',
     description: '',
-    amenities: [] as string[],
-    newAmenity: '',
     images: [] as string[],
     newImage: '',
+    accommodationType: '',
+    collaborationType: '' as 'Kostenlos' | 'Bezahlt' | '',
+    availability: [] as string[],
   })
-  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
+  const [listingImageErrors, setListingImageErrors] = useState<Set<number>>(new Set())
 
   // Creator form data
   const [creatorData, setCreatorData] = useState({
@@ -59,10 +70,21 @@ export default function ProfileEditPage() {
   const loadProfile = async () => {
     setLoading(true)
     try {
+      // Hardcode userType for now - will be set by backend later
+      // For testing: change 'hotel' to 'creator' to test creator profile
+      const hardcodedUserType: UserType = 'hotel'
+      
+      // Set in localStorage for consistency
+      if (typeof window !== 'undefined') {
+        if (!localStorage.getItem('userType')) {
+          localStorage.setItem('userType', hardcodedUserType)
+        }
+      }
+      
       // Get user type from localStorage (in production, this would come from auth context)
       const storedUserType = typeof window !== 'undefined'
-        ? (localStorage.getItem('userType') as UserType) || 'creator'
-        : 'creator'
+        ? (localStorage.getItem('userType') as UserType) || hardcodedUserType
+        : hardcodedUserType
       
       setUserType(storedUserType)
 
@@ -82,36 +104,32 @@ export default function ProfileEditPage() {
 
       if (storedUserType === 'hotel') {
         try {
-          const hotel = await hotelService.getById(userId)
-          setHotelData({
-            name: hotel.name || '',
-            location: hotel.location || '',
-            description: hotel.description || '',
-            amenities: hotel.amenities || [],
-            newAmenity: '',
-            images: hotel.images || [],
-            newImage: '',
+          // In production, this would fetch HotelProfile with all listings
+          // For now, use mock data
+          const mockHotelProfile = getMockHotelProfile(userId)
+          setHotelProfileData({
+            name: mockHotelProfile.name || '',
+            description: mockHotelProfile.description || '',
+            logo: mockHotelProfile.logo || '',
           })
+          setListings(mockHotelProfile.listings || [])
           setImageErrors(new Set()) // Clear image errors when loading
           // Update profile name if not set
           if (!profileInfo.name) {
-            setProfileData(prev => ({ ...prev, name: hotel.name || '' }))
+            setProfileData(prev => ({ ...prev, name: mockHotelProfile.name || '' }))
           }
         } catch (error) {
           console.error('Error loading hotel profile:', error)
           // Use mock data for development
-          const mockHotel = getMockHotel(userId)
-          setHotelData({
-            name: mockHotel.name || '',
-            location: mockHotel.location || '',
-            description: mockHotel.description || '',
-            amenities: mockHotel.amenities || [],
-            newAmenity: '',
-            images: mockHotel.images || [],
-            newImage: '',
+          const mockHotelProfile = getMockHotelProfile(userId)
+          setHotelProfileData({
+            name: mockHotelProfile.name || '',
+            description: mockHotelProfile.description || '',
+            logo: mockHotelProfile.logo || '',
           })
+          setListings(mockHotelProfile.listings || [])
           if (!profileInfo.name) {
-            setProfileData(prev => ({ ...prev, name: mockHotel.name || '' }))
+            setProfileData(prev => ({ ...prev, name: mockHotelProfile.name || '' }))
           }
         }
       } else {
@@ -159,52 +177,39 @@ export default function ProfileEditPage() {
     setProfileData(prev => ({ ...prev, [name]: value }))
   }
 
-  // Hotel form handlers
-  const handleHotelChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Hotel Profile form handlers
+  const handleHotelProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setHotelData(prev => ({ ...prev, [name]: value }))
+    setHotelProfileData(prev => ({ ...prev, [name]: value }))
   }
 
-  const addAmenity = () => {
-    if (hotelData.newAmenity.trim()) {
-      setHotelData(prev => ({
-        ...prev,
-        amenities: [...prev.amenities, prev.newAmenity.trim()],
-        newAmenity: '',
-      }))
-    }
+  // Listing form handlers
+  const handleListingFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setListingFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const removeAmenity = (index: number) => {
-    setHotelData(prev => ({
-      ...prev,
-      amenities: prev.amenities.filter((_, i) => i !== index),
-    }))
-  }
-
-  const addImage = () => {
-    if (hotelData.newImage.trim()) {
-      setHotelData(prev => ({
+  const addListingImage = () => {
+    if (listingFormData.newImage.trim()) {
+      setListingFormData(prev => ({
         ...prev,
         images: [...prev.images, prev.newImage.trim()],
         newImage: '',
       }))
-      // Clear error state for new image
-      setImageErrors(prev => {
+      setListingImageErrors(prev => {
         const newSet = new Set(prev)
-        newSet.delete(hotelData.images.length) // Clear error for the new image index
+        newSet.delete(listingFormData.images.length)
         return newSet
       })
     }
   }
 
-  const removeImage = (index: number) => {
-    setHotelData(prev => ({
+  const removeListingImage = (index: number) => {
+    setListingFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
     }))
-    // Update error indices after removal
-    setImageErrors(prev => {
+    setListingImageErrors(prev => {
       const newSet = new Set<number>()
       prev.forEach(errIndex => {
         if (errIndex < index) {
@@ -217,17 +222,16 @@ export default function ProfileEditPage() {
     })
   }
 
-  const moveImageUp = (index: number) => {
+  const moveListingImageUp = (index: number) => {
     if (index === 0) return
-    setHotelData(prev => {
+    setListingFormData(prev => {
       const newImages = [...prev.images]
       const temp = newImages[index]
       newImages[index] = newImages[index - 1]
       newImages[index - 1] = temp
       return { ...prev, images: newImages }
     })
-    // Update error indices after move
-    setImageErrors(prev => {
+    setListingImageErrors(prev => {
       const newSet = new Set<number>()
       prev.forEach(errIndex => {
         if (errIndex === index) {
@@ -242,17 +246,16 @@ export default function ProfileEditPage() {
     })
   }
 
-  const moveImageDown = (index: number) => {
-    if (index === hotelData.images.length - 1) return
-    setHotelData(prev => {
+  const moveListingImageDown = (index: number) => {
+    if (index === listingFormData.images.length - 1) return
+    setListingFormData(prev => {
       const newImages = [...prev.images]
       const temp = newImages[index]
       newImages[index] = newImages[index + 1]
       newImages[index + 1] = temp
       return { ...prev, images: newImages }
     })
-    // Update error indices after move
-    setImageErrors(prev => {
+    setListingImageErrors(prev => {
       const newSet = new Set<number>()
       prev.forEach(errIndex => {
         if (errIndex === index) {
@@ -265,6 +268,119 @@ export default function ProfileEditPage() {
       })
       return newSet
     })
+  }
+
+  // Listing management functions
+  const openNewListingForm = () => {
+    setEditingListing(null)
+    setListingFormData({
+      name: '',
+      location: '',
+      description: '',
+      images: [],
+      newImage: '',
+      accommodationType: '',
+      collaborationType: '',
+      availability: [],
+    })
+    setListingImageErrors(new Set())
+    setShowListingForm(true)
+  }
+
+  const openEditListingForm = (listing: Hotel) => {
+    setEditingListing(listing)
+    setListingFormData({
+      name: listing.name,
+      location: listing.location,
+      description: listing.description,
+      images: listing.images || [],
+      newImage: '',
+      accommodationType: listing.accommodationType || '',
+      collaborationType: listing.collaborationType || '',
+      availability: listing.availability || [],
+    })
+    setListingImageErrors(new Set())
+    setShowListingForm(true)
+  }
+
+  const cancelListingForm = () => {
+    setShowListingForm(false)
+    setEditingListing(null)
+    setListingFormData({
+      name: '',
+      location: '',
+      description: '',
+      images: [],
+      newImage: '',
+      accommodationType: '',
+      collaborationType: '',
+      availability: [],
+    })
+    setListingImageErrors(new Set())
+  }
+
+  const saveListing = () => {
+    if (!listingFormData.name || !listingFormData.location || !listingFormData.description) {
+      alert('Bitte füllen Sie alle Pflichtfelder aus.')
+      return
+    }
+
+    const userId = typeof window !== 'undefined'
+      ? localStorage.getItem('userId') || '1'
+      : '1'
+
+    if (editingListing) {
+      // Update existing listing
+      setListings(prev => prev.map(listing => 
+        listing.id === editingListing.id
+          ? {
+              ...listing,
+              name: listingFormData.name,
+              location: listingFormData.location,
+              description: listingFormData.description,
+              images: listingFormData.images,
+              accommodationType: listingFormData.accommodationType || undefined,
+              collaborationType: listingFormData.collaborationType as 'Kostenlos' | 'Bezahlt' || undefined,
+              availability: listingFormData.availability,
+              updatedAt: new Date(),
+            }
+          : listing
+      ))
+    } else {
+      // Create new listing
+      const newListing: Hotel = {
+        id: `listing-${Date.now()}`,
+        hotelProfileId: `profile-${userId}`,
+        name: listingFormData.name,
+        location: listingFormData.location,
+        description: listingFormData.description,
+        images: listingFormData.images,
+        accommodationType: listingFormData.accommodationType || undefined,
+        collaborationType: listingFormData.collaborationType as 'Kostenlos' | 'Bezahlt' || undefined,
+        availability: listingFormData.availability,
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      setListings(prev => [...prev, newListing])
+    }
+
+    cancelListingForm()
+  }
+
+  const deleteListing = (listingId: string) => {
+    if (confirm('Möchten Sie dieses Listing wirklich löschen?')) {
+      setListings(prev => prev.filter(listing => listing.id !== listingId))
+    }
+  }
+
+  const toggleAvailabilityMonth = (month: string) => {
+    setListingFormData(prev => ({
+      ...prev,
+      availability: prev.availability.includes(month)
+        ? prev.availability.filter(m => m !== month)
+        : [...prev.availability, month],
+    }))
   }
 
   // Creator form handlers
@@ -327,16 +443,16 @@ export default function ProfileEditPage() {
         : '1'
 
       if (userType === 'hotel') {
-        // Update hotel profile
-        console.log('Updating hotel profile:', hotelData)
-        // TODO: API call to update hotel profile
-        await hotelService.update(userId, {
-          name: hotelData.name,
-          location: hotelData.location,
-          description: hotelData.description,
-          amenities: hotelData.amenities,
-          images: hotelData.images,
-        })
+        // Update hotel profile and listings
+        console.log('Updating hotel profile:', hotelProfileData)
+        console.log('Updating listings:', listings)
+        // TODO: API call to update hotel profile and listings
+        // await hotelProfileService.update(userId, {
+        //   name: hotelProfileData.name,
+        //   description: hotelProfileData.description,
+        //   logo: hotelProfileData.logo,
+        //   listings: listings,
+        // })
       } else {
         // Update creator profile
         console.log('Updating creator profile:', creatorData)
@@ -454,230 +570,287 @@ export default function ProfileEditPage() {
 
           {userType === 'hotel' ? (
             <>
-              <div>
-                <Input
-                  label="Hotel Name"
-                  name="name"
-                  value={hotelData.name}
-                  onChange={handleHotelChange}
-                  required
-                  placeholder="Sunset Beach Resort"
-                />
-              </div>
-
-              <div>
-                <Input
-                  label="Location"
-                  name="location"
-                  value={hotelData.location}
-                  onChange={handleHotelChange}
-                  required
-                  placeholder="Bali, Indonesia"
-                />
-              </div>
-
-              <div>
-                <Textarea
-                  label="Description"
-                  name="description"
-                  value={hotelData.description}
-                  onChange={handleHotelChange}
-                  required
-                  placeholder="Tell us about your hotel..."
-                  rows={5}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amenities
-                </label>
-                <div className="flex gap-2 mb-3">
-                  <Input
-                    name="newAmenity"
-                    value={hotelData.newAmenity}
-                    onChange={handleHotelChange}
-                    placeholder="Add amenity (e.g., Pool, Spa, WiFi)"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        addAmenity()
-                      }
-                    }}
-                  />
-                  <Button type="button" variant="outline" onClick={addAmenity}>
-                    <PlusIcon className="w-5 h-5" />
-                  </Button>
-                </div>
-                {hotelData.amenities.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {hotelData.amenities.map((amenity, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-700 rounded-lg text-sm"
-                      >
-                        {amenity}
-                        <button
-                          type="button"
-                          onClick={() => removeAmenity(index)}
-                          className="hover:text-primary-900"
-                        >
-                          <XMarkIcon className="w-4 h-4" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                  <label className="block text-xl font-bold text-gray-900">
-                    Hotel Images
-                  </label>
-                </div>
-                <p className="text-sm text-gray-600 mb-4 pl-4">
-                  Add images to showcase your hotel. The first image will be used as the main cover photo.
-                </p>
-                
-                {/* Add Image Input */}
-                <div className="mb-6 pl-4">
-                  <div className="flex gap-2">
+              {/* Hotel Profile Information */}
+              <div className="border-b border-gray-200 pb-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Hotel Profil Information</h3>
+                <div className="space-y-4">
+                  <div>
                     <Input
-                      name="newImage"
-                      value={hotelData.newImage}
-                      onChange={handleHotelChange}
-                      placeholder="https://example.com/image.jpg"
-                      type="url"
-                      className="flex-1"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          addImage()
-                        }
-                      }}
+                      label="Firmenname / Hotelkette"
+                      name="name"
+                      value={hotelProfileData.name}
+                      onChange={handleHotelProfileChange}
+                      required
+                      placeholder="Luxury Villa Management"
                     />
-                    <Button 
-                      type="button" 
-                      variant="primary" 
-                      onClick={addImage}
-                      className="shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+                  </div>
+                  <div>
+                    <Textarea
+                      label="Beschreibung"
+                      name="description"
+                      value={hotelProfileData.description}
+                      onChange={handleHotelProfileChange}
+                      placeholder="Beschreiben Sie Ihre Hotelkette oder Agentur..."
+                      rows={4}
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Logo URL (optional)"
+                      name="logo"
+                      type="url"
+                      value={hotelProfileData.logo}
+                      onChange={handleHotelProfileChange}
+                      placeholder="https://example.com/logo.jpg"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Listings Management */}
+              <div className="border-b border-gray-200 pb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-gray-900">Properties / Listings</h3>
+                  {!showListingForm && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      onClick={openNewListingForm}
                     >
                       <PlusIcon className="w-5 h-5 mr-2" />
-                      Add Image
+                      Neues Listing hinzufügen
                     </Button>
-                  </div>
+                  )}
                 </div>
 
-                {/* Image Gallery Preview */}
-                {hotelData.images.length > 0 ? (
-                  <div className="space-y-4 pl-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {hotelData.images.map((image, index) => (
-                        <div
-                          key={index}
-                          className="group relative bg-white rounded-xl border-2 border-gray-200 overflow-hidden hover:border-primary-400 transition-all duration-300 hover:shadow-xl"
-                        >
-                          {/* Image Preview */}
-                          <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                            {!imageErrors.has(index) ? (
-                              <img
-                                src={image}
-                                alt={`Hotel image ${index + 1}`}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                onError={() => {
-                                  setImageErrors(prev => new Set(prev).add(index))
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-100">
-                                <PhotoIcon className="w-12 h-12 mb-2" />
-                                <span className="text-xs">Invalid Image URL</span>
+                {/* Listing Form */}
+                {showListingForm && (
+                  <div className="mb-6 p-6 bg-gray-50 rounded-xl border-2 border-primary-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-gray-900">
+                        {editingListing ? 'Listing bearbeiten' : 'Neues Listing hinzufügen'}
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={cancelListingForm}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <XMarkIcon className="w-6 h-6" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          label="Property Name *"
+                          name="name"
+                          value={listingFormData.name}
+                          onChange={handleListingFormChange}
+                          required
+                          placeholder="Sunset Beach Villa"
+                        />
+                        <Input
+                          label="Standort *"
+                          name="location"
+                          value={listingFormData.location}
+                          onChange={handleListingFormChange}
+                          required
+                          placeholder="Bali, Indonesia"
+                        />
+                      </div>
+
+                      <Textarea
+                        label="Beschreibung *"
+                        name="description"
+                        value={listingFormData.description}
+                        onChange={handleListingFormChange}
+                        required
+                        placeholder="Beschreiben Sie diese Property..."
+                        rows={3}
+                      />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Unterkunftstyp
+                          </label>
+                          <select
+                            name="accommodationType"
+                            value={listingFormData.accommodationType}
+                            onChange={handleListingFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          >
+                            <option value="">Bitte wählen</option>
+                            <option value="Hotel">Hotel</option>
+                            <option value="Resort">Resort</option>
+                            <option value="Boutique Hotel">Boutique Hotel</option>
+                            <option value="Lodge">Lodge</option>
+                            <option value="Apartment">Apartment</option>
+                            <option value="Villa">Villa</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Kollaborationstyp
+                          </label>
+                          <select
+                            name="collaborationType"
+                            value={listingFormData.collaborationType}
+                            onChange={handleListingFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          >
+                            <option value="">Bitte wählen</option>
+                            <option value="Kostenlos">Kostenlos</option>
+                            <option value="Bezahlt">Bezahlt</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Availability Months */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Verfügbarkeit (Monate)
+                        </label>
+                        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                          {['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'].map((month) => (
+                            <button
+                              key={month}
+                              type="button"
+                              onClick={() => toggleAvailabilityMonth(month)}
+                              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                                listingFormData.availability.includes(month)
+                                  ? 'bg-primary-600 text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              {month.substring(0, 3)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Listing Images */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Bilder
+                        </label>
+                        <div className="flex gap-2 mb-3">
+                          <Input
+                            name="newImage"
+                            value={listingFormData.newImage}
+                            onChange={handleListingFormChange}
+                            placeholder="https://example.com/image.jpg"
+                            type="url"
+                            className="flex-1"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                addListingImage()
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={addListingImage}
+                          >
+                            <PlusIcon className="w-5 h-5" />
+                          </Button>
+                        </div>
+                        {listingFormData.images.length > 0 && (
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            {listingFormData.images.map((image, index) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={image}
+                                  alt={`Listing image ${index + 1}`}
+                                  className="w-full h-24 object-cover rounded-lg"
+                                  onError={() => {
+                                    setListingImageErrors(prev => new Set(prev).add(index))
+                                  }}
+                                />
+                                {!listingImageErrors.has(index) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeListingImage(index)}
+                                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <XMarkIcon className="w-4 h-4" />
+                                  </button>
+                                )}
                               </div>
-                            )}
-                            {/* First Image Badge */}
-                            {index === 0 && (
-                              <div className="absolute top-2 left-2 px-2 py-1 bg-primary-600 text-white text-xs font-semibold rounded-lg shadow-lg">
-                                Cover Photo
-                              </div>
-                            )}
-                            {/* Image Number */}
-                            <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-sm text-white text-xs font-semibold rounded-lg">
-                              #{index + 1}
-                            </div>
+                            ))}
                           </div>
+                        )}
+                      </div>
 
-                          {/* Controls */}
-                          <div className="p-3 bg-gradient-to-br from-gray-50 to-white">
-                            {/* URL Display */}
-                            <div className="mb-3">
-                              <p className="text-xs text-gray-500 mb-1 truncate" title={image}>
-                                {image}
-                              </p>
-                            </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="primary"
+                          onClick={saveListing}
+                          className="flex-1"
+                        >
+                          {editingListing ? 'Änderungen speichern' : 'Listing hinzufügen'}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={cancelListingForm}
+                        >
+                          Abbrechen
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-2">
-                              {/* Move Up */}
-                              <button
-                                type="button"
-                                onClick={() => moveImageUp(index)}
-                                disabled={index === 0}
-                                className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                  index === 0
-                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                    : 'bg-primary-50 text-primary-700 hover:bg-primary-100 hover:scale-105'
-                                }`}
-                                title="Move up"
-                              >
-                                <ArrowUpIcon className="w-4 h-4" />
-                                <span className="hidden sm:inline">Up</span>
-                              </button>
-
-                              {/* Move Down */}
-                              <button
-                                type="button"
-                                onClick={() => moveImageDown(index)}
-                                disabled={index === hotelData.images.length - 1}
-                                className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                  index === hotelData.images.length - 1
-                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                    : 'bg-primary-50 text-primary-700 hover:bg-primary-100 hover:scale-105'
-                                }`}
-                                title="Move down"
-                              >
-                                <ArrowDownIcon className="w-4 h-4" />
-                                <span className="hidden sm:inline">Down</span>
-                              </button>
-
-                              {/* Remove */}
-                              <button
-                                type="button"
-                                onClick={() => removeImage(index)}
-                                className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all duration-200 hover:scale-105"
-                                title="Remove image"
-                              >
-                                <XMarkIcon className="w-5 h-5" />
-                              </button>
-                            </div>
+                {/* Listings List */}
+                {listings.length > 0 ? (
+                  <div className="space-y-4">
+                    {listings.map((listing) => (
+                      <div
+                        key={listing.id}
+                        className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900">{listing.name}</h4>
+                            <p className="text-sm text-gray-600">{listing.location}</p>
+                            {listing.accommodationType && (
+                              <span className="inline-block mt-2 px-2 py-1 bg-primary-100 text-primary-700 text-xs rounded">
+                                {listing.accommodationType}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditListingForm(listing)}
+                            >
+                              Bearbeiten
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteListing(listing.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <XMarkIcon className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500 text-center">
-                      💡 Tip: Drag images to reorder, or use the Up/Down buttons. The first image is your cover photo.
-                    </p>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <div className="pl-4">
-                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center bg-gradient-to-br from-gray-50 to-white">
-                      <PhotoIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 font-medium mb-2">No images added yet</p>
-                      <p className="text-sm text-gray-500">
-                        Add image URLs above to showcase your hotel
-                      </p>
-                    </div>
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Noch keine Listings vorhanden.</p>
+                    <p className="text-sm mt-2">Klicken Sie auf "Neues Listing hinzufügen" um zu beginnen.</p>
                   </div>
                 )}
               </div>
@@ -866,14 +1039,43 @@ export default function ProfileEditPage() {
 }
 
 // Mock data for development
-function getMockHotel(id: string): Hotel {
+function getMockHotelProfile(id: string): HotelProfile {
   return {
-    id,
-    name: 'Sunset Beach Resort',
-    location: 'Bali, Indonesia',
-    description: 'Luxury beachfront resort with stunning ocean views and world-class amenities.',
-    images: [],
-    amenities: ['Pool', 'Spa', 'Beach Access', 'Restaurant'],
+    id: 'profile-1',
+    userId: id,
+    name: 'Luxury Villa Management',
+    description: 'Wir sind eine führende Villa-Management-Agentur mit über 15 exklusiven Properties in den schönsten Destinationen weltweit.',
+    logo: undefined,
+    listings: [
+      {
+        id: '1',
+        hotelProfileId: 'profile-1',
+        name: 'Sunset Beach Villa',
+        location: 'Bali, Indonesia',
+        description: 'Luxuriöse Strandvilla mit atemberaubendem Meerblick und erstklassigen Annehmlichkeiten.',
+        images: ['/hotel1.jpg'],
+        accommodationType: 'Villa',
+        collaborationType: 'Kostenlos',
+        availability: ['Juni', 'Juli', 'August', 'September'],
+        status: 'verified',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: '2',
+        hotelProfileId: 'profile-1',
+        name: 'Mountain View Lodge',
+        location: 'Swiss Alps, Switzerland',
+        description: 'Gemütliche Alpenlodge perfekt für Abenteuerlustige und Naturliebhaber.',
+        images: ['/hotel2.jpg'],
+        accommodationType: 'Lodge',
+        collaborationType: 'Bezahlt',
+        availability: ['Dezember', 'Januar', 'Februar', 'März'],
+        status: 'verified',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ],
     status: 'verified',
     createdAt: new Date(),
     updatedAt: new Date(),

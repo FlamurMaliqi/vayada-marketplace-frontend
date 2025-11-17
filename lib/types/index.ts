@@ -47,16 +47,30 @@ export interface SectionContent {
 }
 
 // Hotel types
+// Hotel represents a single property/listing
 export interface Hotel {
   id: string
+  hotelProfileId: string // Reference to the hotel profile that owns this listing
   name: string
   location: string
   description: string
   images: string[]
-  amenities: string[]
   accommodationType?: string // Hotel, Resort, Boutique Hotel, Lodge, Apartment, Villa
   collaborationType?: 'Kostenlos' | 'Bezahlt' // Free, Paid
   availability?: string[] // Array of months
+  status: UserStatus
+  createdAt: Date
+  updatedAt: Date
+}
+
+// HotelProfile represents the main hotel account that can have multiple listings
+export interface HotelProfile {
+  id: string
+  userId: string // Reference to the user account
+  name: string // Company/Chain name
+  description?: string
+  logo?: string
+  listings: Hotel[] // All properties/listings owned by this hotel
   status: UserStatus
   createdAt: Date
   updatedAt: Date

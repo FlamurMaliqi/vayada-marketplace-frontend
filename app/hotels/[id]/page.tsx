@@ -260,28 +260,6 @@ export default function HotelDetailPage() {
               </div>
             )}
 
-            {/* Amenities Section */}
-            {hotel.amenities && hotel.amenities.length > 0 && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-200/50 p-8 lg:p-10 hover:shadow-3xl transition-all duration-300">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                  <h2 className="text-3xl font-bold text-gray-900">Amenities</h2>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {hotel.amenities.map((amenity, index) => (
-                    <div
-                      key={index}
-                      className="group flex items-center gap-3 p-4 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl border border-primary-200/50 hover:shadow-lg transition-all duration-200 hover:scale-105"
-                    >
-                      <div className="p-2 bg-primary-500 rounded-lg">
-                        <SparklesIcon className="w-5 h-5 text-white" />
-                      </div>
-                      <span className="text-gray-700 font-semibold">{amenity}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* About Section */}
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-200/50 p-8 lg:p-10 hover:shadow-3xl transition-all duration-300">
@@ -490,7 +468,6 @@ function getMockHotel(id: string): Hotel {
       location: 'Bali, Indonesia',
       description: 'Luxury beachfront resort with stunning ocean views and world-class amenities. Nestled on the pristine beaches of Bali, our resort offers an unparalleled experience combining traditional Balinese hospitality with modern luxury. Each room features private balconies overlooking the Indian Ocean, and our award-winning spa provides rejuvenating treatments using local ingredients.',
       images: ['/hotel1.jpg'],
-      amenities: ['Pool', 'Spa', 'Beach Access', 'Restaurant', 'Bar', 'Gym', 'WiFi', 'Parking', 'Concierge', 'Room Service'],
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -501,7 +478,6 @@ function getMockHotel(id: string): Hotel {
       location: 'Swiss Alps, Switzerland',
       description: 'Cozy alpine lodge perfect for adventure seekers and nature lovers. Experience the magic of the Swiss Alps in our charming lodge, where traditional architecture meets modern comfort. Wake up to breathtaking mountain views, enjoy authentic Swiss cuisine, and explore endless hiking trails right from our doorstep.',
       images: ['/hotel2.jpg'],
-      amenities: ['Ski Access', 'Fireplace', 'Restaurant', 'Spa', 'WiFi', 'Parking', 'Ski Storage'],
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),

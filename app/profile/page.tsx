@@ -6,7 +6,7 @@ import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
 import { Button } from '@/components/ui'
 import { ROUTES } from '@/lib/constants/routes'
 // Removed API imports - using mock data only for frontend design
-import type { Hotel, Creator, UserType } from '@/lib/types'
+import type { Hotel, Creator, UserType, HotelProfile } from '@/lib/types'
 import { formatNumber, formatDate } from '@/lib/utils'
 import {
   MapPinIcon,
@@ -19,6 +19,7 @@ import {
   UserCircleIcon,
   SparklesIcon,
   ClockIcon,
+  PlusIcon,
 } from '@heroicons/react/24/outline'
 import {
   StarIcon as StarIconSolid,
@@ -36,7 +37,7 @@ interface ProfileInfo {
 export default function ProfilePage() {
   const { isCollapsed } = useSidebar()
   const [userType, setUserType] = useState<UserType>('creator')
-  const [hotel, setHotel] = useState<Hotel | null>(null)
+  const [hotelProfile, setHotelProfile] = useState<HotelProfile | null>(null)
   const [creator, setCreator] = useState<Creator | null>(null)
   const [profileInfo, setProfileInfo] = useState<ProfileInfo>({})
   const [loading, setLoading] = useState(true)
@@ -48,10 +49,21 @@ export default function ProfilePage() {
   const loadProfile = async () => {
     setLoading(true)
     try {
+      // Hardcode userType for now - will be set by backend later
+      // For testing: change 'hotel' to 'creator' to test creator profile
+      const hardcodedUserType: UserType = 'hotel'
+      
+      // Set in localStorage for consistency
+      if (typeof window !== 'undefined') {
+        if (!localStorage.getItem('userType')) {
+          localStorage.setItem('userType', hardcodedUserType)
+        }
+      }
+      
       // Get user type from localStorage (in production, this would come from auth context)
       const storedUserType = typeof window !== 'undefined'
-        ? (localStorage.getItem('userType') as UserType) || 'creator'
-        : 'creator'
+        ? (localStorage.getItem('userType') as UserType) || hardcodedUserType
+        : hardcodedUserType
       
       setUserType(storedUserType)
 
@@ -73,7 +85,7 @@ export default function ProfilePage() {
 
       // Use mock data directly for frontend design
       if (storedUserType === 'hotel') {
-        setHotel(getMockHotel(userId))
+        setHotelProfile(getMockHotelProfile(userId))
       } else {
         setCreator(getMockCreator(userId))
       }
@@ -134,7 +146,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Profile Information Section */}
-        {(hotel || creator) && (
+        {(hotelProfile || creator) && (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-8 mb-8 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
@@ -155,7 +167,7 @@ export default function ProfilePage() {
                 )}
                 <div>
                   <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Name</div>
-                  <div className="font-bold text-lg text-gray-900">{profileInfo.name || (hotel?.name || creator?.name)}</div>
+                  <div className="font-bold text-lg text-gray-900">{profileInfo.name || (hotelProfile?.name || creator?.name)}</div>
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-gradient-to-br from-gray-50/50 to-transparent hover:from-gray-50 transition-colors">
@@ -174,8 +186,8 @@ export default function ProfilePage() {
               <div className="p-4 rounded-xl bg-gradient-to-br from-gray-50/50 to-transparent hover:from-gray-50 transition-colors">
                 <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Status</div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg text-gray-900 capitalize">{hotel?.status || creator?.status}</span>
-                  {(hotel?.status === 'verified' || creator?.status === 'verified') && (
+                  <span className="font-bold text-lg text-gray-900 capitalize">{hotelProfile?.status || creator?.status}</span>
+                  {(hotelProfile?.status === 'verified' || creator?.status === 'verified') && (
                     <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700">
                       <CheckBadgeIcon className="w-5 h-5" />
                       <span className="text-xs font-semibold">Verified</span>
@@ -188,38 +200,40 @@ export default function ProfilePage() {
         )}
 
         {/* Hotel Profile */}
-        {userType === 'hotel' && hotel && (
+        {userType === 'hotel' && hotelProfile && (
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden hover:shadow-3xl transition-all duration-300">
             {/* Header Section */}
-            <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 px-8 py-16 overflow-hidden">
+              <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 px-8 py-16 overflow-hidden">
               <div className="absolute inset-0 opacity-20" style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
               }}></div>
               <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                {profileInfo.avatar ? (
+                {hotelProfile.logo ? (
                   <img
-                    src={profileInfo.avatar}
-                    alt={hotel.name}
+                    src={hotelProfile.logo}
+                    alt={hotelProfile.name}
                     className="w-32 h-32 rounded-2xl object-cover border-4 border-white/90 shadow-2xl ring-4 ring-white/50"
                   />
                 ) : (
                   <div className="w-32 h-32 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-5xl shadow-2xl ring-4 ring-white/50 border-4 border-white/90">
-                    {hotel.name.charAt(0)}
+                    {hotelProfile.name.charAt(0)}
                   </div>
                 )}
                 <div className="flex-1 text-white">
                   <div className="flex items-center gap-3 mb-3 flex-wrap">
-                    <h2 className="text-4xl font-extrabold drop-shadow-lg">{hotel.name}</h2>
-                    {hotel.status === 'verified' && (
+                    <h2 className="text-4xl font-extrabold drop-shadow-lg">{hotelProfile.name}</h2>
+                    {hotelProfile.status === 'verified' && (
                       <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
                         <CheckBadgeIcon className="w-5 h-5" />
                         <span className="text-sm font-semibold">Verified</span>
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center text-primary-100 text-lg font-medium">
-                    <MapPinIcon className="w-6 h-6 mr-2" />
-                    <span>{hotel.location}</span>
+                  {hotelProfile.description && (
+                    <p className="text-primary-100 text-lg mb-2">{hotelProfile.description}</p>
+                  )}
+                  <div className="flex items-center gap-4 text-primary-100 text-sm font-medium">
+                    <span>{hotelProfile.listings.length} {hotelProfile.listings.length === 1 ? 'Property' : 'Properties'}</span>
                   </div>
                 </div>
               </div>
@@ -228,60 +242,95 @@ export default function ProfilePage() {
             {/* Content Section */}
             <div className="p-8 lg:p-10">
               {/* Description */}
+              {hotelProfile.description && (
+                <div className="mb-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                    <h3 className="text-2xl font-bold text-gray-900">Über uns</h3>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed text-lg pl-4">{hotelProfile.description}</p>
+                </div>
+              )}
+
+              {/* Listings Section */}
               <div className="mb-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                  <h3 className="text-2xl font-bold text-gray-900">About</h3>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                    <h3 className="text-2xl font-bold text-gray-900">Meine Properties</h3>
+                  </div>
+                  <Link href={ROUTES.PROFILE_EDIT}>
+                    <Button variant="primary" size="sm">
+                      <PlusIcon className="w-5 h-5 mr-2" />
+                      Property hinzufügen
+                    </Button>
+                  </Link>
                 </div>
-                <p className="text-gray-700 leading-relaxed text-lg pl-4">{hotel.description}</p>
+                {hotelProfile.listings.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pl-4">
+                    {hotelProfile.listings.map((listing) => (
+                      <Link key={listing.id} href={`/hotels/${listing.id}`}>
+                        <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200 cursor-pointer">
+                          {/* Image */}
+                          <div className="relative h-48 bg-gradient-to-br from-primary-100 to-primary-200">
+                            {listing.images && listing.images.length > 0 ? (
+                              <img
+                                src={listing.images[0]}
+                                alt={listing.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none'
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-primary-600 text-4xl font-bold">
+                                  {listing.name.charAt(0)}
+                                </span>
+                              </div>
+                            )}
+                            {listing.status === 'verified' && (
+                              <div className="absolute top-3 right-3">
+                                <div className="bg-white rounded-full p-1.5 shadow-md">
+                                  <CheckBadgeIcon className="w-5 h-5 text-primary-600" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          {/* Content */}
+                          <div className="p-6">
+                            <h4 className="text-xl font-bold text-gray-900 mb-1 line-clamp-1">
+                              {listing.name}
+                            </h4>
+                            <div className="flex items-center text-gray-600 text-sm mb-2">
+                              <MapPinIcon className="w-4 h-4 mr-1" />
+                              <span>{listing.location}</span>
+                            </div>
+                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                              {listing.description}
+                            </p>
+                            {listing.accommodationType && (
+                              <span className="inline-block px-3 py-1 bg-primary-50 text-primary-700 rounded-lg text-xs font-semibold mb-2">
+                                {listing.accommodationType}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 pl-4">
+                    <p className="text-gray-500 mb-4">Noch keine Properties hinzugefügt</p>
+                    <Link href={ROUTES.PROFILE_EDIT}>
+                      <Button variant="primary" size="sm">
+                        <PlusIcon className="w-5 h-5 mr-2" />
+                        Erste Property hinzufügen
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
-
-              {/* Amenities */}
-              {hotel.amenities && hotel.amenities.length > 0 && (
-                <div className="mb-10">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                    <h3 className="text-2xl font-bold text-gray-900">Amenities</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-3 pl-4">
-                    {hotel.amenities.map((amenity, index) => (
-                      <span
-                        key={index}
-                        className="px-5 py-2.5 bg-gradient-to-br from-primary-50 to-primary-100 text-primary-700 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 border border-primary-200/50"
-                      >
-                        {amenity}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Images */}
-              {hotel.images && hotel.images.length > 0 && (
-                <div className="mb-10">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                    <h3 className="text-2xl font-bold text-gray-900">Gallery</h3>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4">
-                    {hotel.images.map((image, index) => (
-                      <div
-                        key={index}
-                        className="group aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
-                      >
-                        <img
-                          src={image}
-                          alt={`${hotel.name} - Image ${index + 1}`}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Metadata */}
               <div className="pt-8 border-t border-gray-200">
@@ -291,8 +340,8 @@ export default function ProfilePage() {
                       <ClockIcon className="w-5 h-5 text-primary-600" />
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Active Since</div>
-                      <div className="font-semibold text-gray-900">{formatDate(hotel.createdAt)}</div>
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Aktiv seit</div>
+                      <div className="font-semibold text-gray-900">{formatDate(hotelProfile.createdAt)}</div>
                     </div>
                   </div>
                 </div>
@@ -463,7 +512,7 @@ export default function ProfilePage() {
         )}
 
         {/* No Profile State */}
-        {!hotel && !creator && (
+        {!hotelProfile && !creator && (
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-200/50 p-16 text-center">
             <div className="max-w-md mx-auto">
               <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center">
@@ -490,14 +539,57 @@ export default function ProfilePage() {
 }
 
 // Mock data for development
-function getMockHotel(id: string): Hotel {
+function getMockHotelProfile(id: string): HotelProfile {
   return {
-    id,
-    name: 'Sunset Beach Resort',
-    location: 'Bali, Indonesia',
-    description: 'Luxury beachfront resort with stunning ocean views and world-class amenities. Perfect for creators looking for an authentic travel experience.',
-    images: [],
-    amenities: ['Pool', 'Spa', 'Beach Access', 'Restaurant', 'WiFi', 'Gym'],
+    id: 'profile-1',
+    userId: id,
+    name: 'Luxury Villa Management',
+    description: 'Wir sind eine führende Villa-Management-Agentur mit über 15 exklusiven Properties in den schönsten Destinationen weltweit.',
+    logo: undefined,
+    listings: [
+      {
+        id: '1',
+        hotelProfileId: 'profile-1',
+        name: 'Sunset Beach Villa',
+        location: 'Bali, Indonesia',
+        description: 'Luxuriöse Strandvilla mit atemberaubendem Meerblick und erstklassigen Annehmlichkeiten.',
+        images: ['/hotel1.jpg'],
+        accommodationType: 'Villa',
+        collaborationType: 'Kostenlos',
+        availability: ['Juni', 'Juli', 'August', 'September'],
+        status: 'verified',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: '2',
+        hotelProfileId: 'profile-1',
+        name: 'Mountain View Lodge',
+        location: 'Swiss Alps, Switzerland',
+        description: 'Gemütliche Alpenlodge perfekt für Abenteuerlustige und Naturliebhaber.',
+        images: ['/hotel2.jpg'],
+        accommodationType: 'Lodge',
+        collaborationType: 'Bezahlt',
+        availability: ['Dezember', 'Januar', 'Februar', 'März'],
+        status: 'verified',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: '3',
+        hotelProfileId: 'profile-1',
+        name: 'Urban Boutique Apartment',
+        location: 'Tokyo, Japan',
+        description: 'Modernes Boutique-Apartment im Herzen von Tokyo mit minimalistischem Design.',
+        images: ['/hotel3.jpg'],
+        accommodationType: 'Apartment',
+        collaborationType: 'Kostenlos',
+        availability: ['März', 'April', 'Mai', 'Juni'],
+        status: 'verified',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ],
     status: 'verified',
     createdAt: new Date(),
     updatedAt: new Date(),

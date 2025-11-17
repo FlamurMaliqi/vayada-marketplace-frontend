@@ -55,25 +55,6 @@ export function HotelCard({ hotel }: HotelCardProps) {
           {hotel.description}
         </p>
 
-        {/* Amenities */}
-        {hotel.amenities && hotel.amenities.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {hotel.amenities.slice(0, 3).map((amenity, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
-              >
-                {amenity}
-              </span>
-            ))}
-            {hotel.amenities.length > 3 && (
-              <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md">
-                +{hotel.amenities.length - 3}
-              </span>
-            )}
-          </div>
-        )}
-
         {/* Actions */}
         <Link href={`/hotels/${hotel.id}`} className="block">
           <Button
