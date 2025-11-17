@@ -59,6 +59,17 @@ export interface Hotel {
   collaborationType?: 'Kostenlos' | 'Bezahlt' // Free, Paid
   availability?: string[] // Array of months
   platforms?: string[] // Array of platform names: 'Instagram', 'TikTok', 'YouTube', 'Facebook'
+  domain?: string // Website domain
+  boardType?: 'All Inclusive' | 'Full Board' | 'Half Board' | 'Bed & Breakfast' | 'Room Only'
+  numberOfNights?: number // Maximum number of nights for free collaboration
+  targetAudience?: string[] // Target audience regions: 'Asia', 'Africa', 'Middle East', 'Australia', 'North America', 'South America'
+  minFollowers?: number // Minimum number of followers required (e.g., 10000)
+  socialLinks?: {
+    instagram?: string
+    tiktok?: string
+    facebook?: string
+    youtube?: string
+  }
   status: UserStatus
   createdAt: Date
   updatedAt: Date

@@ -1,7 +1,8 @@
-import Link from 'next/link'
+import { useState } from 'react'
 import { Hotel } from '@/lib/types'
 import { Button } from '@/components/ui'
 import { MapPinIcon } from '@heroicons/react/24/outline'
+import { HotelDetailModal } from './HotelDetailModal'
 
 interface HotelCardProps {
   hotel: Hotel
@@ -61,10 +62,12 @@ const getMonthAbbr = (month: string): string => {
 }
 
 export function HotelCard({ hotel }: HotelCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const displayedMonths = hotel.availability?.slice(0, 3) || []
   const remainingMonths = (hotel.availability?.length || 0) - 3
 
   return (
+    <>
     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200 flex flex-col h-full">
       {/* Image */}
       <div className="relative h-64 bg-gradient-to-br from-primary-100 to-primary-200 flex-shrink-0">
@@ -145,23 +148,21 @@ export function HotelCard({ hotel }: HotelCardProps) {
 
         {/* Action Buttons */}
         <div className="flex gap-3 mt-auto">
-          <Link href={`/hotels/${hotel.id}`} className="flex-1">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
-            >
-              View Details
-            </Button>
-          </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+            onClick={() => setIsModalOpen(true)}
+          >
+            View Details
+          </Button>
           <Button
             variant="primary"
             size="sm"
             className="flex-1"
             onClick={(e) => {
               e.preventDefault()
-              // TODO: Implement apply functionality
-              console.log('Apply clicked for hotel:', hotel.id)
+              setIsModalOpen(true)
             }}
           >
             Apply
@@ -169,6 +170,12 @@ export function HotelCard({ hotel }: HotelCardProps) {
         </div>
       </div>
     </div>
+    <HotelDetailModal
+      hotel={hotel}
+      isOpen={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+    />
+    </>
   )
 }
 
