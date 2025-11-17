@@ -237,9 +237,9 @@ function getMockCollaborations(
     {
       id: '1',
       hotelProfileId: 'profile-1',
-      name: 'Sunset Beach Resort',
+      name: 'Sunset Beach Villa',
       location: 'Bali, Indonesia',
-      description: 'Luxury beachfront resort',
+      description: 'Luxuriöse Strandvilla mit atemberaubendem Meerblick und erstklassigen Annehmlichkeiten.',
       images: [],
       status: 'verified',
       createdAt: new Date(),
@@ -250,7 +250,51 @@ function getMockCollaborations(
       hotelProfileId: 'profile-1',
       name: 'Mountain View Lodge',
       location: 'Swiss Alps, Switzerland',
-      description: 'Cozy alpine lodge',
+      description: 'Gemütliche Alpenlodge perfekt für Abenteuerlustige und Naturliebhaber.',
+      images: [],
+      status: 'verified',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: '3',
+      hotelProfileId: 'profile-2',
+      name: 'Urban Boutique Hotel',
+      location: 'Tokyo, Japan',
+      description: 'Modernes Boutique-Hotel im Herzen von Tokyo mit minimalistischem Design.',
+      images: [],
+      status: 'verified',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: '4',
+      hotelProfileId: 'profile-2',
+      name: 'Desert Oasis Resort',
+      location: 'Dubai, UAE',
+      description: 'Luxuriöses Wüstenresort mit traditioneller Architektur und modernem Komfort.',
+      images: [],
+      status: 'verified',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: '5',
+      hotelProfileId: 'profile-3',
+      name: 'Santorini Blue Suites',
+      location: 'Santorini, Greece',
+      description: 'Iconic white-washed suites perched on volcanic cliffs with stunning sunset views.',
+      images: [],
+      status: 'verified',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: '6',
+      hotelProfileId: 'profile-3',
+      name: 'Jungle Eco-Lodge',
+      location: 'Costa Rica',
+      description: 'Nachhaltige Öko-Lodge umgeben von tropischem Regenwald und Wildtieren.',
       images: [],
       status: 'verified',
       createdAt: new Date(),
@@ -262,11 +306,12 @@ function getMockCollaborations(
     {
       id: '1',
       name: 'Sarah Travels',
-      niche: ['Luxury Travel'],
+      niche: ['Luxury Travel', 'Beach Destinations'],
       platforms: [
         { name: 'Instagram', handle: '@sarahtravels', followers: 125000, engagementRate: 4.2 },
+        { name: 'YouTube', handle: '@sarahtravels', followers: 45000, engagementRate: 6.8 },
       ],
-      audienceSize: 125000,
+      audienceSize: 170000,
       location: 'Bali, Indonesia',
       status: 'verified',
       createdAt: new Date(),
@@ -275,12 +320,69 @@ function getMockCollaborations(
     {
       id: '2',
       name: 'Adventure Mike',
-      niche: ['Adventure Travel'],
+      niche: ['Adventure Travel', 'Mountain Sports'],
       platforms: [
         { name: 'Instagram', handle: '@adventuremike', followers: 89000, engagementRate: 5.1 },
+        { name: 'TikTok', handle: '@adventuremike', followers: 120000, engagementRate: 8.5 },
       ],
-      audienceSize: 89000,
+      audienceSize: 209000,
       location: 'Swiss Alps, Switzerland',
+      status: 'verified',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: '3',
+      name: 'Tokyo Explorer',
+      niche: ['City Travel', 'Food & Culture'],
+      platforms: [
+        { name: 'Instagram', handle: '@tokyoexplorer', followers: 156000, engagementRate: 4.8 },
+        { name: 'Facebook', handle: '@tokyoexplorer', followers: 25000, engagementRate: 3.2 },
+      ],
+      audienceSize: 181000,
+      location: 'Tokyo, Japan',
+      status: 'verified',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: '4',
+      name: 'Luxury Wanderer',
+      niche: ['Luxury Travel', 'Resorts'],
+      platforms: [
+        { name: 'Instagram', handle: '@luxurywanderer', followers: 245000, engagementRate: 3.9 },
+        { name: 'YouTube', handle: '@luxurywanderer', followers: 98000, engagementRate: 5.5 },
+      ],
+      audienceSize: 343000,
+      location: 'Dubai, UAE',
+      status: 'verified',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: '5',
+      name: 'Island Dreams',
+      niche: ['Beach Destinations', 'Romantic Travel'],
+      platforms: [
+        { name: 'Instagram', handle: '@islanddreams', followers: 198000, engagementRate: 4.5 },
+        { name: 'TikTok', handle: '@islanddreams', followers: 67000, engagementRate: 2.8 },
+      ],
+      audienceSize: 265000,
+      location: 'Santorini, Greece',
+      status: 'verified',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: '6',
+      name: 'Eco Explorer',
+      niche: ['Eco Travel', 'Adventure Travel'],
+      platforms: [
+        { name: 'Instagram', handle: '@ecoexplorer', followers: 112000, engagementRate: 5.8 },
+        { name: 'Facebook', handle: '@ecoexplorer', followers: 32000, engagementRate: 4.1 },
+      ],
+      audienceSize: 144000,
+      location: 'Costa Rica',
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -288,47 +390,193 @@ function getMockCollaborations(
   ]
 
   const allCollaborations = [
+    // Hotel 1 collaborations
     {
       id: '1',
       hotelId: '1',
       creatorId: '1',
       status: 'pending' as CollaborationStatus,
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
       hotel: mockHotels[0],
       creator: mockCreators[0],
     },
     {
       id: '2',
-      hotelId: '2',
-      creatorId: '2',
+      hotelId: '1',
+      creatorId: '5',
       status: 'accepted' as CollaborationStatus,
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      hotel: mockHotels[1],
-      creator: mockCreators[1],
+      createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[0],
+      creator: mockCreators[4],
     },
     {
       id: '3',
       hotelId: '1',
       creatorId: '2',
       status: 'rejected' as CollaborationStatus,
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
       hotel: mockHotels[0],
+      creator: mockCreators[1],
+    },
+    {
+      id: '4',
+      hotelId: '1',
+      creatorId: '4',
+      status: 'completed' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[0],
+      creator: mockCreators[3],
+    },
+    // Hotel 2 collaborations
+    {
+      id: '5',
+      hotelId: '2',
+      creatorId: '2',
+      status: 'accepted' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[1],
+      creator: mockCreators[1],
+    },
+    {
+      id: '6',
+      hotelId: '2',
+      creatorId: '6',
+      status: 'pending' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[1],
+      creator: mockCreators[5],
+    },
+    {
+      id: '7',
+      hotelId: '2',
+      creatorId: '3',
+      status: 'cancelled' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[1],
+      creator: mockCreators[2],
+    },
+    // Hotel 3 collaborations
+    {
+      id: '8',
+      hotelId: '3',
+      creatorId: '3',
+      status: 'accepted' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[2],
+      creator: mockCreators[2],
+    },
+    {
+      id: '9',
+      hotelId: '3',
+      creatorId: '1',
+      status: 'pending' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[2],
+      creator: mockCreators[0],
+    },
+    // Hotel 4 collaborations
+    {
+      id: '10',
+      hotelId: '4',
+      creatorId: '4',
+      status: 'accepted' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[3],
+      creator: mockCreators[3],
+    },
+    {
+      id: '11',
+      hotelId: '4',
+      creatorId: '5',
+      status: 'pending' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[3],
+      creator: mockCreators[4],
+    },
+    // Hotel 5 collaborations
+    {
+      id: '12',
+      hotelId: '5',
+      creatorId: '5',
+      status: 'completed' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[4],
+      creator: mockCreators[4],
+    },
+    {
+      id: '13',
+      hotelId: '5',
+      creatorId: '1',
+      status: 'accepted' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[4],
+      creator: mockCreators[0],
+    },
+    {
+      id: '14',
+      hotelId: '5',
+      creatorId: '4',
+      status: 'pending' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[4],
+      creator: mockCreators[3],
+    },
+    // Hotel 6 collaborations
+    {
+      id: '15',
+      hotelId: '6',
+      creatorId: '6',
+      status: 'accepted' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[5],
+      creator: mockCreators[5],
+    },
+    {
+      id: '16',
+      hotelId: '6',
+      creatorId: '2',
+      status: 'rejected' as CollaborationStatus,
+      createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 17 * 24 * 60 * 60 * 1000),
+      hotel: mockHotels[5],
       creator: mockCreators[1],
     },
   ]
 
   // Filter by user type
   if (userType === 'hotel') {
-    // Show only collaborations where hotelId matches (or default to hotel '1' if no userId)
-    const filterId = userId || '1'
-    return allCollaborations.filter(c => c.hotelId === filterId)
+    // If userId is set, show only that hotel's collaborations
+    // Otherwise, show collaborations for multiple hotels (1, 2, 3) for development
+    if (userId) {
+      return allCollaborations.filter(c => c.hotelId === userId)
+    } else {
+      // Show collaborations for hotels 1, 2, and 3 for better demo experience
+      return allCollaborations.filter(c => ['1', '2', '3'].includes(c.hotelId))
+    }
   } else {
-    // Show only collaborations where creatorId matches (or default to creator '1' if no userId)
-    const filterId = userId || '1'
-    return allCollaborations.filter(c => c.creatorId === filterId)
+    // If userId is set, show only that creator's collaborations
+    // Otherwise, show collaborations for multiple creators (1, 2, 3) for development
+    if (userId) {
+      return allCollaborations.filter(c => c.creatorId === userId)
+    } else {
+      // Show collaborations for creators 1, 2, and 3 for better demo experience
+      return allCollaborations.filter(c => ['1', '2', '3'].includes(c.creatorId))
+    }
   }
 }
 
