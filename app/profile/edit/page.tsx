@@ -113,7 +113,7 @@ export default function ProfileEditPage() {
             logo: mockHotelProfile.logo || '',
           })
           setListings(mockHotelProfile.listings || [])
-          setImageErrors(new Set()) // Clear image errors when loading
+          setListingImageErrors(new Set()) // Clear image errors when loading
           // Update profile name if not set
           if (!profileInfo.name) {
             setProfileData(prev => ({ ...prev, name: mockHotelProfile.name || '' }))
