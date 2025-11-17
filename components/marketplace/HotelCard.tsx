@@ -70,7 +70,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
     <>
     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200 flex flex-col h-full">
       {/* Image */}
-      <div className="relative h-64 bg-gradient-to-br from-primary-100 to-primary-200 flex-shrink-0">
+      <div className="relative h-48 bg-gradient-to-br from-primary-100 to-primary-200 flex-shrink-0">
         {hotel.images && hotel.images.length > 0 ? (
           <img
             src={hotel.images[0]}
@@ -83,7 +83,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-primary-600 text-4xl font-bold">
+            <span className="text-primary-600 text-3xl font-bold">
               {hotel.name.charAt(0)}
             </span>
           </div>
@@ -93,7 +93,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
       {/* Content */}
       <div className="p-6 flex flex-col flex-1">
         {/* Name */}
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">
           {hotel.name}
         </h3>
 
@@ -106,12 +106,12 @@ export function HotelCard({ hotel }: HotelCardProps) {
         {/* Platforms */}
         {hotel.platforms && hotel.platforms.length > 0 && (
           <div className="mb-4">
-            <div className="text-sm text-gray-700 font-medium mb-2">Platforms:</div>
+            <div className="text-xs text-gray-700 font-medium mb-2">Platforms:</div>
             <div className="flex flex-wrap gap-2">
               {hotel.platforms.map((platform, index) => (
                 <div
                   key={index}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm font-medium"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
                 >
                   {getPlatformIcon(platform)}
                   <span>{platform === 'YT' ? 'YouTube' : platform}</span>
@@ -124,18 +124,18 @@ export function HotelCard({ hotel }: HotelCardProps) {
         {/* Availability */}
         {hotel.availability && hotel.availability.length > 0 && (
           <div className="mb-6">
-            <div className="text-sm text-gray-700 font-medium mb-2">Available:</div>
+            <div className="text-xs text-gray-700 font-medium mb-2">Available:</div>
             <div className="flex flex-wrap gap-2">
               {displayedMonths.map((month, index) => (
                 <span
                   key={index}
-                  className="inline-block px-3 py-1.5 bg-gray-800 text-white rounded-full text-sm font-medium"
+                  className="inline-block px-3 py-1.5 bg-gray-800 text-white rounded-full text-xs font-medium"
                 >
                   {getMonthAbbr(month)}
                 </span>
               ))}
               {remainingMonths > 0 && (
-                <span className="inline-block px-3 py-1.5 bg-gray-800 text-white rounded-full text-sm font-medium">
+                <span className="inline-block px-3 py-1.5 bg-gray-800 text-white rounded-full text-xs font-medium">
                   +{remainingMonths}
                 </span>
               )}
