@@ -23,7 +23,7 @@ export default function MarketplacePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOption, setSortOption] = useState<string>('relevance')
   const [filters, setFilters] = useState<{
-    hotelType?: string
+    hotelType?: string | string[]
     offering?: string
     availability?: string
     budget?: string
@@ -59,9 +59,29 @@ export default function MarketplacePage() {
       if (!matchesSearch) return false
     }
 
-    // Hotel type filter
-    if (filters.hotelType && hotel.accommodationType !== filters.hotelType) {
-      return false
+    // Hotel type filter (multiselect)
+    if (filters.hotelType) {
+      const selectedTypes = Array.isArray(filters.hotelType) 
+        ? filters.hotelType 
+        : [filters.hotelType]
+      
+      // Map filter values to data values
+      const typeMap: Record<string, string[]> = {
+        'Resort': ['Resort'],
+        'Boutique': ['Boutique Hotel'],
+        'Lodge': ['Lodge'],
+        'Hostel': ['Hostel'],
+        'Luxury': ['Resort', 'Boutique Hotel', 'Hotel'], // Luxury can be various types
+        'City Hotel': ['Hotel', 'Boutique Hotel'],
+      }
+      
+      // Get all possible accommodation types for selected filters
+      const allowedTypes = selectedTypes.flatMap(type => typeMap[type] || [type])
+      
+      // Check if hotel's accommodation type matches any of the allowed types
+      if (!hotel.accommodationType || !allowedTypes.includes(hotel.accommodationType)) {
+        return false
+      }
     }
 
     // Offering filter

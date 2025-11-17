@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Input } from '@/components/ui'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 
@@ -10,13 +10,13 @@ interface MarketplaceFiltersProps {
   sortOption?: string
   onSortChange?: (sort: string) => void
   filters: {
-    hotelType?: string
+    hotelType?: string | string[]
     offering?: string
     availability?: string
     budget?: string
   }
   onFiltersChange: (filters: {
-    hotelType?: string
+    hotelType?: string | string[]
     offering?: string
     availability?: string
     budget?: string
@@ -26,13 +26,12 @@ interface MarketplaceFiltersProps {
 
 // Filter options
 const HOTEL_TYPES = [
-  'All Hotel Types',
-  'Hotel',
   'Resort',
-  'Boutique Hotel',
+  'Boutique',
   'Lodge',
-  'Apartment',
-  'Villa',
+  'Hostel',
+  'Luxury',
+  'City Hotel',
 ]
 
 const OFFERINGS = [
@@ -76,10 +75,41 @@ export function MarketplaceFilters({
   onFiltersChange,
   viewType,
 }: MarketplaceFiltersProps) {
-  const hotelTypeRef = useRef<HTMLSelectElement>(null)
+  const [isHotelTypeOpen, setIsHotelTypeOpen] = useState(false)
+  const hotelTypeButtonRef = useRef<HTMLButtonElement>(null)
+  const hotelTypeDropdownRef = useRef<HTMLDivElement>(null)
   const offeringRef = useRef<HTMLSelectElement>(null)
   const availabilityRef = useRef<HTMLSelectElement>(null)
   const budgetRef = useRef<HTMLSelectElement>(null)
+
+  // Get selected hotel types as array
+  const selectedHotelTypes = Array.isArray(filters.hotelType) 
+    ? filters.hotelType 
+    : filters.hotelType 
+      ? [filters.hotelType] 
+      : []
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        hotelTypeDropdownRef.current &&
+        hotelTypeButtonRef.current &&
+        !hotelTypeDropdownRef.current.contains(event.target as Node) &&
+        !hotelTypeButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsHotelTypeOpen(false)
+      }
+    }
+
+    if (isHotelTypeOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isHotelTypeOpen])
 
   const adjustSelectWidth = (ref: React.RefObject<HTMLSelectElement>) => {
     if (ref.current) {
@@ -106,20 +136,40 @@ export function MarketplaceFilters({
   }
 
   useEffect(() => {
-    adjustSelectWidth(hotelTypeRef)
     adjustSelectWidth(offeringRef)
     adjustSelectWidth(availabilityRef)
     adjustSelectWidth(budgetRef)
   }, [filters])
 
-  const handleFilterChange = (key: 'hotelType' | 'offering' | 'availability' | 'budget', value: string) => {
+  const handleHotelTypeToggle = (hotelType: string) => {
+    const currentTypes = selectedHotelTypes
+    const newTypes = currentTypes.includes(hotelType)
+      ? currentTypes.filter(t => t !== hotelType)
+      : [...currentTypes, hotelType]
+    
     const newFilters = { ...filters }
-    if (!value || value === 'All Hotel Types' || value === 'All Offerings' || value === 'All Months' || value === 'All Budgets') {
+    if (newTypes.length === 0) {
+      delete newFilters.hotelType
+    } else {
+      newFilters.hotelType = newTypes
+    }
+    onFiltersChange(newFilters)
+  }
+
+  const handleFilterChange = (key: 'offering' | 'availability' | 'budget', value: string) => {
+    const newFilters = { ...filters }
+    if (!value || value === 'All Offerings' || value === 'All Months' || value === 'All Budgets') {
       delete newFilters[key]
     } else {
       newFilters[key] = value
     }
     onFiltersChange(newFilters)
+  }
+
+  const getHotelTypeDisplayText = () => {
+    if (selectedHotelTypes.length === 0) return 'Hotel Type'
+    if (selectedHotelTypes.length === 1) return selectedHotelTypes[0]
+    return `${selectedHotelTypes.length} selected`
   }
 
   return (
@@ -160,24 +210,54 @@ export function MarketplaceFilters({
       {/* Filter Options - Beneath Search Bar */}
       {(viewType === 'all' || viewType === 'hotels') && (
         <div className="flex flex-wrap gap-2">
-          {/* Hotel Type Filter */}
-          <select
-            ref={hotelTypeRef}
-            value={filters.hotelType || ''}
-            onChange={(e) => {
-              handleFilterChange('hotelType', e.target.value)
-              setTimeout(() => adjustSelectWidth(hotelTypeRef), 0)
-            }}
-            className="inline-block px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 cursor-pointer hover:border-gray-400 transition-colors appearance-none"
-            style={{ backgroundImage: 'none' }}
-          >
-            <option value="">Hotel Type</option>
-            {HOTEL_TYPES.slice(1).map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+          {/* Hotel Type Filter - Multiselect */}
+          <div className="relative">
+            <button
+              ref={hotelTypeButtonRef}
+              onClick={() => setIsHotelTypeOpen(!isHotelTypeOpen)}
+              className="inline-block px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 cursor-pointer hover:border-gray-400 transition-colors"
+            >
+              {getHotelTypeDisplayText()}
+            </button>
+            {isHotelTypeOpen && (
+              <div
+                ref={hotelTypeDropdownRef}
+                className="absolute top-full left-0 mt-1 bg-white rounded-b-xl shadow-xl z-50 min-w-[220px] overflow-hidden"
+              >
+                <div className="px-5 py-2.5 text-gray-900 text-sm">
+                  Select Hotel Types
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {HOTEL_TYPES.map((type) => {
+                    const isSelected = selectedHotelTypes.includes(type)
+                    return (
+                      <label
+                        key={type}
+                        className="flex items-center px-5 py-0.5 hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleHotelTypeToggle(type)
+                        }}
+                      >
+                        <div className="relative flex items-center justify-center">
+                          {isSelected ? (
+                            <div className="w-4 h-4 bg-primary-600 rounded flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          ) : (
+                            <div className="w-4 h-4 border-2 border-primary-400 rounded-full bg-white"></div>
+                          )}
+                        </div>
+                        <span className="ml-3 text-sm text-gray-900">{type}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Offering Filter */}
           <select
