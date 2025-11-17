@@ -163,35 +163,14 @@ export default function HotelDetailPage() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4">
-                {userType === 'creator' ? (
-                  <Link href={`${ROUTES.CHATS}?startChat=${hotel.id}`}>
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      className="bg-white text-primary-700 hover:bg-primary-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                    >
-                      Start Chat
-                    </Button>
-                  </Link>
-                ) : (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="bg-white text-primary-700 hover:bg-primary-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                    onClick={() => setShowRequestModal(true)}
-                  >
-                    Request Collaboration
-                  </Button>
-                )}
-                <Link href={`${ROUTES.CHATS}?startChat=${hotel.id}`}>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="border-2 border-white/50 text-white hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  >
-                    Contact Hotel
-                  </Button>
-                </Link>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="bg-white text-primary-700 hover:bg-primary-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  onClick={() => setShowRequestModal(true)}
+                >
+                  Request Collaboration
+                </Button>
               </div>
             </div>
           </div>

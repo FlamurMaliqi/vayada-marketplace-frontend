@@ -174,14 +174,6 @@ export default function CreatorDetailPage() {
                   >
                     Request Collaboration
                   </Button>
-                  <Link href={`${ROUTES.CHATS}?startChat=${creator.id}`}>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                    >
-                      Contact Creator
-                    </Button>
-                  </Link>
                 </div>
               </div>
             </div>

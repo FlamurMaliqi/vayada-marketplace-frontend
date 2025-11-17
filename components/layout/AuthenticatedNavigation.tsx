@@ -10,7 +10,6 @@ import {
   ArrowRightOnRectangleIcon,
   UserGroupIcon,
   UserIcon,
-  ChatBubbleLeftRightIcon,
   ViewColumnsIcon,
 } from '@heroicons/react/24/outline'
 
@@ -70,11 +69,6 @@ export default function AuthenticatedNavigation() {
       icon: UserGroupIcon,
     },
     {
-      href: ROUTES.CHATS,
-      label: 'Chats',
-      icon: ChatBubbleLeftRightIcon,
-    },
-    {
       href: ROUTES.PROFILE,
       label: 'My Profile',
       icon: UserIcon,
@@ -85,7 +79,7 @@ export default function AuthenticatedNavigation() {
     <SidebarContext.Provider value={{ isCollapsed, toggleSidebar }}>
       {/* Sidebar - Visible on all screen sizes */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 bg-primary-800 flex-col z-50 transition-all duration-300 ${
+        className={`fixed left-0 top-0 bottom-0 bg-primary-800 flex flex-col z-50 transition-all duration-300 ${
           isCollapsed ? 'w-20' : 'w-64'
         }`}
       >
@@ -114,16 +108,16 @@ export default function AuthenticatedNavigation() {
           })}
         </nav>
 
-        {/* Logout Button */}
-        <div className="p-4 border-t border-primary-700/50">
+        {/* Logout Button - Bottom Left */}
+        <div className="mt-auto p-4 border-t border-primary-700/50">
           <button
             onClick={handleLogout}
             className={`flex items-center rounded-lg font-medium text-white/80 hover:text-white hover:bg-primary-700/50 transition-all duration-200 w-full ${
-              isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3'
+              isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3 justify-start'
             }`}
             title={isCollapsed ? 'Sign Out' : undefined}
           >
-            <ArrowRightOnRectangleIcon className="w-6 h-6" />
+            <ArrowRightOnRectangleIcon className="w-6 h-6 flex-shrink-0" />
             {!isCollapsed && <span className="text-sm">Sign Out</span>}
           </button>
         </div>
