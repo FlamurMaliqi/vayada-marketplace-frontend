@@ -1,8 +1,9 @@
-import Link from 'next/link'
+import { useState } from 'react'
 import { Creator } from '@/lib/types'
 import { Button } from '@/components/ui'
 import { MapPinIcon, CheckBadgeIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
+import { CreatorDetailModal } from './CreatorDetailModal'
 
 interface CreatorCardProps {
   creator: Creator
@@ -43,6 +44,7 @@ const getPlatformIcon = (platformName: string) => {
 }
 
 export function CreatorCard({ creator }: CreatorCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const totalFollowers = creator.platforms.reduce(
     (sum, platform) => sum + platform.followers,
     0
@@ -52,6 +54,7 @@ export function CreatorCard({ creator }: CreatorCardProps) {
     creator.platforms.length
 
   return (
+    <>
     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200">
       {/* Header */}
       <div className="p-6 pb-4">
@@ -130,17 +133,22 @@ export function CreatorCard({ creator }: CreatorCardProps) {
 
       {/* Actions */}
       <div className="p-6 pt-4">
-        <Link href={`/creators/${creator.id}`} className="block">
-          <Button
-            variant="primary"
-            size="sm"
-            className="w-full"
-          >
-            View Profile
-          </Button>
-        </Link>
+        <Button
+          variant="primary"
+          size="sm"
+          className="w-full"
+          onClick={() => setIsModalOpen(true)}
+        >
+          View Profile
+        </Button>
       </div>
     </div>
+    <CreatorDetailModal
+      creator={creator}
+      isOpen={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+    />
+    </>
   )
 }
 
