@@ -77,18 +77,22 @@ export default function AuthenticatedNavigation() {
 
   return (
     <SidebarContext.Provider value={{ isCollapsed, toggleSidebar }}>
-      {/* Backdrop overlay when sidebar is expanded - click to collapse */}
+      {/* Backdrop overlay when sidebar is expanded on small screens - click to collapse */}
       {!isCollapsed && (
         <div
-          className="fixed inset-0 bg-black/50 z-40"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={toggleSidebar}
         />
       )}
       
-      {/* Sidebar - Always visible */}
+      {/* Sidebar - Hidden on small screens when collapsed, visible when expanded or on larger screens */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 bg-primary-800 flex flex-col z-50 transition-all duration-300 ${
+        className={`fixed left-0 top-0 bottom-0 bg-primary-800 flex-col z-50 transition-all duration-300 ${
           isCollapsed ? 'w-20' : 'w-64'
+        } ${
+          isCollapsed 
+            ? 'hidden md:flex' // Hidden on small screens when collapsed, visible on larger screens
+            : 'flex' // Always visible when expanded
         }`}
       >
         {/* Navigation Links */}
@@ -133,7 +137,7 @@ export default function AuthenticatedNavigation() {
 
       {/* Top Header - Visible on all screen sizes */}
       <header className={`fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-40 transition-all duration-300 ${
-        isCollapsed ? 'pl-20' : 'pl-64'
+        isCollapsed ? 'md:pl-20' : 'md:pl-64'
       }`}>
         <div className="flex items-center justify-between h-full w-full px-6">
           {/* Toggle Button - Left - Hidden when sidebar is expanded */}

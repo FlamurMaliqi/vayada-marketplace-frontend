@@ -80,7 +80,7 @@ export default function MarketplacePage() {
       
       // Check if hotel's accommodation type matches any of the allowed types
       if (!hotel.accommodationType || !allowedTypes.includes(hotel.accommodationType)) {
-        return false
+      return false
       }
     }
 
@@ -190,7 +190,7 @@ export default function MarketplacePage() {
   return (
     <main className="min-h-screen bg-white">
       <AuthenticatedNavigation />
-      <div className={`transition-all duration-300 ${isCollapsed ? 'pl-20' : 'pl-64'} pt-16`}>
+      <div className={`transition-all duration-300 ${isCollapsed ? 'md:pl-20' : 'md:pl-64'} pt-16`}>
         <div className="pt-4">
           <ProfileWarningBanner />
         </div>

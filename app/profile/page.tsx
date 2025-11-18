@@ -98,7 +98,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-white">
         <AuthenticatedNavigation />
-        <div className={`transition-all duration-300 ${isCollapsed ? 'pl-20' : 'pl-64'} pt-16`}>
+        <div className={`transition-all duration-300 ${isCollapsed ? 'md:pl-20' : 'md:pl-64'} pt-16`}>
           <div className="pt-4">
             <ProfileWarningBanner />
           </div>
