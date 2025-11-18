@@ -77,6 +77,14 @@ export default function AuthenticatedNavigation() {
 
   return (
     <SidebarContext.Provider value={{ isCollapsed, toggleSidebar }}>
+      {/* Backdrop overlay when sidebar is expanded - click to collapse */}
+      {!isCollapsed && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={toggleSidebar}
+        />
+      )}
+      
       {/* Sidebar - Always visible */}
       <aside
         className={`fixed left-0 top-0 bottom-0 bg-primary-800 flex flex-col z-50 transition-all duration-300 ${
@@ -128,14 +136,16 @@ export default function AuthenticatedNavigation() {
         isCollapsed ? 'pl-20' : 'pl-64'
       }`}>
         <div className="flex items-center justify-between h-full w-full px-6">
-          {/* Toggle Button - Left - Always visible */}
-          <button
-            onClick={toggleSidebar}
-            className="p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 transition-all duration-200"
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            <ViewColumnsIcon className="w-5 h-5" />
-          </button>
+          {/* Toggle Button - Left - Hidden when sidebar is expanded */}
+          {isCollapsed && (
+            <button
+              onClick={toggleSidebar}
+              className="p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 transition-all duration-200"
+              title="Expand sidebar"
+            >
+              <ViewColumnsIcon className="w-5 h-5" />
+            </button>
+          )}
 
           {/* Logo - Centered */}
           <Link
