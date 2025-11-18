@@ -289,7 +289,7 @@ export default function ProfilePage() {
               {userType === 'creator' && creatorProfile && (
                 <>
                   {/* Tab Navigation */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-6 w-fit">
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => setActiveCreatorTab('overview')}
