@@ -35,6 +35,30 @@ interface CreatorProfile {
 }
 
 // Mock data for Hotel Profile
+interface HotelListing {
+  id: string
+  name: string
+  location: string
+  description: string
+  images: string[]
+  accommodationType?: string
+  // Offerings per listing
+  collaborationTypes: ('Free Stay' | 'Paid' | 'Discount')[]
+  availability: string[] // months
+  platforms: string[] // Instagram, TikTok, YouTube, Facebook
+  freeStayMinNights?: number
+  freeStayMaxNights?: number
+  paidMaxAmount?: number
+  discountPercentage?: number
+  // Looking for per listing
+  lookingForPlatforms: string[]
+  lookingForMinFollowers?: number
+  targetGroupCountries: string[]
+  targetGroupAgeMin?: number
+  targetGroupAgeMax?: number
+  status: 'verified' | 'pending' | 'rejected'
+}
+
 interface HotelProfile {
   id: string
   name: string
@@ -42,10 +66,21 @@ interface HotelProfile {
   category: string
   location: string
   status: 'verified' | 'pending' | 'rejected'
+  website?: string
+  about?: string
+  email: string
+  phone?: string
+  listings: HotelListing[]
 }
 
 type CreatorTab = 'overview' | 'platforms'
-type HotelTab = 'overview' | 'about' | 'offering' | 'looking-for' | 'contact'
+type HotelTab = 'overview' | 'listings'
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const HOTEL_CATEGORIES = ['Resort', 'Hotel', 'Villa', 'Apartment', 'Hostel', 'Boutique Hotel', 'Luxury Hotel', 'Eco Resort', 'Spa Resort', 'Beach Resort']
+const PLATFORM_OPTIONS = ['Instagram', 'TikTok', 'YouTube', 'Facebook']
+const COLLABORATION_TYPES = ['Free Stay', 'Paid', 'Discount'] as const
+const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherlands', 'Switzerland', 'Austria', 'Belgium', 'Canada', 'Australia', 'Japan', 'South Korea', 'Singapore', 'Thailand', 'Indonesia', 'Malaysia', 'Philippines', 'India', 'Brazil', 'Mexico', 'Argentina', 'Chile', 'South Africa', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Egypt']
 
 export default function ProfilePage() {
   const { isCollapsed } = useSidebar()
@@ -61,9 +96,18 @@ export default function ProfilePage() {
   const [isSavingContact, setIsSavingContact] = useState(false)
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [isSavingProfile, setIsSavingProfile] = useState(false)
+  const [isEditingHotelProfile, setIsEditingHotelProfile] = useState(false)
+  const [isSavingHotelProfile, setIsSavingHotelProfile] = useState(false)
   const [showPictureModal, setShowPictureModal] = useState(false)
+  const [showHotelPictureModal, setShowHotelPictureModal] = useState(false)
+  const [showListingModal, setShowListingModal] = useState(false)
+  const [editingListingId, setEditingListingId] = useState<string | null>(null)
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null)
+  const [hotelPicturePreview, setHotelPicturePreview] = useState<string | null>(null)
+  const [listingImagePreview, setListingImagePreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const hotelFileInputRef = useRef<HTMLInputElement>(null)
+  const listingImageInputRef = useRef<HTMLInputElement>(null)
   
   // Edit form state
   const [editFormData, setEditFormData] = useState({
@@ -73,6 +117,50 @@ export default function ProfilePage() {
     location: '',
     platforms: [] as Platform[],
   })
+
+  // Hotel edit form state
+  const [hotelEditFormData, setHotelEditFormData] = useState({
+    name: '',
+    picture: '',
+    category: '',
+    location: '',
+    website: '',
+    about: '',
+    collaborationTypes: [] as ('Free Stay' | 'Paid' | 'Discount')[],
+    availability: [] as string[],
+    platforms: [] as string[],
+    freeStayMinNights: undefined as number | undefined,
+    freeStayMaxNights: undefined as number | undefined,
+    paidMaxAmount: undefined as number | undefined,
+    discountPercentage: undefined as number | undefined,
+    lookingForPlatforms: [] as string[],
+    lookingForMinFollowers: undefined as number | undefined,
+    targetGroupCountries: [] as string[],
+    targetGroupAgeMin: undefined as number | undefined,
+    targetGroupAgeMax: undefined as number | undefined,
+  })
+
+  // Listing edit form state
+  const [listingFormData, setListingFormData] = useState({
+    name: '',
+    location: '',
+    description: '',
+    images: [] as string[],
+    accommodationType: '',
+    collaborationTypes: [] as ('Free Stay' | 'Paid' | 'Discount')[],
+    availability: [] as string[],
+    platforms: [] as string[],
+    freeStayMinNights: undefined as number | undefined,
+    freeStayMaxNights: undefined as number | undefined,
+    paidMaxAmount: undefined as number | undefined,
+    discountPercentage: undefined as number | undefined,
+    lookingForPlatforms: [] as string[],
+    lookingForMinFollowers: undefined as number | undefined,
+    targetGroupCountries: [] as string[],
+    targetGroupAgeMin: undefined as number | undefined,
+    targetGroupAgeMax: undefined as number | undefined,
+  })
+  const [isSavingListing, setIsSavingListing] = useState(false)
 
   useEffect(() => {
     loadProfile()
@@ -149,14 +237,87 @@ export default function ProfilePage() {
         setHotelProfile({
           id: '1',
           name: 'Luxury Villa Management',
+          picture: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           category: 'Resort',
           location: 'Bali, Indonesia',
           status: 'verified',
+          website: 'https://luxuryvillamanagement.com',
+          about: 'A luxury resort offering unique experiences in the heart of Bali. We specialize in providing exceptional hospitality and creating memorable stays for our guests.',
+          email: 'contact@luxuryvillamanagement.com',
+          phone: '+62 361 123456',
+          listings: [
+            {
+              id: 'listing-1',
+              name: 'Luxury Beach Villa',
+              location: 'Bali, Indonesia',
+              description: 'A stunning beachfront villa with private pool and ocean views.',
+              images: ['https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+              accommodationType: 'Villa',
+              collaborationTypes: ['Free Stay', 'Discount'],
+              availability: ['January', 'February', 'March', 'April', 'May', 'June'],
+              platforms: ['Instagram', 'TikTok', 'YouTube'],
+              freeStayMinNights: 2,
+              freeStayMaxNights: 5,
+              discountPercentage: 20,
+              lookingForPlatforms: ['Instagram', 'TikTok'],
+              lookingForMinFollowers: 50000,
+              targetGroupCountries: ['USA', 'Germany', 'UK'],
+              targetGroupAgeMin: 25,
+              targetGroupAgeMax: 45,
+              status: 'verified',
+            },
+            {
+              id: 'listing-2',
+              name: 'Mountain Resort',
+              location: 'Swiss Alps, Switzerland',
+              description: 'A cozy mountain resort perfect for winter sports enthusiasts.',
+              images: ['https://images.unsplash.com/photo-1564501049412-61c2a3083791?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3'],
+              accommodationType: 'Resort',
+              collaborationTypes: ['Paid', 'Discount'],
+              availability: ['December', 'January', 'February', 'March'],
+              platforms: ['Instagram', 'Facebook'],
+              paidMaxAmount: 3000,
+              discountPercentage: 15,
+              lookingForPlatforms: ['Instagram', 'YouTube'],
+              lookingForMinFollowers: 75000,
+              targetGroupCountries: ['USA', 'UK', 'France'],
+              targetGroupAgeMin: 30,
+              targetGroupAgeMax: 50,
+              status: 'verified',
+            },
+          ],
         })
       }
       setLoading(false)
     }, 300)
   }
+
+  useEffect(() => {
+    if (hotelProfile) {
+      setHotelEditFormData({
+        name: hotelProfile.name,
+        picture: hotelProfile.picture || '',
+        category: hotelProfile.category,
+        location: hotelProfile.location,
+        website: hotelProfile.website || '',
+        about: hotelProfile.about || '',
+        collaborationTypes: [],
+        availability: [],
+        platforms: [],
+        freeStayMinNights: undefined,
+        freeStayMaxNights: undefined,
+        paidMaxAmount: undefined,
+        discountPercentage: undefined,
+        lookingForPlatforms: [],
+        lookingForMinFollowers: undefined,
+        targetGroupCountries: [],
+        targetGroupAgeMin: undefined,
+        targetGroupAgeMax: undefined,
+      })
+      setEmail(hotelProfile.email)
+      setPhone(hotelProfile.phone || '')
+    }
+  }, [hotelProfile])
 
   // Platform Icon Component
   const getPlatformIcon = (platform: string) => {
@@ -264,6 +425,210 @@ export default function ProfilePage() {
       }
     }
     setIsEditingProfile(false)
+  }
+
+  const handleSaveHotelProfile = async () => {
+    if (!hotelEditFormData.name || !hotelEditFormData.category || !hotelEditFormData.location) {
+      return
+    }
+
+    setIsSavingHotelProfile(true)
+    setTimeout(() => {
+      if (hotelProfile) {
+        setHotelProfile({
+          ...hotelProfile,
+          name: hotelEditFormData.name,
+          picture: hotelEditFormData.picture || undefined,
+          category: hotelEditFormData.category,
+          location: hotelEditFormData.location,
+          website: hotelEditFormData.website || undefined,
+          about: hotelEditFormData.about || undefined,
+          email: email,
+          phone: phone,
+        })
+      }
+      setIsEditingHotelProfile(false)
+      setIsSavingHotelProfile(false)
+    }, 500)
+  }
+
+  const handleCancelHotelEdit = () => {
+    if (hotelProfile) {
+      setHotelEditFormData({
+        name: hotelProfile.name,
+        picture: hotelProfile.picture || '',
+        category: hotelProfile.category,
+        location: hotelProfile.location,
+        website: hotelProfile.website || '',
+        about: hotelProfile.about || '',
+        collaborationTypes: [],
+        availability: [],
+        platforms: [],
+        freeStayMinNights: undefined,
+        freeStayMaxNights: undefined,
+        paidMaxAmount: undefined,
+        discountPercentage: undefined,
+        lookingForPlatforms: [],
+        lookingForMinFollowers: undefined,
+        targetGroupCountries: [],
+        targetGroupAgeMin: undefined,
+        targetGroupAgeMax: undefined,
+      })
+      setEmail(hotelProfile.email)
+      setPhone(hotelProfile.phone || '')
+      setHotelPicturePreview(null)
+      if (hotelFileInputRef.current) {
+        hotelFileInputRef.current.value = ''
+      }
+    }
+    setIsEditingHotelProfile(false)
+  }
+
+  const handleSaveHotelContact = async () => {
+    if (!email || !email.includes('@')) {
+      return
+    }
+    
+    setIsSavingContact(true)
+    setTimeout(() => {
+      if (hotelProfile) {
+        setHotelProfile({
+          ...hotelProfile,
+          email: email,
+          phone: phone,
+        })
+      }
+      setIsEditingContact(false)
+      setIsSavingContact(false)
+    }, 500)
+  }
+
+  const openAddListingModal = () => {
+    setListingFormData({
+      name: '',
+      location: '',
+      description: '',
+      images: [],
+      accommodationType: '',
+      collaborationTypes: [],
+      availability: [],
+      platforms: [],
+      freeStayMinNights: undefined,
+      freeStayMaxNights: undefined,
+      paidMaxAmount: undefined,
+      discountPercentage: undefined,
+      lookingForPlatforms: [],
+      lookingForMinFollowers: undefined,
+      targetGroupCountries: [],
+      targetGroupAgeMin: undefined,
+      targetGroupAgeMax: undefined,
+    })
+    setEditingListingId(null)
+    setListingImagePreview(null)
+    setShowListingModal(true)
+  }
+
+  const openEditListingModal = (listing: HotelListing) => {
+    setListingFormData({
+      name: listing.name,
+      location: listing.location,
+      description: listing.description,
+      images: listing.images || [],
+      accommodationType: listing.accommodationType || '',
+      collaborationTypes: listing.collaborationTypes || [],
+      availability: listing.availability || [],
+      platforms: listing.platforms || [],
+      freeStayMinNights: listing.freeStayMinNights,
+      freeStayMaxNights: listing.freeStayMaxNights,
+      paidMaxAmount: listing.paidMaxAmount,
+      discountPercentage: listing.discountPercentage,
+      lookingForPlatforms: listing.lookingForPlatforms || [],
+      lookingForMinFollowers: listing.lookingForMinFollowers,
+      targetGroupCountries: listing.targetGroupCountries || [],
+      targetGroupAgeMin: listing.targetGroupAgeMin,
+      targetGroupAgeMax: listing.targetGroupAgeMax,
+    })
+    setEditingListingId(listing.id)
+    setListingImagePreview(null)
+    setShowListingModal(true)
+  }
+
+  const handleSaveListing = async () => {
+    if (!listingFormData.name || !listingFormData.location || !listingFormData.description) {
+      return
+    }
+
+    setIsSavingListing(true)
+    setTimeout(() => {
+      if (hotelProfile) {
+        if (editingListingId) {
+          // Update existing listing
+          setHotelProfile({
+            ...hotelProfile,
+            listings: hotelProfile.listings.map((listing) =>
+              listing.id === editingListingId
+                ? {
+                    ...listing,
+                    ...listingFormData,
+                    images: listingFormData.images.length > 0 ? listingFormData.images : listing.images,
+                  }
+                : listing
+            ),
+          })
+        } else {
+          // Add new listing
+          const newListing: HotelListing = {
+            id: `listing-${Date.now()}`,
+            ...listingFormData,
+            status: 'pending',
+          }
+          setHotelProfile({
+            ...hotelProfile,
+            listings: [...hotelProfile.listings, newListing],
+          })
+        }
+      }
+      setShowListingModal(false)
+      setEditingListingId(null)
+      setIsSavingListing(false)
+    }, 500)
+  }
+
+  const handleCancelListing = () => {
+    setShowListingModal(false)
+    setEditingListingId(null)
+    setListingImagePreview(null)
+    if (listingImageInputRef.current) {
+      listingImageInputRef.current.value = ''
+    }
+  }
+
+  const handleDeleteListing = (listingId: string) => {
+    if (confirm('Are you sure you want to delete this listing?')) {
+      if (hotelProfile) {
+        setHotelProfile({
+          ...hotelProfile,
+          listings: hotelProfile.listings.filter((listing) => listing.id !== listingId),
+        })
+      }
+    }
+  }
+
+  const addListingImage = () => {
+    const url = prompt('Enter image URL:')
+    if (url && url.trim()) {
+      setListingFormData({
+        ...listingFormData,
+        images: [...listingFormData.images, url.trim()],
+      })
+    }
+  }
+
+  const removeListingImage = (index: number) => {
+    setListingFormData({
+      ...listingFormData,
+      images: listingFormData.images.filter((_, i) => i !== index),
+    })
   }
 
   const addPlatform = () => {
@@ -769,9 +1134,10 @@ export default function ProfilePage() {
               {/* Hotel Profile Tabs */}
               {userType === 'hotel' && hotelProfile && (
                 <>
-                  {/* Tab Navigation */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-6">
-                    <div className="flex flex-wrap gap-2">
+                  {/* Tab Navigation with Edit Button */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 w-fit">
+                      <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => setActiveHotelTab('overview')}
                         className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
@@ -783,46 +1149,44 @@ export default function ProfilePage() {
                         Overview
                       </button>
                       <button
-                        onClick={() => setActiveHotelTab('about')}
+                        onClick={() => setActiveHotelTab('listings')}
                         className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                          activeHotelTab === 'about'
+                          activeHotelTab === 'listings'
                             ? 'bg-primary-600 text-white shadow-md'
                             : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
                         }`}
                       >
-                        About
+                        Listings
                       </button>
-                      <button
-                        onClick={() => setActiveHotelTab('offering')}
-                        className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                          activeHotelTab === 'offering'
-                            ? 'bg-primary-600 text-white shadow-md'
-                            : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                        }`}
-                      >
-                        Offering
-                      </button>
-                      <button
-                        onClick={() => setActiveHotelTab('looking-for')}
-                        className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                          activeHotelTab === 'looking-for'
-                            ? 'bg-primary-600 text-white shadow-md'
-                            : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                        }`}
-                      >
-                        Looking For
-                      </button>
-                      <button
-                        onClick={() => setActiveHotelTab('contact')}
-                        className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                          activeHotelTab === 'contact'
-                            ? 'bg-primary-600 text-white shadow-md'
-                            : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                        }`}
-                      >
-                        Contact Information
-                      </button>
+                      </div>
                     </div>
+                    {!isEditingHotelProfile ? (
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditingHotelProfile(true)}
+                      >
+                        <PencilIcon className="w-5 h-5 mr-2" />
+                        Edit Profile
+                      </Button>
+                    ) : (
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelHotelEdit}
+                          disabled={isSavingHotelProfile}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={handleSaveHotelProfile}
+                          isLoading={isSavingHotelProfile}
+                          disabled={!hotelEditFormData.name || !hotelEditFormData.category || !hotelEditFormData.location}
+                        >
+                          Save Changes
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Tab Content */}
@@ -833,43 +1197,371 @@ export default function ProfilePage() {
                           <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
                           <h2 className="text-2xl font-bold text-gray-900">Overview</h2>
                         </div>
-                        <p className="text-gray-600">Hotel profile overview will be implemented here.</p>
+
+                        {!isEditingHotelProfile ? (
+                          <div className="space-y-6">
+                            {/* Basic Info */}
+                            <div className="flex items-start gap-6">
+                              {/* Hotel Picture */}
+                              <div className="flex-shrink-0">
+                                {hotelProfile.picture ? (
+                                  <button
+                                    onClick={() => setShowHotelPictureModal(true)}
+                                    className="cursor-pointer hover:opacity-90 transition-opacity"
+                                  >
+                                    <img
+                                      src={hotelProfile.picture}
+                                      alt={hotelProfile.name}
+                                      className="w-32 h-32 rounded-2xl object-cover border-4 border-gray-100 shadow-lg"
+                                    />
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => setShowHotelPictureModal(true)}
+                                    className="cursor-pointer hover:opacity-90 transition-opacity"
+                                  >
+                                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-5xl shadow-lg border-4 border-gray-100">
+                                      {hotelProfile.name.charAt(0)}
+                                    </div>
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Hotel Information */}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-3">
+                                  <h3 className="text-3xl font-bold text-gray-900">{hotelProfile.name}</h3>
+                                  {hotelProfile.status === 'verified' && (
+                                    <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700">
+                                      <CheckBadgeIcon className="w-5 h-5" />
+                                      <span className="text-sm font-semibold">Verified</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Category */}
+                                <div className="mb-4">
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-semibold text-sm">
+                                    {hotelProfile.category}
+                                  </span>
+                                </div>
+
+                                {/* Location */}
+                                <div className="flex items-center gap-2 text-gray-600 mb-4">
+                                  <MapPinIcon className="w-5 h-5" />
+                                  <span className="text-lg">{hotelProfile.location}</span>
+                                </div>
+
+                                {/* Website */}
+                                {hotelProfile.website && (
+                                  <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                                    <a
+                                      href={hotelProfile.website}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary-600 hover:text-primary-700 font-semibold text-base"
+                                    >
+                                      {hotelProfile.website}
+                                    </a>
+                                  </div>
+                                )}
+
+                                {/* Description */}
+                                {hotelProfile.about && (
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                    <p className="text-gray-700 leading-relaxed">{hotelProfile.about}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Contact Information Section in View Mode */}
+                            <div className="pt-8 border-t border-gray-200">
+                              <div className="flex items-center gap-3 mb-6">
+                                <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                                <h2 className="text-2xl font-bold text-gray-900">Contact Information</h2>
+                              </div>
+                              <div className="space-y-4">
+                                {/* Email Display */}
+                                <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <svg
+                                      className="w-5 h-5 text-gray-600"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                      />
+                                    </svg>
+                                    <label className="text-sm font-medium text-gray-700">E-Mail</label>
+                                  </div>
+                                  <p className="text-lg font-semibold text-gray-900 ml-8">{email || 'Not provided'}</p>
+                                </div>
+
+                                {/* Phone Display */}
+                                <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <svg
+                                      className="w-5 h-5 text-gray-600"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                      />
+                                    </svg>
+                                    <label className="text-sm font-medium text-gray-700">Telefon</label>
+                                  </div>
+                                  <p className="text-lg font-semibold text-gray-900 ml-8">{phone || 'Not provided'}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div>
+                                <Input
+                                  label="Name"
+                                  value={hotelEditFormData.name}
+                                  onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, name: e.target.value })}
+                                  required
+                                  placeholder="Hotel name"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-base font-medium text-gray-900 mb-2">
+                                  Category <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                  value={hotelEditFormData.category}
+                                  onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, category: e.target.value })}
+                                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                  required
+                                >
+                                  <option value="">Select category</option>
+                                  {HOTEL_CATEGORIES.map((cat) => (
+                                    <option key={cat} value={cat}>
+                                      {cat}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                            <div>
+                              <Input
+                                label="Location"
+                                value={hotelEditFormData.location}
+                                onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, location: e.target.value })}
+                                required
+                                placeholder="City, Country"
+                              />
+                            </div>
+                            <div>
+                              <Input
+                                label="Website (optional)"
+                                type="url"
+                                value={hotelEditFormData.website}
+                                onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, website: e.target.value })}
+                                placeholder="https://example.com"
+                              />
+                            </div>
+                            <div>
+                              <Textarea
+                                label="About (optional)"
+                                value={hotelEditFormData.about}
+                                onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, about: e.target.value })}
+                                rows={6}
+                                placeholder="Describe your hotel..."
+                              />
+                            </div>
+
+                            {/* Contact Information Section */}
+                            <div className="mt-8 pt-8 border-t border-gray-200">
+                              <div className="flex items-center gap-3 mb-6">
+                                <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                                <h2 className="text-2xl font-bold text-gray-900">Contact Information</h2>
+                              </div>
+                              <div className="space-y-4">
+                                <div>
+                                  <Input
+                                    label="E-Mail"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="your.email@example.com"
+                                    required
+                                    helperText="Your email address for contact"
+                                  />
+                                </div>
+                                <div>
+                                  <Input
+                                    label="Telefon (optional)"
+                                    type="tel"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="+1 (555) 123-4567"
+                                    helperText="Your phone number for contact"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
-                    {activeHotelTab === 'about' && (
+                    {activeHotelTab === 'listings' && (
                       <div>
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                          <h2 className="text-2xl font-bold text-gray-900">About</h2>
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                            <h2 className="text-2xl font-bold text-gray-900">My Listings</h2>
+                          </div>
+                          <Button
+                            variant="primary"
+                            onClick={openAddListingModal}
+                          >
+                            <PlusIcon className="w-5 h-5 mr-2" />
+                            Add Listing
+                          </Button>
                         </div>
-                        <p className="text-gray-600">About section will be implemented here.</p>
-                      </div>
-                    )}
-                    {activeHotelTab === 'offering' && (
-                      <div>
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                          <h2 className="text-2xl font-bold text-gray-900">Offering</h2>
-                        </div>
-                        <p className="text-gray-600">Offering section will be implemented here.</p>
-                      </div>
-                    )}
-                    {activeHotelTab === 'looking-for' && (
-                      <div>
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                          <h2 className="text-2xl font-bold text-gray-900">Looking For</h2>
-                        </div>
-                        <p className="text-gray-600">Looking For section will be implemented here.</p>
-                      </div>
-                    )}
-                    {activeHotelTab === 'contact' && (
-                      <div>
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                          <h2 className="text-2xl font-bold text-gray-900">Contact Information</h2>
-                        </div>
-                        <p className="text-gray-600">Contact information section will be implemented here.</p>
+
+                        {hotelProfile.listings && hotelProfile.listings.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {hotelProfile.listings.map((listing) => (
+                              <div
+                                key={listing.id}
+                                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+                              >
+                                {/* Listing Image */}
+                                <div className="relative h-48 bg-gradient-to-br from-primary-100 to-primary-200">
+                                  {listing.images && listing.images.length > 0 ? (
+                                    <img
+                                      src={listing.images[0]}
+                                      alt={listing.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none'
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <span className="text-primary-600 text-3xl font-bold">
+                                        {listing.name.charAt(0)}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {/* Status Badge */}
+                                  <div className="absolute top-3 right-3">
+                                    <span
+                                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                        listing.status === 'verified'
+                                          ? 'bg-green-100 text-green-700'
+                                          : listing.status === 'pending'
+                                          ? 'bg-yellow-100 text-yellow-700'
+                                          : 'bg-red-100 text-red-700'
+                                      }`}
+                                    >
+                                      {listing.status === 'verified' ? 'Verified' : listing.status === 'pending' ? 'Pending' : 'Rejected'}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Listing Info */}
+                                <div className="p-6">
+                                  <h3 className="text-xl font-bold text-gray-900 mb-2">{listing.name}</h3>
+                                  <div className="flex items-center gap-2 text-gray-600 mb-3">
+                                    <MapPinIcon className="w-4 h-4" />
+                                    <span className="text-sm">{listing.location}</span>
+                                  </div>
+                                  <p className="text-gray-700 text-sm mb-4 line-clamp-2">{listing.description}</p>
+
+                                  {/* Listing Details */}
+                                  <div className="space-y-2 mb-4">
+                                    {listing.accommodationType && (
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-500">Type:</span>
+                                        <span className="text-xs font-medium text-gray-700">{listing.accommodationType}</span>
+                                      </div>
+                                    )}
+                                    {listing.collaborationTypes && listing.collaborationTypes.length > 0 && (
+                                      <div>
+                                        <span className="text-xs text-gray-500">Collaboration:</span>
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                          {listing.collaborationTypes.map((type, idx) => (
+                                            <span
+                                              key={idx}
+                                              className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 text-xs font-medium"
+                                            >
+                                              {type}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {listing.platforms && listing.platforms.length > 0 && (
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-500">Platforms:</span>
+                                        <span className="text-xs font-medium text-gray-700">{listing.platforms.join(', ')}</span>
+                                      </div>
+                                    )}
+                                    {listing.availability && listing.availability.length > 0 && (
+                                      <div>
+                                        <span className="text-xs text-gray-500">Availability:</span>
+                                        <span className="text-xs font-medium text-gray-700 ml-1">
+                                          {listing.availability.length} months
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Actions */}
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="flex-1"
+                                      onClick={() => openEditListingModal(listing)}
+                                    >
+                                      <PencilIcon className="w-4 h-4 mr-1" />
+                                      Edit
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-red-600 hover:text-red-700 hover:border-red-300"
+                                      onClick={() => handleDeleteListing(listing.id)}
+                                    >
+                                      <TrashIcon className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
+                            <p className="text-gray-500 text-lg mb-4">No listings yet</p>
+                            <Button
+                              variant="primary"
+                              onClick={openAddListingModal}
+                            >
+                              <PlusIcon className="w-5 h-5 mr-2" />
+                              Create Your First Listing
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -879,6 +1571,107 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {/* Hotel Picture Modal */}
+      {showHotelPictureModal && hotelProfile && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setShowHotelPictureModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+              <h3 className="text-xl font-bold text-gray-900">Hotel Picture</h3>
+              <button
+                onClick={() => setShowHotelPictureModal(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <XMarkIcon className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* Large Picture Preview */}
+              <div className="flex justify-center">
+                {hotelProfile.picture ? (
+                  <img
+                    src={hotelProfile.picture}
+                    alt={hotelProfile.name}
+                    className="w-64 h-64 rounded-2xl object-cover border-4 border-gray-100 shadow-lg"
+                  />
+                ) : (
+                  <div className="w-64 h-64 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-8xl shadow-lg border-4 border-gray-100">
+                    {hotelProfile.name.charAt(0)}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-center">
+                <input
+                  ref={hotelFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onloadend = () => {
+                        const result = reader.result as string
+                        setHotelPicturePreview(result)
+                        setHotelEditFormData({ ...hotelEditFormData, picture: result })
+                        setShowHotelPictureModal(false)
+                        setIsEditingHotelProfile(true)
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    hotelFileInputRef.current?.click()
+                  }}
+                >
+                  <PencilIcon className="w-5 h-5 mr-2" />
+                  Change Picture
+                </Button>
+                {hotelProfile.picture && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (hotelProfile) {
+                        setHotelProfile({
+                          ...hotelProfile,
+                          picture: undefined,
+                        })
+                        setHotelEditFormData({
+                          ...hotelEditFormData,
+                          picture: '',
+                        })
+                        setHotelPicturePreview(null)
+                        if (hotelFileInputRef.current) {
+                          hotelFileInputRef.current.value = ''
+                        }
+                      }
+                      setShowHotelPictureModal(false)
+                    }}
+                    className="text-red-600 hover:text-red-700 hover:border-red-300"
+                  >
+                    <TrashIcon className="w-5 h-5 mr-2" />
+                    Delete Picture
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Profile Picture Modal */}
       {showPictureModal && creatorProfile && (
@@ -975,6 +1768,432 @@ export default function ProfilePage() {
                     Delete Picture
                   </Button>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Listing Edit/Add Modal */}
+      {showListingModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
+          onClick={handleCancelListing}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto my-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+              <h3 className="text-2xl font-bold text-gray-900">
+                {editingListingId ? 'Edit Listing' : 'Add New Listing'}
+              </h3>
+              <button
+                onClick={handleCancelListing}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <XMarkIcon className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-8">
+              {/* Basic Information Section */}
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                  <h2 className="text-xl font-bold text-gray-900">Basic Information</h2>
+                </div>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input
+                      label="Listing Name"
+                      value={listingFormData.name}
+                      onChange={(e) => setListingFormData({ ...listingFormData, name: e.target.value })}
+                      required
+                      placeholder="Luxury Beach Villa"
+                    />
+                    <Input
+                      label="Location"
+                      value={listingFormData.location}
+                      onChange={(e) => setListingFormData({ ...listingFormData, location: e.target.value })}
+                      required
+                      placeholder="Bali, Indonesia"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-base font-medium text-gray-900 mb-2">
+                      Accommodation Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={listingFormData.accommodationType}
+                      onChange={(e) => setListingFormData({ ...listingFormData, accommodationType: e.target.value })}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      required
+                    >
+                      <option value="">Select type</option>
+                      {HOTEL_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <Textarea
+                      label="Description"
+                      value={listingFormData.description}
+                      onChange={(e) => setListingFormData({ ...listingFormData, description: e.target.value })}
+                      required
+                      rows={4}
+                      placeholder="Describe your listing..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-base font-medium text-gray-900 mb-2">Images</label>
+                    <div className="space-y-4">
+                      {listingFormData.images.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {listingFormData.images.map((image, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={image}
+                                alt={`Listing ${index + 1}`}
+                                className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none'
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeListingImage(index)}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <XMarkIcon className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={addListingImage}
+                      >
+                        <PlusIcon className="w-5 h-5 mr-2" />
+                        Add Image URL
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Offerings Section */}
+              <div className="pt-6 border-t border-gray-200">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                  <h2 className="text-xl font-bold text-gray-900">Offerings</h2>
+                </div>
+                <div className="space-y-6">
+                  {/* Collaboration Types */}
+                  <div>
+                    <label className="block text-base font-medium text-gray-900 mb-3">
+                      Collaboration Types
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      {COLLABORATION_TYPES.map((type) => (
+                        <label key={type} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={listingFormData.collaborationTypes.includes(type)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  collaborationTypes: [...listingFormData.collaborationTypes, type],
+                                })
+                              } else {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  collaborationTypes: listingFormData.collaborationTypes.filter((t) => t !== type),
+                                })
+                              }
+                            }}
+                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          />
+                          <span className="ml-2 text-gray-700">{type}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Availability */}
+                  <div>
+                    <label className="block text-base font-medium text-gray-900 mb-3">Availability (Months)</label>
+                    <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                      {MONTHS.map((month) => (
+                        <label key={month} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={listingFormData.availability.includes(month)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  availability: [...listingFormData.availability, month],
+                                })
+                              } else {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  availability: listingFormData.availability.filter((m) => m !== month),
+                                })
+                              }
+                            }}
+                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          />
+                          <span className="ml-2 text-gray-700 text-sm">{month}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Platforms */}
+                  <div>
+                    <label className="block text-base font-medium text-gray-900 mb-3">Platforms</label>
+                    <div className="flex flex-wrap gap-3">
+                      {PLATFORM_OPTIONS.map((platform) => (
+                        <label key={platform} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={listingFormData.platforms.includes(platform)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  platforms: [...listingFormData.platforms, platform],
+                                })
+                              } else {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  platforms: listingFormData.platforms.filter((p) => p !== platform),
+                                })
+                              }
+                            }}
+                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          />
+                          <span className="ml-2 text-gray-700">{platform}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Free Stay Details */}
+                  {listingFormData.collaborationTypes.includes('Free Stay') && (
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <h4 className="font-semibold text-gray-900 mb-4">Free Stay Details</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          label="Min. Nights"
+                          type="number"
+                          value={listingFormData.freeStayMinNights || ''}
+                          onChange={(e) =>
+                            setListingFormData({
+                              ...listingFormData,
+                              freeStayMinNights: parseInt(e.target.value) || undefined,
+                            })
+                          }
+                          placeholder="2"
+                        />
+                        <Input
+                          label="Max. Nights"
+                          type="number"
+                          value={listingFormData.freeStayMaxNights || ''}
+                          onChange={(e) =>
+                            setListingFormData({
+                              ...listingFormData,
+                              freeStayMaxNights: parseInt(e.target.value) || undefined,
+                            })
+                          }
+                          placeholder="5"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Paid Details */}
+                  {listingFormData.collaborationTypes.includes('Paid') && (
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <h4 className="font-semibold text-gray-900 mb-4">Paid Details</h4>
+                      <Input
+                        label="Max. Amount ($)"
+                        type="number"
+                        value={listingFormData.paidMaxAmount || ''}
+                        onChange={(e) =>
+                          setListingFormData({
+                            ...listingFormData,
+                            paidMaxAmount: parseInt(e.target.value) || undefined,
+                          })
+                        }
+                        placeholder="5000"
+                      />
+                    </div>
+                  )}
+
+                  {/* Discount Details */}
+                  {listingFormData.collaborationTypes.includes('Discount') && (
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <h4 className="font-semibold text-gray-900 mb-4">Discount Details</h4>
+                      <Input
+                        label="Discount Percentage (%)"
+                        type="number"
+                        value={listingFormData.discountPercentage || ''}
+                        onChange={(e) =>
+                          setListingFormData({
+                            ...listingFormData,
+                            discountPercentage: parseInt(e.target.value) || undefined,
+                          })
+                        }
+                        placeholder="30"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Looking For Section */}
+              <div className="pt-6 border-t border-gray-200">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                  <h2 className="text-xl font-bold text-gray-900">Looking For</h2>
+                </div>
+                <div className="space-y-6">
+                  {/* Platforms */}
+                  <div>
+                    <label className="block text-base font-medium text-gray-900 mb-3">Platforms</label>
+                    <div className="flex flex-wrap gap-3">
+                      {PLATFORM_OPTIONS.map((platform) => (
+                        <label key={platform} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={listingFormData.lookingForPlatforms.includes(platform)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  lookingForPlatforms: [...listingFormData.lookingForPlatforms, platform],
+                                })
+                              } else {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  lookingForPlatforms: listingFormData.lookingForPlatforms.filter((p) => p !== platform),
+                                })
+                              }
+                            }}
+                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          />
+                          <span className="ml-2 text-gray-700">{platform}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Min Followers */}
+                  <div>
+                    <Input
+                      label="Min. Follower Amount (optional)"
+                      type="number"
+                      value={listingFormData.lookingForMinFollowers || ''}
+                      onChange={(e) =>
+                        setListingFormData({
+                          ...listingFormData,
+                          lookingForMinFollowers: parseInt(e.target.value) || undefined,
+                        })
+                      }
+                      placeholder="50000"
+                    />
+                  </div>
+
+                  {/* Target Group Countries */}
+                  <div>
+                    <label className="block text-base font-medium text-gray-900 mb-3">Target Group - Countries</label>
+                    <div className="grid grid-cols-3 md:grid-cols-4 gap-3 max-h-60 overflow-y-auto p-4 border border-gray-200 rounded-lg">
+                      {COUNTRIES.map((country) => (
+                        <label key={country} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={listingFormData.targetGroupCountries.includes(country)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  targetGroupCountries: [...listingFormData.targetGroupCountries, country],
+                                })
+                              } else {
+                                setListingFormData({
+                                  ...listingFormData,
+                                  targetGroupCountries: listingFormData.targetGroupCountries.filter((c) => c !== country),
+                                })
+                              }
+                            }}
+                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          />
+                          <span className="ml-2 text-gray-700 text-sm">{country}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Target Group Age */}
+                  <div>
+                    <label className="block text-base font-medium text-gray-900 mb-3">Target Group - Age Group</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        label="Min. Age (optional)"
+                        type="number"
+                        value={listingFormData.targetGroupAgeMin || ''}
+                        onChange={(e) =>
+                          setListingFormData({
+                            ...listingFormData,
+                            targetGroupAgeMin: parseInt(e.target.value) || undefined,
+                          })
+                        }
+                        placeholder="25"
+                      />
+                      <Input
+                        label="Max. Age (optional)"
+                        type="number"
+                        value={listingFormData.targetGroupAgeMax || ''}
+                        onChange={(e) =>
+                          setListingFormData({
+                            ...listingFormData,
+                            targetGroupAgeMax: parseInt(e.target.value) || undefined,
+                          })
+                        }
+                        placeholder="45"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                <Button
+                  variant="outline"
+                  onClick={handleCancelListing}
+                  disabled={isSavingListing}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSaveListing}
+                  isLoading={isSavingListing}
+                  disabled={!listingFormData.name || !listingFormData.location || !listingFormData.description}
+                >
+                  {editingListingId ? 'Save Changes' : 'Create Listing'}
+                </Button>
               </div>
             </div>
           </div>
