@@ -1173,32 +1173,36 @@ export default function ProfilePage() {
                       </button>
                       </div>
                     </div>
-                    {!isEditingHotelProfile ? (
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsEditingHotelProfile(true)}
-                      >
-                        <PencilIcon className="w-5 h-5 mr-2" />
-                        Edit Profile
-                      </Button>
-                    ) : (
-                      <div className="flex gap-3">
-                        <Button
-                          variant="outline"
-                          onClick={handleCancelHotelEdit}
-                          disabled={isSavingHotelProfile}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="primary"
-                          onClick={handleSaveHotelProfile}
-                          isLoading={isSavingHotelProfile}
-                          disabled={!hotelEditFormData.name || !hotelEditFormData.category || !hotelEditFormData.location}
-                        >
-                          Save Changes
-                        </Button>
-                      </div>
+                    {activeHotelTab === 'overview' && (
+                      <>
+                        {!isEditingHotelProfile ? (
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsEditingHotelProfile(true)}
+                          >
+                            <PencilIcon className="w-5 h-5 mr-2" />
+                            Edit Profile
+                          </Button>
+                        ) : (
+                          <div className="flex gap-3">
+                            <Button
+                              variant="outline"
+                              onClick={handleCancelHotelEdit}
+                              disabled={isSavingHotelProfile}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="primary"
+                              onClick={handleSaveHotelProfile}
+                              isLoading={isSavingHotelProfile}
+                              disabled={!hotelEditFormData.name || !hotelEditFormData.category || !hotelEditFormData.location}
+                            >
+                              Save Changes
+                            </Button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
 
