@@ -615,12 +615,25 @@ export default function ProfilePage() {
   }
 
   const addListingImage = () => {
-    const url = prompt('Enter image URL:')
-    if (url && url.trim()) {
-      setListingFormData({
-        ...listingFormData,
-        images: [...listingFormData.images, url.trim()],
-      })
+    listingImageInputRef.current?.click()
+  }
+
+  const handleListingImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const result = reader.result as string
+        setListingFormData({
+          ...listingFormData,
+          images: [...listingFormData.images, result],
+        })
+      }
+      reader.readAsDataURL(file)
+    }
+    // Reset input so the same file can be selected again
+    if (listingImageInputRef.current) {
+      listingImageInputRef.current.value = ''
     }
   }
 
@@ -1876,13 +1889,20 @@ export default function ProfilePage() {
                           ))}
                         </div>
                       )}
+                      <input
+                        ref={listingImageInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleListingImageChange}
+                      />
                       <Button
                         variant="outline"
                         type="button"
                         onClick={addListingImage}
                       >
                         <PlusIcon className="w-5 h-5 mr-2" />
-                        Add Image URL
+                        Add Image
                       </Button>
                     </div>
                   </div>
