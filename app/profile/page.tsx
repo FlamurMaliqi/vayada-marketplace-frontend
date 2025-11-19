@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AuthenticatedNavigation, ProfileWarningBanner } from '@/components/layout'
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
-import { Button, Input } from '@/components/ui'
-import { MapPinIcon, CheckBadgeIcon, StarIcon } from '@heroicons/react/24/solid'
+import { Button, Input, Textarea } from '@/components/ui'
+import { MapPinIcon, CheckBadgeIcon, StarIcon, PencilIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'
+import { TrashIcon } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
 
@@ -58,6 +59,20 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState('')
   const [isEditingContact, setIsEditingContact] = useState(false)
   const [isSavingContact, setIsSavingContact] = useState(false)
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [isSavingProfile, setIsSavingProfile] = useState(false)
+  const [showPictureModal, setShowPictureModal] = useState(false)
+  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // Edit form state
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    profilePicture: '',
+    shortDescription: '',
+    location: '',
+    platforms: [] as Platform[],
+  })
 
   useEffect(() => {
     loadProfile()
@@ -69,6 +84,15 @@ export default function ProfilePage() {
     }
     if (creatorProfile?.phone) {
       setPhone(creatorProfile.phone)
+    }
+    if (creatorProfile) {
+      setEditFormData({
+        name: creatorProfile.name,
+        profilePicture: creatorProfile.profilePicture || '',
+        shortDescription: creatorProfile.shortDescription,
+        location: creatorProfile.location,
+        platforms: creatorProfile.platforms || [],
+      })
     }
   }, [creatorProfile])
 
@@ -201,6 +225,70 @@ export default function ProfilePage() {
     }, 500)
   }
 
+  const handleSaveProfile = async () => {
+    if (!editFormData.name || !editFormData.shortDescription || !editFormData.location) {
+      return
+    }
+    
+    setIsSavingProfile(true)
+    // Simulate API call
+    setTimeout(() => {
+      if (creatorProfile) {
+        setCreatorProfile({
+          ...creatorProfile,
+          name: editFormData.name,
+          profilePicture: editFormData.profilePicture || undefined,
+          shortDescription: editFormData.shortDescription,
+          location: editFormData.location,
+          platforms: editFormData.platforms,
+        })
+      }
+      setIsEditingProfile(false)
+      setIsSavingProfile(false)
+      // In production, make API call to save profile
+    }, 500)
+  }
+
+  const handleCancelEdit = () => {
+    if (creatorProfile) {
+      setEditFormData({
+        name: creatorProfile.name,
+        profilePicture: creatorProfile.profilePicture || '',
+        shortDescription: creatorProfile.shortDescription,
+        location: creatorProfile.location,
+        platforms: creatorProfile.platforms || [],
+      })
+      setProfilePicturePreview(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+    setIsEditingProfile(false)
+  }
+
+  const addPlatform = () => {
+    setEditFormData({
+      ...editFormData,
+      platforms: [...editFormData.platforms, { name: '', handle: '', followers: 0, engagementRate: 0 }],
+    })
+  }
+
+  const removePlatform = (index: number) => {
+    setEditFormData({
+      ...editFormData,
+      platforms: editFormData.platforms.filter((_, i) => i !== index),
+    })
+  }
+
+  const updatePlatform = (index: number, field: keyof Platform, value: string | number) => {
+    setEditFormData({
+      ...editFormData,
+      platforms: editFormData.platforms.map((platform, i) =>
+        i === index ? { ...platform, [field]: value } : platform
+      ),
+    })
+  }
+
   // Star Rating Component
   const StarRating = ({ rating, totalRatings }: { rating: number; totalRatings: number }) => {
     const fullStars = Math.floor(rating)
@@ -288,30 +376,59 @@ export default function ProfilePage() {
               {/* Creator Profile Tabs */}
               {userType === 'creator' && creatorProfile && (
                 <>
-                  {/* Tab Navigation */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-6 w-fit">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => setActiveCreatorTab('overview')}
-                        className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                          activeCreatorTab === 'overview'
-                            ? 'bg-primary-600 text-white shadow-md'
-                            : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                        }`}
-                      >
-                        Overview
-                      </button>
-                      <button
-                        onClick={() => setActiveCreatorTab('platforms')}
-                        className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                          activeCreatorTab === 'platforms'
-                            ? 'bg-primary-600 text-white shadow-md'
-                            : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                        }`}
-                      >
-                        Social Media Platforms
-                      </button>
+                  {/* Tab Navigation with Edit Button */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 w-fit">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setActiveCreatorTab('overview')}
+                          className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
+                            activeCreatorTab === 'overview'
+                              ? 'bg-primary-600 text-white shadow-md'
+                              : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                          }`}
+                        >
+                          Overview
+                        </button>
+                        <button
+                          onClick={() => setActiveCreatorTab('platforms')}
+                          className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
+                            activeCreatorTab === 'platforms'
+                              ? 'bg-primary-600 text-white shadow-md'
+                              : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                          }`}
+                        >
+                          Social Media Platforms
+                        </button>
+                      </div>
                     </div>
+                    {!isEditingProfile ? (
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditingProfile(true)}
+                      >
+                        <PencilIcon className="w-5 h-5 mr-2" />
+                        Edit Profile
+                      </Button>
+                    ) : (
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                          disabled={isSavingProfile}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={handleSaveProfile}
+                          isLoading={isSavingProfile}
+                          disabled={!editFormData.name || !editFormData.shortDescription || !editFormData.location}
+                        >
+                          Save Changes
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Tab Content */}
@@ -324,56 +441,101 @@ export default function ProfilePage() {
                           <h2 className="text-2xl font-bold text-gray-900">Overview</h2>
                         </div>
 
-                  <div className="flex items-start gap-6">
-                    {/* Profile Picture */}
-                    <div className="flex-shrink-0">
-                      {creatorProfile.profilePicture ? (
-                        <img
-                          src={creatorProfile.profilePicture}
-                          alt={creatorProfile.name}
-                          className="w-32 h-32 rounded-2xl object-cover border-4 border-gray-100 shadow-lg"
-                        />
-                      ) : (
-                        <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-5xl shadow-lg border-4 border-gray-100">
-                          {creatorProfile.name.charAt(0)}
-                        </div>
-                      )}
-                    </div>
+                        {!isEditingProfile ? (
+                          <div className="flex items-start gap-6">
+                            {/* Profile Picture */}
+                            <div className="flex-shrink-0">
+                              {creatorProfile.profilePicture ? (
+                                <button
+                                  onClick={() => setShowPictureModal(true)}
+                                  className="cursor-pointer hover:opacity-90 transition-opacity"
+                                >
+                                  <img
+                                    src={creatorProfile.profilePicture}
+                                    alt={creatorProfile.name}
+                                    className="w-32 h-32 rounded-2xl object-cover border-4 border-gray-100 shadow-lg"
+                                  />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => setShowPictureModal(true)}
+                                  className="cursor-pointer hover:opacity-90 transition-opacity"
+                                >
+                                  <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-5xl shadow-lg border-4 border-gray-100">
+                                    {creatorProfile.name.charAt(0)}
+                                  </div>
+                                </button>
+                              )}
+                            </div>
 
-                    {/* Profile Information */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-3xl font-bold text-gray-900">{creatorProfile.name}</h3>
-                        {creatorProfile.status === 'verified' && (
-                          <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700">
-                            <CheckBadgeIcon className="w-5 h-5" />
-                            <span className="text-sm font-semibold">Verified</span>
+                            {/* Profile Information */}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-3">
+                                <h3 className="text-3xl font-bold text-gray-900">{creatorProfile.name}</h3>
+                                {creatorProfile.status === 'verified' && (
+                                  <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700">
+                                    <CheckBadgeIcon className="w-5 h-5" />
+                                    <span className="text-sm font-semibold">Verified</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Location */}
+                              <div className="flex items-center gap-2 text-gray-600 mb-4">
+                                <MapPinIcon className="w-5 h-5" />
+                                <span className="text-lg">{creatorProfile.location}</span>
+                              </div>
+
+                              {/* Rating */}
+                              <div className="mb-4">
+                                <StarRating rating={creatorProfile.rating} totalRatings={creatorProfile.totalRatings} />
+                              </div>
+
+                              {/* Short Description */}
+                              <div className="mt-6">
+                                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                                  Description
+                                </h4>
+                                <p className="text-gray-700 leading-relaxed text-lg">
+                                  {creatorProfile.shortDescription}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div>
+                                <Input
+                                  label="Name"
+                                  value={editFormData.name}
+                                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                                  required
+                                  placeholder="Your name"
+                                />
+                              </div>
+                              <div>
+                                <Input
+                                  label="Location"
+                                  value={editFormData.location}
+                                  onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                                  required
+                                  placeholder="City, Country"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Textarea
+                                label="Short Description"
+                                value={editFormData.shortDescription}
+                                onChange={(e) => setEditFormData({ ...editFormData, shortDescription: e.target.value })}
+                                required
+                                rows={4}
+                                placeholder="Describe yourself and your content..."
+                              />
+                            </div>
                           </div>
                         )}
-                      </div>
-
-                      {/* Location */}
-                      <div className="flex items-center gap-2 text-gray-600 mb-4">
-                        <MapPinIcon className="w-5 h-5" />
-                        <span className="text-lg">{creatorProfile.location}</span>
-                      </div>
-
-                      {/* Rating */}
-                      <div className="mb-4">
-                        <StarRating rating={creatorProfile.rating} totalRatings={creatorProfile.totalRatings} />
-                      </div>
-
-                      {/* Short Description */}
-                      <div className="mt-6">
-                        <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                          Description
-                        </h4>
-                        <p className="text-gray-700 leading-relaxed text-lg">
-                          {creatorProfile.shortDescription}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Contact Information Section */}
                   <div className="mt-8 pt-8 border-t border-gray-200">
@@ -491,40 +653,113 @@ export default function ProfilePage() {
                     )}
 
                     {/* Social Media Platforms Tab */}
-                    {activeCreatorTab === 'platforms' && creatorProfile.platforms && (
+                    {activeCreatorTab === 'platforms' && (
                       <div>
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                          <h2 className="text-2xl font-bold text-gray-900">Social Media Platforms</h2>
-                        </div>
-
-                        <div className="space-y-4">
-                          {creatorProfile.platforms.map((platform, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                            <h2 className="text-2xl font-bold text-gray-900">Social Media Platforms</h2>
+                          </div>
+                          {isEditingProfile && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={addPlatform}
                             >
-                              {/* Platform Icon */}
-                              <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-white flex items-center justify-center text-gray-700 border border-gray-200">
-                                {getPlatformIcon(platform.name)}
-                              </div>
-
-                              {/* Platform Info */}
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h3 className="font-semibold text-gray-900">{platform.name}</h3>
-                                </div>
-                                <div className="flex items-center gap-2 text-gray-700">
-                                  <span className="font-medium">{platform.handle}</span>
-                                  <span className="text-gray-400">•</span>
-                                  <span>{formatFollowersDE(platform.followers)} Follower</span>
-                                  <span className="text-gray-400">•</span>
-                                  <span>{platform.engagementRate.toFixed(1).replace('.', ',')}% Engagement</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+                              <PlusIcon className="w-4 h-4 mr-2" />
+                              Add Platform
+                            </Button>
+                          )}
                         </div>
+
+                        {!isEditingProfile ? (
+                          <div className="space-y-4">
+                            {creatorProfile.platforms.map((platform, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                              >
+                                {/* Platform Icon */}
+                                <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-white flex items-center justify-center text-gray-700 border border-gray-200">
+                                  {getPlatformIcon(platform.name)}
+                                </div>
+
+                                {/* Platform Info */}
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-semibold text-gray-900">{platform.name}</h3>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-gray-700">
+                                    <span className="font-medium">{platform.handle}</span>
+                                    <span className="text-gray-400">•</span>
+                                    <span>{formatFollowersDE(platform.followers)} Follower</span>
+                                    <span className="text-gray-400">•</span>
+                                    <span>{platform.engagementRate.toFixed(1).replace('.', ',')}% Engagement</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {editFormData.platforms.map((platform, index) => (
+                              <div
+                                key={index}
+                                className="p-6 bg-gray-50 rounded-lg border border-gray-200"
+                              >
+                                <div className="flex items-center justify-between mb-4">
+                                  <h3 className="font-semibold text-gray-900">Platform {index + 1}</h3>
+                                  {editFormData.platforms.length > 1 && (
+                                    <button
+                                      onClick={() => removePlatform(index)}
+                                      className="text-red-600 hover:text-red-700 p-1"
+                                    >
+                                      <XMarkIcon className="w-5 h-5" />
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <Input
+                                    label="Platform Name"
+                                    value={platform.name}
+                                    onChange={(e) => updatePlatform(index, 'name', e.target.value)}
+                                    placeholder="Instagram, TikTok, YouTube, etc."
+                                    required
+                                  />
+                                  <Input
+                                    label="Handle"
+                                    value={platform.handle}
+                                    onChange={(e) => updatePlatform(index, 'handle', e.target.value)}
+                                    placeholder="@username"
+                                    required
+                                  />
+                                  <Input
+                                    label="Followers"
+                                    type="number"
+                                    value={platform.followers || ''}
+                                    onChange={(e) => updatePlatform(index, 'followers', parseInt(e.target.value) || 0)}
+                                    placeholder="125000"
+                                    required
+                                  />
+                                  <Input
+                                    label="Engagement Rate (%)"
+                                    type="number"
+                                    step="0.1"
+                                    value={platform.engagementRate || ''}
+                                    onChange={(e) => updatePlatform(index, 'engagementRate', parseFloat(e.target.value) || 0)}
+                                    placeholder="4.2"
+                                    required
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                            {editFormData.platforms.length === 0 && (
+                              <div className="text-center py-8 text-gray-500">
+                                <p>No platforms added. Click "Add Platform" to get started.</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -644,6 +879,107 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {/* Profile Picture Modal */}
+      {showPictureModal && creatorProfile && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setShowPictureModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+              <h3 className="text-xl font-bold text-gray-900">Profile Picture</h3>
+              <button
+                onClick={() => setShowPictureModal(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <XMarkIcon className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* Large Picture Preview */}
+              <div className="flex justify-center">
+                {creatorProfile.profilePicture ? (
+                  <img
+                    src={creatorProfile.profilePicture}
+                    alt={creatorProfile.name}
+                    className="w-64 h-64 rounded-2xl object-cover border-4 border-gray-100 shadow-lg"
+                  />
+                ) : (
+                  <div className="w-64 h-64 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-8xl shadow-lg border-4 border-gray-100">
+                    {creatorProfile.name.charAt(0)}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-center">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onloadend = () => {
+                        const result = reader.result as string
+                        setProfilePicturePreview(result)
+                        setEditFormData({ ...editFormData, profilePicture: result })
+                        setShowPictureModal(false)
+                        setIsEditingProfile(true)
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    fileInputRef.current?.click()
+                  }}
+                >
+                  <PencilIcon className="w-5 h-5 mr-2" />
+                  Change Picture
+                </Button>
+                {creatorProfile.profilePicture && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (creatorProfile) {
+                        setCreatorProfile({
+                          ...creatorProfile,
+                          profilePicture: undefined,
+                        })
+                        setEditFormData({
+                          ...editFormData,
+                          profilePicture: '',
+                        })
+                        setProfilePicturePreview(null)
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = ''
+                        }
+                      }
+                      setShowPictureModal(false)
+                    }}
+                    className="text-red-600 hover:text-red-700 hover:border-red-300"
+                  >
+                    <TrashIcon className="w-5 h-5 mr-2" />
+                    Delete Picture
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
