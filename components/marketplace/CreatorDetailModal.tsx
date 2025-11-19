@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Creator } from '@/lib/types'
 import { Button } from '@/components/ui'
 import { formatNumber } from '@/lib/utils'
@@ -7,6 +8,7 @@ import {
   MapPinIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
+import { HotelInvitationModal, type HotelInvitationData } from './HotelInvitationModal'
 
 interface CreatorDetailModalProps {
   creator: Creator | null
@@ -80,7 +82,25 @@ const getTimeAgo = (date: Date): string => {
 }
 
 export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailModalProps) {
+  const [showInvitationModal, setShowInvitationModal] = useState(false)
+
+  // Mock hotel listings - in production, this would come from the logged-in hotel's profile
+  const mockListings = [
+    { id: 'listing-1', name: 'Luxury Beach Villa', location: 'Bali, Indonesia' },
+    { id: 'listing-2', name: 'Mountain Resort', location: 'Swiss Alps, Switzerland' },
+  ]
+
   if (!isOpen || !creator) return null
+
+  const handleInviteClick = () => {
+    setShowInvitationModal(true)
+  }
+
+  const handleInvitationSubmit = (data: HotelInvitationData) => {
+    // TODO: Implement actual invitation submission logic
+    console.log('Invitation submitted:', data)
+    setShowInvitationModal(false)
+  }
 
   // Calculate total followers and average engagement
   const totalFollowers = creator.platforms.reduce((sum, platform) => sum + platform.followers, 0)
@@ -239,16 +259,22 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
             <Button
               variant="primary"
               size="lg"
-              onClick={() => {
-                // TODO: Implement invite functionality
-                console.log('Invite clicked for creator:', creator.id)
-              }}
+              onClick={handleInviteClick}
             >
               Invite to Collaborate
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Hotel Invitation Modal */}
+      <HotelInvitationModal
+        isOpen={showInvitationModal}
+        onClose={() => setShowInvitationModal(false)}
+        onSubmit={handleInvitationSubmit}
+        creatorName={creator.name}
+        listings={mockListings}
+      />
     </div>
   )
 }
