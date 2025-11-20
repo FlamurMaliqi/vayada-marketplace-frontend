@@ -3,7 +3,7 @@
  */
 
 import { apiClient, ApiErrorResponse } from '../api/client'
-import type { RegisterRequest, RegisterResponse } from '@/lib/types'
+import type { RegisterRequest, RegisterResponse, LoginRequest, LoginResponse } from '@/lib/types'
 
 export const authService = {
   /**
@@ -24,9 +24,16 @@ export const authService = {
   /**
    * Login user
    */
-  login: async (email: string, password: string) => {
-    // TODO: Implement authentication
-    throw new Error('Not implemented yet')
+  login: async (data: LoginRequest): Promise<LoginResponse> => {
+    try {
+      const response = await apiClient.post<LoginResponse>('/auth/login', data)
+      return response
+    } catch (error) {
+      if (error instanceof ApiErrorResponse) {
+        throw error
+      }
+      throw new Error('Login failed: Network error')
+    }
   },
 
   /**

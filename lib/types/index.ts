@@ -153,3 +153,17 @@ export interface RegisterResponse {
   status: UserStatus
   message: string
 }
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  id: string
+  email: string
+  name: string
+  type: 'creator' | 'hotel'
+  status: UserStatus
+  message: string
+}
