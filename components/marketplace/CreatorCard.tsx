@@ -65,13 +65,25 @@ export function CreatorCard({ creator }: CreatorCardProps) {
                 {creator.name}
               </h3>
               {creator.status === 'verified' && (
-                <CheckBadgeIcon className="w-5 h-5 text-primary-600" />
+                <div className="w-5 h-5 rounded-full bg-primary-600 flex items-center justify-center">
+                  <CheckBadgeIcon className="w-4 h-4 text-white" />
+                </div>
               )}
             </div>
-            <div className="flex items-center text-gray-600 text-sm">
+            <div className="flex items-center text-gray-600 text-sm mb-3">
               <MapPinIcon className="w-4 h-4 mr-1" />
               <span>{creator.location}</span>
             </div>
+            {/* Rating - replacing category section */}
+            {creator.rating && (
+              <div className="flex items-center">
+                <StarRating
+                  rating={creator.rating.averageRating}
+                  totalReviews={creator.rating.totalReviews}
+                  size="sm"
+                />
+              </div>
+            )}
           </div>
           {/* Avatar placeholder */}
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
@@ -82,16 +94,6 @@ export function CreatorCard({ creator }: CreatorCardProps) {
 
       {/* Stats */}
       <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-        {/* Rating */}
-        {creator.rating && (
-          <div className="mb-4 pb-4 border-b border-gray-200">
-            <StarRating
-              rating={creator.rating.averageRating}
-              totalReviews={creator.rating.totalReviews}
-              size="sm"
-            />
-          </div>
-        )}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <div className="flex items-center text-gray-600 text-xs mb-1">
