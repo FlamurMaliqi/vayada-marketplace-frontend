@@ -11,7 +11,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import type { Collaboration, CollaborationStatus, Hotel, Creator, UserType } from '@/lib/types'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 
-type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected'
+type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected' | 'completed'
 type SortOption = 'newest' | 'a-z'
 
 function CollaborationsPageContent() {
@@ -26,14 +26,35 @@ function CollaborationsPageContent() {
   const [sortOption, setSortOption] = useState<SortOption>('newest')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   
-  // Get user type from URL params or localStorage (for development)
-  const userType = (searchParams.get('type') || 
-    (typeof window !== 'undefined' ? localStorage.getItem('userType') : null) || 
-    'hotel') as UserType
+  // Initialize userType from searchParams (available on both server and client)
+  // This ensures server and client render the same initial value
+  // Default to 'hotel' so the subtitle shows "Manage your partnerships with creators"
+  const [userType, setUserType] = useState<UserType>(
+    (searchParams.get('type') as UserType) || 'hotel'
+  )
   
   // Get user ID from localStorage (for development - in production this would come from auth)
-  const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
+  // Update userType from localStorage after hydration (client-only)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUserType = localStorage.getItem('userType') as UserType | null
+      const urlType = searchParams.get('type') as UserType | null
+      
+      // Priority: URL param > localStorage > default
+      if (urlType && (urlType === 'hotel' || urlType === 'creator')) {
+        setUserType(urlType)
+      } else if (storedUserType && (storedUserType === 'hotel' || storedUserType === 'creator')) {
+        setUserType(storedUserType)
+      }
+      
+      const userId = localStorage.getItem('userId')
+      setCurrentUserId(userId)
+    }
+  }, [searchParams])
+
+  // Load collaborations whenever dependencies change
   useEffect(() => {
     loadCollaborations()
   }, [statusFilter, userType, currentUserId])
@@ -42,7 +63,9 @@ function CollaborationsPageContent() {
     setLoading(true)
     // Use mock data directly for frontend design
     setTimeout(() => {
-      setCollaborations(getMockCollaborations(userType, currentUserId))
+      // Pass currentUserId (can be null, which will show default demo collaborations)
+      const loadedCollaborations = getMockCollaborations(userType, currentUserId)
+      setCollaborations(loadedCollaborations)
       setLoading(false)
     }, 300)
   }
@@ -61,11 +84,26 @@ function CollaborationsPageContent() {
     }, 500)
   }
 
+  const handleRatingSubmit = async (id: string, rating: number, comment: string) => {
+    // Simulate rating submission (frontend design only)
+    // In production, this would call an API to submit the rating
+    setTimeout(() => {
+      setCollaborations(prev => 
+        prev.map(collab => 
+          collab.id === id ? { ...collab, hasRated: true } : collab
+        )
+      )
+      // TODO: In production, submit rating to API
+      console.log('Rating submitted:', { id, rating, comment })
+    }, 500)
+  }
+
   const statusFilters: { value: StatusFilter; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'pending', label: 'Pending' },
     { value: 'accepted', label: 'Accepted' },
     { value: 'rejected', label: 'Declined' },
+    { value: 'completed', label: 'Completed' },
   ]
 
   const filteredAndSortedCollaborations = useMemo(() => {
@@ -129,7 +167,7 @@ function CollaborationsPageContent() {
           </h1>
           <p className="text-lg text-gray-600 font-medium">
             {userType === 'hotel' 
-              ? 'Manage your partnerships with creators and influencers'
+              ? 'Manage your partnerships with creators'
               : 'Manage your partnerships with hotels'}
           </p>
         </div>
@@ -198,6 +236,7 @@ function CollaborationsPageContent() {
                 key={collaboration.id}
                 collaboration={collaboration}
                 onStatusUpdate={handleStatusUpdate}
+                onRatingSubmit={handleRatingSubmit}
                 currentUserType={userType}
               />
             ))}
@@ -423,6 +462,7 @@ function getMockCollaborations(
       hotelId: '1',
       creatorId: '4',
       status: 'completed' as CollaborationStatus,
+      hasRated: false, // Needs rating
       createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
       hotel: mockHotels[0],
@@ -507,6 +547,7 @@ function getMockCollaborations(
       hotelId: '5',
       creatorId: '5',
       status: 'completed' as CollaborationStatus,
+      hasRated: false, // Needs rating
       createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
       hotel: mockHotels[4],
@@ -563,7 +604,8 @@ function getMockCollaborations(
       return allCollaborations.filter(c => c.hotelId === userId)
     } else {
       // Show collaborations for hotels 1, 2, and 3 for better demo experience
-      return allCollaborations.filter(c => ['1', '2', '3'].includes(c.hotelId))
+      const filtered = allCollaborations.filter(c => ['1', '2', '3'].includes(c.hotelId))
+      return filtered
     }
   } else {
     // If userId is set, show only that creator's collaborations
@@ -572,7 +614,8 @@ function getMockCollaborations(
       return allCollaborations.filter(c => c.creatorId === userId)
     } else {
       // Show collaborations for creators 1, 2, and 3 for better demo experience
-      return allCollaborations.filter(c => ['1', '2', '3'].includes(c.creatorId))
+      const filtered = allCollaborations.filter(c => ['1', '2', '3'].includes(c.creatorId))
+      return filtered
     }
   }
 }

@@ -130,6 +130,7 @@ export interface Collaboration {
   hotelId: string
   creatorId: string
   status: CollaborationStatus
+  hasRated?: boolean // Whether the hotel has rated this completed collaboration
   createdAt: Date
   updatedAt: Date
 }

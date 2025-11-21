@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Collaboration, Hotel, Creator, CollaborationStatus, UserType } from '@/lib/types'
 import { Button } from '@/components/ui'
 import { 
@@ -5,8 +6,10 @@ import {
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
+  StarIcon,
 } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
+import { CollaborationRatingModal } from './CollaborationRatingModal'
 
 interface CollaborationCardProps {
   collaboration: Collaboration & {
@@ -14,6 +17,7 @@ interface CollaborationCardProps {
     creator?: Creator
   }
   onStatusUpdate?: (id: string, status: CollaborationStatus) => void
+  onRatingSubmit?: (id: string, rating: number, comment: string) => void
   currentUserType?: UserType
 }
 
@@ -28,10 +32,23 @@ const statusConfig: Record<CollaborationStatus, { label: string; color: string; 
 export function CollaborationCard({ 
   collaboration, 
   onStatusUpdate,
+  onRatingSubmit,
   currentUserType 
 }: CollaborationCardProps) {
+  const [showRatingModal, setShowRatingModal] = useState(false)
   const statusInfo = statusConfig[collaboration.status]
   const StatusIcon = statusInfo.icon
+
+  const handleRatingSubmit = (rating: number, comment: string) => {
+    if (onRatingSubmit) {
+      onRatingSubmit(collaboration.id, rating, comment)
+    }
+  }
+
+  const shouldShowRatingPrompt = 
+    currentUserType === 'hotel' &&
+    collaboration.status === 'completed' &&
+    !collaboration.hasRated
 
   const formatDate = (date: Date) => {
     const now = new Date()
@@ -161,14 +178,52 @@ export function CollaborationCard({
           </div>
         )}
 
-        {/* Status badge for non-pending */}
-        {collaboration.status !== 'pending' && (
+        {/* Rating Prompt for completed collaborations */}
+        {shouldShowRatingPrompt && (
+          <div className="flex flex-col items-end gap-2 flex-shrink-0">
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 max-w-xs shadow-sm">
+              <div className="flex items-start gap-2 mb-2">
+                <StarIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-amber-900 mb-1">
+                    Rate Your Experience
+                  </p>
+                  <p className="text-xs text-amber-800 mb-3 leading-relaxed">
+                    This collaboration is completed. Please rate your experience with a 1-5 star rating and share your feedback.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowRatingModal(true)}
+                className="w-full bg-amber-600 hover:bg-amber-700"
+              >
+                <StarIcon className="w-4 h-4 mr-2" />
+                Rate Now
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Status badge for non-pending (when not showing rating prompt) */}
+        {collaboration.status !== 'pending' && !shouldShowRatingPrompt && (
           <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color} flex-shrink-0`}>
             <StatusIcon className="w-4 h-4" />
             <span>{statusInfo.label}</span>
           </div>
         )}
       </div>
+
+      {/* Rating Modal */}
+      {collaboration.creator && (
+        <CollaborationRatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          onSubmit={handleRatingSubmit}
+          creatorName={collaboration.creator.name}
+        />
+      )}
     </div>
   )
 }
