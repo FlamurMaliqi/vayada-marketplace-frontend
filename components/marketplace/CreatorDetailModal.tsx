@@ -107,17 +107,12 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
   const avgEngagementRate = creator.platforms.reduce((sum, platform) => sum + platform.engagementRate, 0) / creator.platforms.length
 
   // Get primary platform handle (first platform's handle)
-  const primaryHandle = creator.platforms.length > 0 ? creator.platforms[0].handle : ''
+  const primaryHandle = creator.platforms.length > 0 
+    ? creator.platforms[0].handle.replace('@', '') 
+    : ''
 
-  // Generate about description based on niche
+  // Generate about description
   const getAboutDescription = () => {
-    if (creator.niche && creator.niche.length > 0) {
-      const niches = creator.niche.join(' & ').toLowerCase()
-      if (niches.includes('luxury')) {
-        return 'Luxury travel & lifestyle creator focusing on boutique hotels and unique experiences.'
-      }
-      return `${creator.niche.join(' & ')} creator focusing on unique experiences and insights.`
-    }
     return 'Content creator sharing unique experiences and insights.'
   }
 
@@ -210,6 +205,24 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
               ))}
             </div>
           </div>
+
+          {/* Portfolio Link Section */}
+          {creator.portfolioLink && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Portfolio</h3>
+              <a
+                href={creator.portfolioLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors font-medium"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                <span>View Portfolio</span>
+              </a>
+            </div>
+          )}
 
           {/* Platform Metrics Section */}
           <div>

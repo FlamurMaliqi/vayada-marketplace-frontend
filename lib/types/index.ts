@@ -92,10 +92,10 @@ export interface HotelProfile {
 export interface Creator {
   id: string
   name: string
-  niche: string[]
   platforms: Platform[]
   audienceSize: number
   location: string
+  portfolioLink?: string
   status: UserStatus
   createdAt: Date
   updatedAt: Date

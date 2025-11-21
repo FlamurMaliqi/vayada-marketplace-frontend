@@ -155,8 +155,7 @@ export default function MarketplacePage() {
       const query = searchQuery.toLowerCase()
       const matchesSearch = 
         creator.name.toLowerCase().includes(query) ||
-        creator.location.toLowerCase().includes(query) ||
-        creator.niche.some((n) => n.toLowerCase().includes(query))
+        creator.location.toLowerCase().includes(query)
       if (!matchesSearch) return false
     }
 
@@ -466,13 +465,13 @@ function getMockCreators(): Creator[] {
     {
       id: '1',
       name: 'Sarah Travels',
-      niche: ['Luxury Travel', 'Beach Destinations'],
       platforms: [
         { name: 'Instagram', handle: '@sarahtravels', followers: 125000, engagementRate: 4.2 },
         { name: 'YouTube', handle: '@sarahtravels', followers: 45000, engagementRate: 6.8 },
       ],
       audienceSize: 170000,
       location: 'Bali, Indonesia',
+      portfolioLink: 'https://sarahtravels.com',
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -480,13 +479,13 @@ function getMockCreators(): Creator[] {
     {
       id: '2',
       name: 'Adventure Mike',
-      niche: ['Adventure Travel', 'Mountain Sports'],
       platforms: [
         { name: 'Instagram', handle: '@adventuremike', followers: 89000, engagementRate: 5.1 },
         { name: 'TikTok', handle: '@adventuremike', followers: 120000, engagementRate: 8.5 },
       ],
       audienceSize: 209000,
       location: 'Swiss Alps, Switzerland',
+      portfolioLink: 'https://adventuremike.com',
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -494,13 +493,13 @@ function getMockCreators(): Creator[] {
     {
       id: '3',
       name: 'Tokyo Explorer',
-      niche: ['City Travel', 'Food & Culture'],
       platforms: [
         { name: 'Instagram', handle: '@tokyoexplorer', followers: 156000, engagementRate: 4.8 },
         { name: 'Facebook', handle: '@tokyoexplorer', followers: 25000, engagementRate: 3.2 },
       ],
       audienceSize: 181000,
       location: 'Tokyo, Japan',
+      portfolioLink: 'https://tokyoexplorer.com',
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -508,13 +507,13 @@ function getMockCreators(): Creator[] {
     {
       id: '4',
       name: 'Luxury Wanderer',
-      niche: ['Luxury Travel', 'Resorts'],
       platforms: [
         { name: 'Instagram', handle: '@luxurywanderer', followers: 245000, engagementRate: 3.9 },
         { name: 'YouTube', handle: '@luxurywanderer', followers: 98000, engagementRate: 5.5 },
       ],
       audienceSize: 343000,
       location: 'Dubai, UAE',
+      portfolioLink: 'https://luxurywanderer.com',
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -522,13 +521,13 @@ function getMockCreators(): Creator[] {
     {
       id: '5',
       name: 'Island Dreams',
-      niche: ['Beach Destinations', 'Romantic Travel'],
       platforms: [
         { name: 'Instagram', handle: '@islanddreams', followers: 198000, engagementRate: 4.5 },
         { name: 'TikTok', handle: '@islanddreams', followers: 67000, engagementRate: 2.8 },
       ],
       audienceSize: 265000,
       location: 'Santorini, Greece',
+      portfolioLink: 'https://islanddreams.com',
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -536,7 +535,6 @@ function getMockCreators(): Creator[] {
     {
       id: '6',
       name: 'Eco Explorer',
-      niche: ['Eco Travel', 'Adventure Travel'],
       platforms: [
         { name: 'Instagram', handle: '@ecoexplorer', followers: 112000, engagementRate: 5.8 },
         { name: 'Facebook', handle: '@ecoexplorer', followers: 32000, engagementRate: 4.1 },

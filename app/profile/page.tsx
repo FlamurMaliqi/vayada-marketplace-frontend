@@ -115,6 +115,7 @@ export default function ProfilePage() {
     profilePicture: '',
     shortDescription: '',
     location: '',
+    portfolioLink: '',
     platforms: [] as Platform[],
   })
 
@@ -179,6 +180,7 @@ export default function ProfilePage() {
         profilePicture: creatorProfile.profilePicture || '',
         shortDescription: creatorProfile.shortDescription,
         location: creatorProfile.location,
+        portfolioLink: creatorProfile.portfolioLink || '',
         platforms: creatorProfile.platforms || [],
       })
     }
@@ -194,6 +196,7 @@ export default function ProfilePage() {
           name: 'Sarah Travels',
           shortDescription: 'Luxury travel & lifestyle creator focusing on boutique hotels and unique experiences.',
           location: 'Los Angeles, USA',
+          portfolioLink: 'https://sarahtravels.com',
           status: 'verified',
           rating: 4.5,
           totalRatings: 12,
@@ -401,6 +404,7 @@ export default function ProfilePage() {
           profilePicture: editFormData.profilePicture || undefined,
           shortDescription: editFormData.shortDescription,
           location: editFormData.location,
+          portfolioLink: editFormData.portfolioLink || undefined,
           platforms: editFormData.platforms,
         })
       }
@@ -417,6 +421,7 @@ export default function ProfilePage() {
         profilePicture: creatorProfile.profilePicture || '',
         shortDescription: creatorProfile.shortDescription,
         location: creatorProfile.location,
+        portfolioLink: creatorProfile.portfolioLink || '',
         platforms: creatorProfile.platforms || [],
       })
       setProfilePicturePreview(null)
@@ -878,6 +883,26 @@ export default function ProfilePage() {
                                   {creatorProfile.shortDescription}
                                 </p>
                               </div>
+
+                              {/* Portfolio Link */}
+                              {creatorProfile.portfolioLink && (
+                                <div className="mt-6">
+                                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                                    Portfolio
+                                  </h4>
+                                  <a
+                                    href={creatorProfile.portfolioLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                    <span>{creatorProfile.portfolioLink}</span>
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ) : (
@@ -910,6 +935,16 @@ export default function ProfilePage() {
                                 required
                                 rows={4}
                                 placeholder="Describe yourself and your content..."
+                              />
+                            </div>
+                            <div>
+                              <Input
+                                label="Portfolio Link"
+                                type="url"
+                                value={editFormData.portfolioLink}
+                                onChange={(e) => setEditFormData({ ...editFormData, portfolioLink: e.target.value })}
+                                placeholder="https://yourportfolio.com"
+                                helperText="Optional: Link to your portfolio website"
                               />
                             </div>
                           </div>

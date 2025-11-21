@@ -68,7 +68,7 @@ export function CreatorCard({ creator }: CreatorCardProps) {
                 <CheckBadgeIcon className="w-5 h-5 text-primary-600" />
               )}
             </div>
-            <div className="flex items-center text-gray-600 text-sm mb-3">
+            <div className="flex items-center text-gray-600 text-sm">
               <MapPinIcon className="w-4 h-4 mr-1" />
               <span>{creator.location}</span>
             </div>
@@ -78,20 +78,6 @@ export function CreatorCard({ creator }: CreatorCardProps) {
             {creator.name.charAt(0)}
           </div>
         </div>
-
-        {/* Niche Tags */}
-        {creator.niche && creator.niche.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {creator.niche.map((niche, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 bg-primary-50 text-primary-700 text-xs rounded-md font-medium"
-              >
-                {niche}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Stats */}
