@@ -117,11 +117,29 @@ export interface CollaborationReview {
   createdAt: Date
 }
 
+export interface PlatformCountry {
+  country: string
+  percentage: number
+}
+
+export interface PlatformAgeGroup {
+  ageRange: string
+  percentage: number
+}
+
+export interface PlatformGenderSplit {
+  male: number
+  female: number
+}
+
 export interface Platform {
   name: string
   handle: string
   followers: number
   engagementRate: number
+  topCountries?: PlatformCountry[]
+  topAgeGroups?: PlatformAgeGroup[]
+  genderSplit?: PlatformGenderSplit
 }
 
 // Collaboration types

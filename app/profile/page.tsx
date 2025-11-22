@@ -12,11 +12,29 @@ import type { CreatorRating, CollaborationReview } from '@/lib/types'
 
 type UserType = 'hotel' | 'creator'
 
+interface PlatformCountry {
+  country: string
+  percentage: number
+}
+
+interface PlatformAgeGroup {
+  ageRange: string
+  percentage: number
+}
+
+interface PlatformGenderSplit {
+  male: number
+  female: number
+}
+
 interface Platform {
   name: string
   handle: string
   followers: number
   engagementRate: number
+  topCountries?: PlatformCountry[]
+  topAgeGroups?: PlatformAgeGroup[]
+  genderSplit?: PlatformGenderSplit
 }
 
 // Mock data for Creator Profile
@@ -181,7 +199,12 @@ export default function ProfilePage() {
         shortDescription: creatorProfile.shortDescription,
         location: creatorProfile.location,
         portfolioLink: creatorProfile.portfolioLink || '',
-        platforms: creatorProfile.platforms || [],
+        platforms: (creatorProfile.platforms || []).map(platform => ({
+          ...platform,
+          topCountries: platform.topCountries || [],
+          topAgeGroups: platform.topAgeGroups || [],
+          genderSplit: platform.genderSplit || { male: 0, female: 0 },
+        })),
       })
     }
   }, [creatorProfile])
@@ -248,12 +271,32 @@ export default function ProfilePage() {
               handle: '@sarahtravels',
               followers: 125000,
               engagementRate: 4.2,
+              topCountries: [
+                { country: 'Indonesia', percentage: 35 },
+                { country: 'Australia', percentage: 22 },
+                { country: 'Singapore', percentage: 15 },
+              ],
+              topAgeGroups: [
+                { ageRange: '25-34', percentage: 48 },
+                { ageRange: '18-24', percentage: 28 },
+              ],
+              genderSplit: { male: 45, female: 55 },
             },
             {
               name: 'TikTok',
               handle: '@sarahtravels',
               followers: 89000,
               engagementRate: 8.5,
+              topCountries: [
+                { country: 'United States', percentage: 28 },
+                { country: 'United Kingdom', percentage: 18 },
+                { country: 'Canada', percentage: 11 },
+              ],
+              topAgeGroups: [
+                { ageRange: '18-24', percentage: 55 },
+                { ageRange: '25-34', percentage: 31 },
+              ],
+              genderSplit: { male: 54, female: 46 },
             },
             {
               name: 'YouTube',
@@ -410,6 +453,47 @@ export default function ProfilePage() {
     return new Intl.NumberFormat('de-DE').format(num)
   }
 
+  // Get country flag emoji
+  const getCountryFlag = (country: string): string => {
+    const countryFlags: Record<string, string> = {
+      'Germany': '🇩🇪',
+      'Switzerland': '🇨🇭',
+      'Austria': '🇦🇹',
+      'United States': '🇺🇸',
+      'USA': '🇺🇸',
+      'United Kingdom': '🇬🇧',
+      'UK': '🇬🇧',
+      'Canada': '🇨🇦',
+      'France': '🇫🇷',
+      'Italy': '🇮🇹',
+      'Spain': '🇪🇸',
+      'Netherlands': '🇳🇱',
+      'Belgium': '🇧🇪',
+      'Australia': '🇦🇺',
+      'Japan': '🇯🇵',
+      'South Korea': '🇰🇷',
+      'Singapore': '🇸🇬',
+      'Thailand': '🇹🇭',
+      'Indonesia': '🇮🇩',
+      'Malaysia': '🇲🇾',
+      'Philippines': '🇵🇭',
+      'India': '🇮🇳',
+      'Brazil': '🇧🇷',
+      'Mexico': '🇲🇽',
+      'Argentina': '🇦🇷',
+      'Chile': '🇨🇱',
+      'South Africa': '🇿🇦',
+      'UAE': '🇦🇪',
+      'Saudi Arabia': '🇸🇦',
+      'Qatar': '🇶🇦',
+      'Kuwait': '🇰🇼',
+      'Egypt': '🇪🇬',
+      'Greece': '🇬🇷',
+      'Costa Rica': '🇨🇷',
+    }
+    return countryFlags[country] || '🏳️'
+  }
+
   const handleSaveContact = async () => {
     if (!email || !email.includes('@')) {
       return
@@ -464,7 +548,12 @@ export default function ProfilePage() {
         shortDescription: creatorProfile.shortDescription,
         location: creatorProfile.location,
         portfolioLink: creatorProfile.portfolioLink || '',
-        platforms: creatorProfile.platforms || [],
+        platforms: (creatorProfile.platforms || []).map(platform => ({
+          ...platform,
+          topCountries: platform.topCountries || [],
+          topAgeGroups: platform.topAgeGroups || [],
+          genderSplit: platform.genderSplit || { male: 0, female: 0 },
+        })),
       })
       setProfilePicturePreview(null)
       if (fileInputRef.current) {
@@ -694,7 +783,15 @@ export default function ProfilePage() {
   const addPlatform = () => {
     setEditFormData({
       ...editFormData,
-      platforms: [...editFormData.platforms, { name: '', handle: '', followers: 0, engagementRate: 0 }],
+      platforms: [...editFormData.platforms, { 
+        name: '', 
+        handle: '', 
+        followers: 0, 
+        engagementRate: 0,
+        topCountries: [],
+        topAgeGroups: [],
+        genderSplit: { male: 0, female: 0 },
+      }],
     })
   }
 
@@ -705,13 +802,59 @@ export default function ProfilePage() {
     })
   }
 
-  const updatePlatform = (index: number, field: keyof Platform, value: string | number) => {
+  const updatePlatform = (index: number, field: keyof Platform, value: string | number | PlatformCountry[] | PlatformAgeGroup[] | PlatformGenderSplit) => {
     setEditFormData({
       ...editFormData,
       platforms: editFormData.platforms.map((platform, i) =>
         i === index ? { ...platform, [field]: value } : platform
       ),
     })
+  }
+
+  const addTopCountry = (platformIndex: number) => {
+    const platform = editFormData.platforms[platformIndex]
+    const newCountries = [...(platform.topCountries || []), { country: '', percentage: 0 }]
+    updatePlatform(platformIndex, 'topCountries', newCountries)
+  }
+
+  const removeTopCountry = (platformIndex: number, countryIndex: number) => {
+    const platform = editFormData.platforms[platformIndex]
+    const newCountries = (platform.topCountries || []).filter((_, i) => i !== countryIndex)
+    updatePlatform(platformIndex, 'topCountries', newCountries)
+  }
+
+  const updateTopCountry = (platformIndex: number, countryIndex: number, field: 'country' | 'percentage', value: string | number) => {
+    const platform = editFormData.platforms[platformIndex]
+    const newCountries = (platform.topCountries || []).map((country, i) =>
+      i === countryIndex ? { ...country, [field]: value } : country
+    )
+    updatePlatform(platformIndex, 'topCountries', newCountries)
+  }
+
+  const addTopAgeGroup = (platformIndex: number) => {
+    const platform = editFormData.platforms[platformIndex]
+    const newAgeGroups = [...(platform.topAgeGroups || []), { ageRange: '', percentage: 0 }]
+    updatePlatform(platformIndex, 'topAgeGroups', newAgeGroups)
+  }
+
+  const removeTopAgeGroup = (platformIndex: number, ageGroupIndex: number) => {
+    const platform = editFormData.platforms[platformIndex]
+    const newAgeGroups = (platform.topAgeGroups || []).filter((_, i) => i !== ageGroupIndex)
+    updatePlatform(platformIndex, 'topAgeGroups', newAgeGroups)
+  }
+
+  const updateTopAgeGroup = (platformIndex: number, ageGroupIndex: number, field: 'ageRange' | 'percentage', value: string | number) => {
+    const platform = editFormData.platforms[platformIndex]
+    const newAgeGroups = (platform.topAgeGroups || []).map((ageGroup, i) =>
+      i === ageGroupIndex ? { ...ageGroup, [field]: value } : ageGroup
+    )
+    updatePlatform(platformIndex, 'topAgeGroups', newAgeGroups)
+  }
+
+  const updateGenderSplit = (platformIndex: number, field: 'male' | 'female', value: number) => {
+    const platform = editFormData.platforms[platformIndex]
+    const newGenderSplit = { ...(platform.genderSplit || { male: 0, female: 0 }), [field]: value }
+    updatePlatform(platformIndex, 'genderSplit', newGenderSplit)
   }
 
 
@@ -1117,26 +1260,77 @@ export default function ProfilePage() {
                             {creatorProfile.platforms.map((platform, index) => (
                               <div
                                 key={index}
-                                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                                className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
                               >
-                                {/* Platform Icon */}
-                                <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-white flex items-center justify-center text-gray-700 border border-gray-200">
-                                  {getPlatformIcon(platform.name)}
+                                {/* Platform Header */}
+                                <div className="flex items-center gap-4 mb-4 pb-4 border-b border-gray-200">
+                                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center text-gray-700 border border-gray-200">
+                                    {getPlatformIcon(platform.name)}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <h3 className="font-semibold text-gray-900 text-lg">{platform.name}</h3>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                      <span className="font-medium">{platform.handle}</span>
+                                      <span className="text-gray-400">•</span>
+                                      <span>{formatFollowersDE(platform.followers)} Follower</span>
+                                      <span className="text-gray-400">•</span>
+                                      <span>{platform.engagementRate.toFixed(1).replace('.', ',')}% Engagement</span>
+                                    </div>
+                                  </div>
                                 </div>
 
-                                {/* Platform Info */}
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-semibold text-gray-900">{platform.name}</h3>
+                                {/* Platform Metrics */}
+                                {(platform.topCountries && platform.topCountries.length > 0) ||
+                                 (platform.topAgeGroups && platform.topAgeGroups.length > 0) ||
+                                 platform.genderSplit ? (
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {/* Top Countries */}
+                                    {platform.topCountries && platform.topCountries.length > 0 && (
+                                      <div>
+                                        <div className="text-sm font-semibold text-gray-700 mb-2">Top Countries</div>
+                                        <ul className="space-y-2">
+                                          {platform.topCountries.map((country, idx) => (
+                                            <li key={idx} className="flex items-center gap-2">
+                                              <span className="text-lg">{getCountryFlag(country.country)}</span>
+                                              <span className="text-sm text-gray-700">{country.country}: <span className="font-semibold text-gray-900">{country.percentage}%</span></span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+
+                                    {/* Top Age Groups */}
+                                    {platform.topAgeGroups && platform.topAgeGroups.length > 0 && (
+                                      <div>
+                                        <div className="text-sm font-semibold text-gray-700 mb-2">Top Age Groups</div>
+                                        <ul className="space-y-2">
+                                          {platform.topAgeGroups.map((ageGroup, idx) => (
+                                            <li key={idx} className="text-sm text-gray-700">
+                                              {ageGroup.ageRange}: <span className="font-semibold text-gray-900">{ageGroup.percentage}%</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+
+                                    {/* Gender Split */}
+                                    {platform.genderSplit && (
+                                      <div>
+                                        <div className="text-sm font-semibold text-gray-700 mb-2">Gender Split</div>
+                                        <div className="space-y-2">
+                                          <div className="text-sm text-gray-700">Male: <span className="font-semibold text-gray-900">{platform.genderSplit.male}%</span></div>
+                                          <div className="text-sm text-gray-700">Female: <span className="font-semibold text-gray-900">{platform.genderSplit.female}%</span></div>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
-                                  <div className="flex items-center gap-2 text-gray-700">
-                                    <span className="font-medium">{platform.handle}</span>
-                                    <span className="text-gray-400">•</span>
-                                    <span>{formatFollowersDE(platform.followers)} Follower</span>
-                                    <span className="text-gray-400">•</span>
-                                    <span>{platform.engagementRate.toFixed(1).replace('.', ',')}% Engagement</span>
+                                ) : (
+                                  <div className="text-sm text-gray-500 italic">
+                                    No additional metrics available. Edit your profile to add platform metrics.
                                   </div>
-                                </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -1190,6 +1384,119 @@ export default function ProfilePage() {
                                     placeholder="4.2"
                                     required
                                   />
+                                </div>
+
+                                {/* Top Countries */}
+                                <div className="mt-6 pt-6 border-t border-gray-300">
+                                  <div className="flex items-center justify-between mb-4">
+                                    <h4 className="font-semibold text-gray-900">Top Countries</h4>
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => addTopCountry(index)}
+                                    >
+                                      <PlusIcon className="w-4 h-4 mr-2" />
+                                      Add Country
+                                    </Button>
+                                  </div>
+                                  {(platform.topCountries || []).map((country, countryIdx) => (
+                                    <div key={countryIdx} className="mb-3 p-3 bg-white rounded border border-gray-200">
+                                      <div className="flex items-end gap-3">
+                                        <div className="flex-1">
+                                          <Input
+                                            label="Country"
+                                            value={country.country}
+                                            onChange={(e) => updateTopCountry(index, countryIdx, 'country', e.target.value)}
+                                            placeholder="Germany, USA, etc."
+                                          />
+                                        </div>
+                                        <div className="w-32">
+                                          <Input
+                                            label="Percentage"
+                                            type="number"
+                                            value={country.percentage || ''}
+                                            onChange={(e) => updateTopCountry(index, countryIdx, 'percentage', parseInt(e.target.value) || 0)}
+                                            placeholder="32"
+                                          />
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeTopCountry(index, countryIdx)}
+                                          className="mb-2 p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                                        >
+                                          <XMarkIcon className="w-5 h-5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Top Age Groups */}
+                                <div className="mt-6 pt-6 border-t border-gray-300">
+                                  <div className="flex items-center justify-between mb-4">
+                                    <h4 className="font-semibold text-gray-900">Top Age Groups</h4>
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => addTopAgeGroup(index)}
+                                    >
+                                      <PlusIcon className="w-4 h-4 mr-2" />
+                                      Add Age Group
+                                    </Button>
+                                  </div>
+                                  {(platform.topAgeGroups || []).map((ageGroup, ageGroupIdx) => (
+                                    <div key={ageGroupIdx} className="mb-3 p-3 bg-white rounded border border-gray-200">
+                                      <div className="flex items-end gap-3">
+                                        <div className="flex-1">
+                                          <Input
+                                            label="Age Range"
+                                            value={ageGroup.ageRange}
+                                            onChange={(e) => updateTopAgeGroup(index, ageGroupIdx, 'ageRange', e.target.value)}
+                                            placeholder="25-34, 18-24, etc."
+                                          />
+                                        </div>
+                                        <div className="w-32">
+                                          <Input
+                                            label="Percentage"
+                                            type="number"
+                                            value={ageGroup.percentage || ''}
+                                            onChange={(e) => updateTopAgeGroup(index, ageGroupIdx, 'percentage', parseInt(e.target.value) || 0)}
+                                            placeholder="45"
+                                          />
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeTopAgeGroup(index, ageGroupIdx)}
+                                          className="mb-2 p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                                        >
+                                          <XMarkIcon className="w-5 h-5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Gender Split */}
+                                <div className="mt-6 pt-6 border-t border-gray-300">
+                                  <h4 className="font-semibold text-gray-900 mb-4">Gender Split</h4>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <Input
+                                      label="Male (%)"
+                                      type="number"
+                                      value={platform.genderSplit?.male || ''}
+                                      onChange={(e) => updateGenderSplit(index, 'male', parseInt(e.target.value) || 0)}
+                                      placeholder="62"
+                                    />
+                                    <Input
+                                      label="Female (%)"
+                                      type="number"
+                                      value={platform.genderSplit?.female || ''}
+                                      onChange={(e) => updateGenderSplit(index, 'female', parseInt(e.target.value) || 0)}
+                                      placeholder="38"
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             ))}
