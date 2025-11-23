@@ -181,6 +181,14 @@ export default function ProfilePage() {
   })
   const [isSavingListing, setIsSavingListing] = useState(false)
 
+  // Load user type from localStorage on mount
+  useEffect(() => {
+    const storedUserType = localStorage.getItem('userType') as UserType | null
+    if (storedUserType && (storedUserType === 'creator' || storedUserType === 'hotel')) {
+      setUserType(storedUserType)
+    }
+  }, [])
+
   useEffect(() => {
     loadProfile()
   }, [userType])
@@ -874,30 +882,6 @@ export default function ProfilePage() {
             <p className="text-lg text-gray-600 font-medium mb-6">
               Manage your profile information
             </p>
-
-            {/* User Type Toggle */}
-            <div className="flex gap-2 bg-white/80 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-gray-200/50 w-fit">
-              <button
-                onClick={() => setUserType('creator')}
-                className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                  userType === 'creator'
-                    ? 'bg-primary-600 text-white shadow-md'
-                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                }`}
-              >
-                Creator Profile
-              </button>
-              <button
-                onClick={() => setUserType('hotel')}
-                className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                  userType === 'hotel'
-                    ? 'bg-primary-600 text-white shadow-md'
-                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                }`}
-              >
-                Hotel Profile
-              </button>
-            </div>
           </div>
 
           {loading ? (
