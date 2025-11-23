@@ -12,13 +12,11 @@ export const creatorService = {
   getAll: async (params?: { 
     page?: number
     limit?: number
-    niche?: string
     location?: string
   }): Promise<PaginatedResponse<Creator>> => {
     const queryParams = new URLSearchParams()
     if (params?.page) queryParams.append('page', params.page.toString())
     if (params?.limit) queryParams.append('limit', params.limit.toString())
-    if (params?.niche) queryParams.append('niche', params.niche)
     if (params?.location) queryParams.append('location', params.location)
     
     const query = queryParams.toString()

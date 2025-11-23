@@ -155,8 +155,7 @@ export default function MarketplacePage() {
       const query = searchQuery.toLowerCase()
       const matchesSearch = 
         creator.name.toLowerCase().includes(query) ||
-        creator.location.toLowerCase().includes(query) ||
-        creator.niche.some((n) => n.toLowerCase().includes(query))
+        creator.location.toLowerCase().includes(query)
       if (!matchesSearch) return false
     }
 
@@ -462,17 +461,82 @@ function getMockHotels(): Hotel[] {
 }
 
 function getMockCreators(): Creator[] {
+  const now = new Date()
+  const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const twoMonthsAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+  const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+
   return [
     {
       id: '1',
       name: 'Sarah Travels',
-      niche: ['Luxury Travel', 'Beach Destinations'],
       platforms: [
-        { name: 'Instagram', handle: '@sarahtravels', followers: 125000, engagementRate: 4.2 },
-        { name: 'YouTube', handle: '@sarahtravels', followers: 45000, engagementRate: 6.8 },
+        { 
+          name: 'Instagram', 
+          handle: '@sarahtravels', 
+          followers: 125000, 
+          engagementRate: 4.2,
+          topCountries: [
+            { country: 'Indonesia', percentage: 35 },
+            { country: 'Australia', percentage: 22 },
+            { country: 'Singapore', percentage: 15 },
+          ],
+          topAgeGroups: [
+            { ageRange: '25-34', percentage: 48 },
+            { ageRange: '18-24', percentage: 28 },
+          ],
+          genderSplit: { male: 45, female: 55 },
+        },
+        { 
+          name: 'YouTube', 
+          handle: '@sarahtravels', 
+          followers: 45000, 
+          engagementRate: 6.8,
+          topCountries: [
+            { country: 'Australia', percentage: 28 },
+            { country: 'United States', percentage: 20 },
+            { country: 'United Kingdom', percentage: 14 },
+          ],
+          topAgeGroups: [
+            { ageRange: '25-34', percentage: 42 },
+            { ageRange: '35-44', percentage: 31 },
+          ],
+          genderSplit: { male: 52, female: 48 },
+        },
       ],
       audienceSize: 170000,
       location: 'Bali, Indonesia',
+      portfolioLink: 'https://sarahtravels.com',
+      rating: {
+        averageRating: 4.8,
+        totalReviews: 12,
+        reviews: [
+          {
+            id: 'r1',
+            hotelId: 'h1',
+            hotelName: 'Sunset Beach Villa',
+            rating: 5,
+            comment: 'Excellent collaboration! Sarah delivered high-quality content and was very professional throughout the process.',
+            createdAt: oneMonthAgo,
+          },
+          {
+            id: 'r2',
+            hotelId: 'h2',
+            hotelName: 'Mountain View Lodge',
+            rating: 5,
+            comment: 'Amazing content creator. The photos and videos exceeded our expectations.',
+            createdAt: twoMonthsAgo,
+          },
+          {
+            id: 'r3',
+            hotelId: 'h3',
+            hotelName: 'Urban Boutique Hotel',
+            rating: 4,
+            comment: 'Great collaboration, very responsive and delivered on time.',
+            createdAt: threeMonthsAgo,
+          },
+        ],
+      },
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -480,13 +544,65 @@ function getMockCreators(): Creator[] {
     {
       id: '2',
       name: 'Adventure Mike',
-      niche: ['Adventure Travel', 'Mountain Sports'],
       platforms: [
-        { name: 'Instagram', handle: '@adventuremike', followers: 89000, engagementRate: 5.1 },
-        { name: 'TikTok', handle: '@adventuremike', followers: 120000, engagementRate: 8.5 },
+        { 
+          name: 'Instagram', 
+          handle: '@adventuremike', 
+          followers: 89000, 
+          engagementRate: 5.1,
+          topCountries: [
+            { country: 'Germany', percentage: 32 },
+            { country: 'Switzerland', percentage: 21 },
+            { country: 'Austria', percentage: 12 },
+          ],
+          topAgeGroups: [
+            { ageRange: '25-34', percentage: 45 },
+            { ageRange: '18-24', percentage: 30 },
+          ],
+          genderSplit: { male: 62, female: 38 },
+        },
+        { 
+          name: 'TikTok', 
+          handle: '@adventuremike', 
+          followers: 120000, 
+          engagementRate: 8.5,
+          topCountries: [
+            { country: 'United States', percentage: 28 },
+            { country: 'United Kingdom', percentage: 18 },
+            { country: 'Canada', percentage: 11 },
+          ],
+          topAgeGroups: [
+            { ageRange: '18-24', percentage: 55 },
+            { ageRange: '25-34', percentage: 31 },
+          ],
+          genderSplit: { male: 54, female: 46 },
+        },
       ],
       audienceSize: 209000,
       location: 'Swiss Alps, Switzerland',
+      portfolioLink: 'https://adventuremike.com',
+      rating: {
+        averageRating: 4.6,
+        totalReviews: 8,
+        reviews: [
+          {
+            id: 'r4',
+            hotelId: 'h2',
+            hotelName: 'Mountain View Lodge',
+            rating: 5,
+            comment: 'Perfect fit for our brand! Mike captured the adventure spirit beautifully.',
+            createdAt: oneMonthAgo,
+          },
+          {
+            id: 'r5',
+            hotelId: 'h4',
+            hotelName: 'Desert Oasis Resort',
+            rating: 4,
+            comment: 'Great content creator, very creative and professional.',
+            createdAt: twoMonthsAgo,
+          },
+        ],
+      },
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -494,13 +610,65 @@ function getMockCreators(): Creator[] {
     {
       id: '3',
       name: 'Tokyo Explorer',
-      niche: ['City Travel', 'Food & Culture'],
       platforms: [
-        { name: 'Instagram', handle: '@tokyoexplorer', followers: 156000, engagementRate: 4.8 },
-        { name: 'Facebook', handle: '@tokyoexplorer', followers: 25000, engagementRate: 3.2 },
+        { 
+          name: 'Instagram', 
+          handle: '@tokyoexplorer', 
+          followers: 156000, 
+          engagementRate: 4.8,
+          topCountries: [
+            { country: 'Japan', percentage: 42 },
+            { country: 'South Korea', percentage: 18 },
+            { country: 'Singapore', percentage: 12 },
+          ],
+          topAgeGroups: [
+            { ageRange: '18-24', percentage: 38 },
+            { ageRange: '25-34', percentage: 35 },
+          ],
+          genderSplit: { male: 48, female: 52 },
+        },
+        { 
+          name: 'Facebook', 
+          handle: '@tokyoexplorer', 
+          followers: 25000, 
+          engagementRate: 3.2,
+          topCountries: [
+            { country: 'Japan', percentage: 38 },
+            { country: 'United States', percentage: 22 },
+            { country: 'Australia', percentage: 15 },
+          ],
+          topAgeGroups: [
+            { ageRange: '25-34', percentage: 41 },
+            { ageRange: '35-44', percentage: 33 },
+          ],
+          genderSplit: { male: 55, female: 45 },
+        },
       ],
       audienceSize: 181000,
       location: 'Tokyo, Japan',
+      portfolioLink: 'https://tokyoexplorer.com',
+      rating: {
+        averageRating: 4.9,
+        totalReviews: 15,
+        reviews: [
+          {
+            id: 'r6',
+            hotelId: 'h3',
+            hotelName: 'Urban Boutique Hotel',
+            rating: 5,
+            comment: 'Outstanding work! The content perfectly showcased our hotel and reached our target audience.',
+            createdAt: oneMonthAgo,
+          },
+          {
+            id: 'r7',
+            hotelId: 'h5',
+            hotelName: 'Santorini Blue Suites',
+            rating: 5,
+            comment: 'Highly recommend! Professional, creative, and delivered exceptional results.',
+            createdAt: twoMonthsAgo,
+          },
+        ],
+      },
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -508,13 +676,65 @@ function getMockCreators(): Creator[] {
     {
       id: '4',
       name: 'Luxury Wanderer',
-      niche: ['Luxury Travel', 'Resorts'],
       platforms: [
-        { name: 'Instagram', handle: '@luxurywanderer', followers: 245000, engagementRate: 3.9 },
-        { name: 'YouTube', handle: '@luxurywanderer', followers: 98000, engagementRate: 5.5 },
+        { 
+          name: 'Instagram', 
+          handle: '@luxurywanderer', 
+          followers: 245000, 
+          engagementRate: 3.9,
+          topCountries: [
+            { country: 'UAE', percentage: 28 },
+            { country: 'Saudi Arabia', percentage: 19 },
+            { country: 'United Kingdom', percentage: 15 },
+          ],
+          topAgeGroups: [
+            { ageRange: '25-34', percentage: 44 },
+            { ageRange: '35-44', percentage: 32 },
+          ],
+          genderSplit: { male: 58, female: 42 },
+        },
+        { 
+          name: 'YouTube', 
+          handle: '@luxurywanderer', 
+          followers: 98000, 
+          engagementRate: 5.5,
+          topCountries: [
+            { country: 'United States', percentage: 31 },
+            { country: 'United Kingdom', percentage: 19 },
+            { country: 'UAE', percentage: 14 },
+          ],
+          topAgeGroups: [
+            { ageRange: '25-34', percentage: 46 },
+            { ageRange: '35-44', percentage: 28 },
+          ],
+          genderSplit: { male: 61, female: 39 },
+        },
       ],
       audienceSize: 343000,
       location: 'Dubai, UAE',
+      portfolioLink: 'https://luxurywanderer.com',
+      rating: {
+        averageRating: 4.7,
+        totalReviews: 20,
+        reviews: [
+          {
+            id: 'r8',
+            hotelId: 'h4',
+            hotelName: 'Desert Oasis Resort',
+            rating: 5,
+            comment: 'Exceeded expectations! The luxury content perfectly aligned with our brand.',
+            createdAt: oneMonthAgo,
+          },
+          {
+            id: 'r9',
+            hotelId: 'h5',
+            hotelName: 'Santorini Blue Suites',
+            rating: 4,
+            comment: 'Great collaboration, very professional and delivered quality content.',
+            createdAt: twoMonthsAgo,
+          },
+        ],
+      },
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -522,13 +742,65 @@ function getMockCreators(): Creator[] {
     {
       id: '5',
       name: 'Island Dreams',
-      niche: ['Beach Destinations', 'Romantic Travel'],
       platforms: [
-        { name: 'Instagram', handle: '@islanddreams', followers: 198000, engagementRate: 4.5 },
-        { name: 'TikTok', handle: '@islanddreams', followers: 67000, engagementRate: 2.8 },
+        { 
+          name: 'Instagram', 
+          handle: '@islanddreams', 
+          followers: 198000, 
+          engagementRate: 4.5,
+          topCountries: [
+            { country: 'Greece', percentage: 36 },
+            { country: 'Italy', percentage: 21 },
+            { country: 'Spain', percentage: 16 },
+          ],
+          topAgeGroups: [
+            { ageRange: '25-34', percentage: 47 },
+            { ageRange: '18-24', percentage: 29 },
+          ],
+          genderSplit: { male: 41, female: 59 },
+        },
+        { 
+          name: 'TikTok', 
+          handle: '@islanddreams', 
+          followers: 67000, 
+          engagementRate: 2.8,
+          topCountries: [
+            { country: 'Greece', percentage: 31 },
+            { country: 'United States', percentage: 24 },
+            { country: 'United Kingdom', percentage: 16 },
+          ],
+          topAgeGroups: [
+            { ageRange: '18-24', percentage: 52 },
+            { ageRange: '25-34', percentage: 28 },
+          ],
+          genderSplit: { male: 38, female: 62 },
+        },
       ],
       audienceSize: 265000,
       location: 'Santorini, Greece',
+      portfolioLink: 'https://islanddreams.com',
+      rating: {
+        averageRating: 4.5,
+        totalReviews: 10,
+        reviews: [
+          {
+            id: 'r10',
+            hotelId: 'h5',
+            hotelName: 'Santorini Blue Suites',
+            rating: 5,
+            comment: 'Perfect match! The content beautifully captured the essence of our location.',
+            createdAt: oneMonthAgo,
+          },
+          {
+            id: 'r11',
+            hotelId: 'h1',
+            hotelName: 'Sunset Beach Villa',
+            rating: 4,
+            comment: 'Good collaboration, delivered as promised.',
+            createdAt: twoMonthsAgo,
+          },
+        ],
+      },
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -536,13 +808,64 @@ function getMockCreators(): Creator[] {
     {
       id: '6',
       name: 'Eco Explorer',
-      niche: ['Eco Travel', 'Adventure Travel'],
       platforms: [
-        { name: 'Instagram', handle: '@ecoexplorer', followers: 112000, engagementRate: 5.8 },
-        { name: 'Facebook', handle: '@ecoexplorer', followers: 32000, engagementRate: 4.1 },
+        { 
+          name: 'Instagram', 
+          handle: '@ecoexplorer', 
+          followers: 112000, 
+          engagementRate: 5.8,
+          topCountries: [
+            { country: 'Costa Rica', percentage: 29 },
+            { country: 'United States', percentage: 25 },
+            { country: 'Canada', percentage: 14 },
+          ],
+          topAgeGroups: [
+            { ageRange: '25-34', percentage: 43 },
+            { ageRange: '18-24', percentage: 32 },
+          ],
+          genderSplit: { male: 47, female: 53 },
+        },
+        { 
+          name: 'Facebook', 
+          handle: '@ecoexplorer', 
+          followers: 32000, 
+          engagementRate: 4.1,
+          topCountries: [
+            { country: 'United States', percentage: 35 },
+            { country: 'Canada', percentage: 21 },
+            { country: 'Costa Rica', percentage: 18 },
+          ],
+          topAgeGroups: [
+            { ageRange: '25-34', percentage: 39 },
+            { ageRange: '35-44', percentage: 34 },
+          ],
+          genderSplit: { male: 51, female: 49 },
+        },
       ],
       audienceSize: 144000,
       location: 'Costa Rica',
+      rating: {
+        averageRating: 4.3,
+        totalReviews: 6,
+        reviews: [
+          {
+            id: 'r12',
+            hotelId: 'h6',
+            hotelName: 'Jungle Eco-Lodge',
+            rating: 4,
+            comment: 'Great partnership! The eco-friendly content resonated well with our values.',
+            createdAt: oneMonthAgo,
+          },
+          {
+            id: 'r13',
+            hotelId: 'h1',
+            hotelName: 'Sunset Beach Villa',
+            rating: 5,
+            comment: 'Excellent work! Very authentic and engaging content.',
+            createdAt: twoMonthsAgo,
+          },
+        ],
+      },
       status: 'verified',
       createdAt: new Date(),
       updatedAt: new Date(),

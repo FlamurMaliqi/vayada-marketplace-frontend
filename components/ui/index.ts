@@ -11,3 +11,5 @@ export type { InputProps } from './Input'
 export { default as Textarea } from './Textarea'
 export type { TextareaProps } from './Textarea'
 
+export { StarRating, default as StarRatingDefault } from './StarRating'
+

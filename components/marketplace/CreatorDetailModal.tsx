@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Creator } from '@/lib/types'
-import { Button } from '@/components/ui'
+import { Button, StarRating } from '@/components/ui'
 import { formatNumber } from '@/lib/utils'
 import {
   MapPinIcon,
@@ -61,6 +61,45 @@ const formatFollowers = (num: number): string => {
   return num.toString()
 }
 
+// Get country flag emoji
+const getCountryFlag = (country: string): string => {
+  const countryFlags: Record<string, string> = {
+    'Germany': '🇩🇪',
+    'Switzerland': '🇨🇭',
+    'Austria': '🇦🇹',
+    'United States': '🇺🇸',
+    'USA': '🇺🇸',
+    'United Kingdom': '🇬🇧',
+    'UK': '🇬🇧',
+    'Canada': '🇨🇦',
+    'France': '🇫🇷',
+    'Italy': '🇮🇹',
+    'Spain': '🇪🇸',
+    'Netherlands': '🇳🇱',
+    'Belgium': '🇧🇪',
+    'Australia': '🇦🇺',
+    'Japan': '🇯🇵',
+    'South Korea': '🇰🇷',
+    'Singapore': '🇸🇬',
+    'Thailand': '🇹🇭',
+    'Indonesia': '🇮🇩',
+    'Malaysia': '🇲🇾',
+    'Philippines': '🇵🇭',
+    'India': '🇮🇳',
+    'Brazil': '🇧🇷',
+    'Mexico': '🇲🇽',
+    'Argentina': '🇦🇷',
+    'Chile': '🇨🇱',
+    'South Africa': '🇿🇦',
+    'UAE': '🇦🇪',
+    'Saudi Arabia': '🇸🇦',
+    'Qatar': '🇶🇦',
+    'Kuwait': '🇰🇼',
+    'Egypt': '🇪🇬',
+  }
+  return countryFlags[country] || '🏳️'
+}
+
 // Get time ago string
 const getTimeAgo = (date: Date): string => {
   const now = new Date()
@@ -107,17 +146,12 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
   const avgEngagementRate = creator.platforms.reduce((sum, platform) => sum + platform.engagementRate, 0) / creator.platforms.length
 
   // Get primary platform handle (first platform's handle)
-  const primaryHandle = creator.platforms.length > 0 ? creator.platforms[0].handle : ''
+  const primaryHandle = creator.platforms.length > 0 
+    ? creator.platforms[0].handle.replace('@', '') 
+    : ''
 
-  // Generate about description based on niche
+  // Generate about description
   const getAboutDescription = () => {
-    if (creator.niche && creator.niche.length > 0) {
-      const niches = creator.niche.join(' & ').toLowerCase()
-      if (niches.includes('luxury')) {
-        return 'Luxury travel & lifestyle creator focusing on boutique hotels and unique experiences.'
-      }
-      return `${creator.niche.join(' & ')} creator focusing on unique experiences and insights.`
-    }
     return 'Content creator sharing unique experiences and insights.'
   }
 
@@ -163,6 +197,17 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
                   </div>
                 ))}
               </div>
+
+              {/* Rating */}
+              {creator.rating && (
+                <div className="mb-4">
+                  <StarRating
+                    rating={creator.rating.averageRating}
+                    totalReviews={creator.rating.totalReviews}
+                    size="lg"
+                  />
+                </div>
+              )}
 
               {/* Key Metrics */}
               <div className="flex items-center gap-6 mb-4">
@@ -211,45 +256,133 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
             </div>
           </div>
 
+          {/* Portfolio Link Section */}
+          {creator.portfolioLink && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Portfolio</h3>
+              <a
+                href={creator.portfolioLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors font-medium"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                <span>View Portfolio</span>
+              </a>
+            </div>
+          )}
+
           {/* Platform Metrics Section */}
           <div>
             <h3 className="text-lg font-bold text-gray-900 mb-3">Platform Metrics</h3>
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      PLATFORM
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      FOLLOWERS
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      ENGAGEMENT
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {creator.platforms.map((platform, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        <div className="flex items-center gap-2">
-                          {getPlatformIcon(platform.name)}
-                          <span>{platform.name === 'YT' ? 'YouTube' : platform.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {formatNumber(platform.followers)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {platform.engagementRate.toFixed(1)}%
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {creator.platforms.map((platform, index) => (
+                <div
+                  key={index}
+                  className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
+                >
+                  {/* Platform Header */}
+                  <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
+                    <div className="text-gray-700">
+                      {getPlatformIcon(platform.name)}
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900">
+                      {platform.name === 'YT' ? 'YouTube' : platform.name}
+                    </h4>
+                  </div>
+
+                  {/* Followers and Engagement */}
+                  <div className="mb-6 grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Followers</div>
+                      <div className="text-2xl font-bold text-gray-900">{formatNumber(platform.followers)}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">Engagement</div>
+                      <div className="text-2xl font-bold text-gray-900">{platform.engagementRate.toFixed(1)}%</div>
+                    </div>
+                  </div>
+
+                  {/* Top Countries */}
+                  {platform.topCountries && platform.topCountries.length > 0 && (
+                    <div className="mb-6">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Top Countries</div>
+                      <ul className="space-y-2">
+                        {platform.topCountries.map((country, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="text-lg">{getCountryFlag(country.country)}</span>
+                            <span className="text-sm text-gray-700">{country.country}: <span className="font-semibold text-gray-900">{country.percentage}%</span></span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Top Age Groups */}
+                  {platform.topAgeGroups && platform.topAgeGroups.length > 0 && (
+                    <div className="mb-6">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Top Age Groups</div>
+                      <ul className="space-y-2">
+                        {platform.topAgeGroups.map((ageGroup, idx) => (
+                          <li key={idx} className="text-sm text-gray-700">
+                            {ageGroup.ageRange}: <span className="font-semibold text-gray-900">{ageGroup.percentage}%</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Gender Split */}
+                  {platform.genderSplit && (
+                    <div>
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Gender Split</div>
+                      <div className="space-y-2">
+                        <div className="text-sm text-gray-700">Male: <span className="font-semibold text-gray-900">{platform.genderSplit.male}%</span></div>
+                        <div className="text-sm text-gray-700">Female: <span className="font-semibold text-gray-900">{platform.genderSplit.female}%</span></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
+
+          {/* Reviews Section */}
+          {creator.rating && creator.rating.reviews && creator.rating.reviews.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-3">
+                Reviews ({creator.rating.totalReviews})
+              </h3>
+              <div className="space-y-4">
+                {creator.rating.reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-semibold text-gray-900">{review.hotelName}</p>
+                        <p className="text-xs text-gray-500">
+                          {getTimeAgo(review.createdAt)}
+                        </p>
+                      </div>
+                      <StarRating
+                        rating={review.rating}
+                        size="sm"
+                        showNumber={false}
+                        showReviews={false}
+                      />
+                    </div>
+                    {review.comment && (
+                      <p className="text-sm text-gray-700 mt-2">{review.comment}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Footer with Last Updated and Button */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-200">

@@ -92,13 +92,44 @@ export interface HotelProfile {
 export interface Creator {
   id: string
   name: string
-  niche: string[]
   platforms: Platform[]
   audienceSize: number
   location: string
+  portfolioLink?: string
+  rating?: CreatorRating
   status: UserStatus
   createdAt: Date
   updatedAt: Date
+}
+
+export interface CreatorRating {
+  averageRating: number // 1-5
+  totalReviews: number
+  reviews?: CollaborationReview[]
+}
+
+export interface CollaborationReview {
+  id: string
+  hotelId: string
+  hotelName: string
+  rating: number // 1-5
+  comment?: string
+  createdAt: Date
+}
+
+export interface PlatformCountry {
+  country: string
+  percentage: number
+}
+
+export interface PlatformAgeGroup {
+  ageRange: string
+  percentage: number
+}
+
+export interface PlatformGenderSplit {
+  male: number
+  female: number
 }
 
 export interface Platform {
@@ -106,6 +137,9 @@ export interface Platform {
   handle: string
   followers: number
   engagementRate: number
+  topCountries?: PlatformCountry[]
+  topAgeGroups?: PlatformAgeGroup[]
+  genderSplit?: PlatformGenderSplit
 }
 
 // Collaboration types
@@ -114,6 +148,7 @@ export interface Collaboration {
   hotelId: string
   creatorId: string
   status: CollaborationStatus
+  hasRated?: boolean // Whether the hotel has rated this completed collaboration
   createdAt: Date
   updatedAt: Date
 }
