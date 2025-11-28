@@ -1,9 +1,9 @@
 'use client'
 
 import { Collaboration, Hotel, Creator, UserType } from '@/lib/types'
-import { Button } from '@/components/ui'
+import { Button, StarRating } from '@/components/ui'
 import { XMarkIcon } from '@heroicons/react/24/solid'
-import { CheckBadgeIcon, MapPinIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline'
+import { CheckBadgeIcon, MapPinIcon, ChatBubbleLeftIcon, StarIcon } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
 
 interface CollaborationRequestDetailModalProps {
@@ -250,6 +250,110 @@ export function CollaborationRequestDetailModal({
                     <span>{platform === 'YT' ? 'YouTube' : platform}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Social Media Platform Metrics */}
+          {currentUserType === 'hotel' && collaboration.creator?.platforms && collaboration.creator.platforms.length > 0 && (
+            <div>
+              <h5 className="font-bold text-gray-900 mb-4">Social Media Metrics</h5>
+              <div className="space-y-4">
+                {collaboration.creator.platforms.map((platform, index) => (
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      {getPlatformIcon(platform.name)}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h6 className="font-semibold text-gray-900">
+                            {platform.name === 'YT' ? 'YouTube' : platform.name}
+                          </h6>
+                          {platform.handle && (
+                            <span className="text-sm text-gray-600">@{platform.handle}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Followers</p>
+                        <p className="text-lg font-bold text-gray-900">
+                          {formatNumber(platform.followers)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Engagement Rate</p>
+                        <p className="text-lg font-bold text-gray-900">
+                          {platform.engagementRate.toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Reviews Section */}
+          {currentUserType === 'hotel' && collaboration.creator?.rating && (
+            <div>
+              <h5 className="font-bold text-gray-900 mb-4">Reviews & Ratings</h5>
+              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-1">
+                    <StarIcon className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+                    <span className="text-2xl font-bold text-gray-900">
+                      {collaboration.creator.rating.averageRating.toFixed(1)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      Based on {collaboration.creator.rating.totalReviews} review{collaboration.creator.rating.totalReviews !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Star Rating Display */}
+                <div className="mb-4">
+                  <StarRating rating={collaboration.creator.rating.averageRating} />
+                </div>
+
+                {/* Individual Reviews */}
+                {collaboration.creator.rating.reviews && collaboration.creator.rating.reviews.length > 0 && (
+                  <div className="space-y-4 mt-4 pt-4 border-t border-gray-200">
+                    <h6 className="font-semibold text-gray-900 mb-2">Recent Reviews</h6>
+                    {collaboration.creator.rating.reviews.slice(0, 3).map((review) => (
+                      <div key={review.id} className="bg-white rounded-lg p-3 border border-gray-200">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="font-semibold text-gray-900">{review.hotelName}</p>
+                            <p className="text-xs text-gray-500">
+                              {formatDate(review.createdAt)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <StarIcon
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < review.rating
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-sm text-gray-700 mt-2">{review.comment}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
