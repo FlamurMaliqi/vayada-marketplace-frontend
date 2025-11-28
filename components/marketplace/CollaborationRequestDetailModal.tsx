@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Collaboration, Hotel, Creator, UserType } from '@/lib/types'
 import { Button, StarRating } from '@/components/ui'
 import { XMarkIcon } from '@heroicons/react/24/solid'
-import { CheckBadgeIcon, MapPinIcon, ChatBubbleLeftIcon, StarIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import { CheckBadgeIcon, MapPinIcon, StarIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
 
 interface CollaborationRequestDetailModalProps {
@@ -520,37 +520,25 @@ export function CollaborationRequestDetailModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between">
-          <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium">
-            <ChatBubbleLeftIcon className="w-5 h-5" />
-            <span>Add note</span>
-          </button>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-            >
-              Close
-            </Button>
-            {collaboration.status === 'pending' && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={handleDecline}
-                  className="bg-red-600 text-white border-red-600 hover:bg-red-700 hover:border-red-700"
-                >
-                  Decline
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleAccept}
-                >
-                  Accept
-                </Button>
-              </>
-            )}
+        {collaboration.status === 'pending' && (
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-end">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={handleDecline}
+                className="bg-red-600 text-white border-red-600 hover:bg-red-700 hover:border-red-700"
+              >
+                Decline
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleAccept}
+              >
+                Accept
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
