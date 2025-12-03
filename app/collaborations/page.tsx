@@ -70,110 +70,18 @@ function CollaborationsPageContent() {
 
   const loadCollaborations = async () => {
     setLoading(true)
-    try {
-      // Build query params based on user type and filters
-      const params: {
-        page?: number
-        limit?: number
-        status?: string
-        hotelId?: string
-        creatorId?: string
-      } = {}
-      
-      if (statusFilter !== 'all') {
-        params.status = statusFilter
-      }
-      
-      // Filter by current user's ID based on user type
-      if (currentUserId) {
-        if (userType === 'hotel') {
-          params.hotelId = currentUserId
-        } else if (userType === 'creator') {
-          params.creatorId = currentUserId
-        }
-      }
-      
-      const response = await collaborationService.getAll(params)
-      
-      // Fetch hotel/creator details for each collaboration
-      const collaborationsWithDetails = await Promise.all(
-        response.data.map(async (collab) => {
-          const details: { hotel?: Hotel; creator?: Creator } = {}
-          
-          try {
-            if (collab.hotelId && userType === 'creator') {
-              // If user is creator, fetch hotel details
-              const hotel = await hotelService.getById(collab.hotelId)
-              details.hotel = hotel
-            } else if (collab.creatorId && userType === 'hotel') {
-              // If user is hotel, fetch creator details
-              const creator = await creatorService.getById(collab.creatorId)
-              details.creator = creator
-            }
-          } catch (error) {
-            console.error(`Failed to load details for collaboration ${collab.id}:`, error)
-          }
-          
-          return {
-            ...collab,
-            ...details,
-          }
-        })
-      )
-      
-      setCollaborations(collaborationsWithDetails)
-    } catch (error) {
-      console.error('Failed to load collaborations:', error)
-      if (error instanceof ApiErrorResponse) {
-        if (error.status === 401) {
-          // Token expired or invalid - redirect handled by API client
-          return
-        } else {
-          alert(`Failed to load collaborations: ${error.data.detail}`)
-        }
-      } else {
-        alert('Failed to load collaborations. Please check your connection and try again.')
-      }
-      setCollaborations([])
-    } finally {
-      setLoading(false)
-    }
+    // Collaboration endpoints have been removed from backend
+    // Backend only supports authentication endpoints
+    console.warn('Collaboration endpoints are not available. Backend only supports authentication.')
+    setCollaborations([])
+    setLoading(false)
   }
 
   const handleStatusUpdate = async (id: string, newStatus: CollaborationStatus) => {
-    setUpdatingId(id)
-    try {
-      // Find the collaboration being updated
-      const updatedCollaboration = collaborations.find(collab => collab.id === id)
-      
-      // Update via API
-      const updated = await collaborationService.updateStatus(id, newStatus)
-      
-      // Update local state
-      setCollaborations(prev => 
-        prev.map(collab => 
-          collab.id === id ? { ...collab, ...updated } : collab
-        )
-      )
-      
-      // If rejected, show the modal
-      if (newStatus === 'rejected' && updatedCollaboration) {
-        setRejectedCollaboration({
-          ...updatedCollaboration,
-          status: 'rejected',
-          updatedAt: new Date(updated.updatedAt),
-        })
-      }
-    } catch (error) {
-      console.error('Failed to update collaboration status:', error)
-      if (error instanceof ApiErrorResponse) {
-        alert(`Failed to update collaboration: ${error.data.detail}`)
-      } else {
-        alert('Failed to update collaboration. Please try again.')
-      }
-    } finally {
-      setUpdatingId(null)
-    }
+    // Collaboration endpoints have been removed from backend
+    console.warn('Collaboration update endpoints are not available. Backend only supports authentication.')
+    alert('Collaboration management is not available. Backend only supports authentication endpoints.')
+    setUpdatingId(null)
   }
 
   const handleViewDetails = (collaboration: Collaboration & { hotel?: Hotel; creator?: Creator }) => {
@@ -332,6 +240,26 @@ function CollaborationsPageContent() {
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-100"></div>
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-primary-600 absolute top-0 left-0"></div>
             </div>
+          </div>
+        ) : !loading && collaborations.length === 0 ? (
+          <div className="text-center py-12 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-8">
+            <svg className="w-16 h-16 text-yellow-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Collaborations Unavailable</h3>
+            <p className="text-gray-600 mb-4">
+              Collaboration endpoints have been removed from the backend. The backend now only supports authentication endpoints.
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              You can still register and login, but collaboration management features are not available.
+            </p>
+            <Button
+              variant="primary"
+              onClick={() => (window.location.href = ROUTES.MARKETPLACE)}
+              size="lg"
+            >
+              Browse Marketplace
+            </Button>
           </div>
         ) : filteredAndSortedCollaborations.length > 0 ? (
           <div className="space-y-4">

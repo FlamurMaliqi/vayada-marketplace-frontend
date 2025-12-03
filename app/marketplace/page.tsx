@@ -47,36 +47,15 @@ export default function MarketplacePage() {
     if (!userType) return
     
     setLoading(true)
-    try {
-      // If user is creator, show hotels. If user is hotel, show creators.
-      if (userType === 'creator') {
-        const response = await hotelService.getAll()
-        setHotels(response.data)
-        setCreators([])
-      } else if (userType === 'hotel') {
-        const response = await creatorService.getAll()
-        setCreators(response.data)
-        setHotels([])
-      }
-    } catch (error) {
-      console.error('Failed to load data:', error)
-      if (error instanceof ApiErrorResponse) {
-        if (error.status === 401) {
-          // Token expired or invalid - redirect handled by API client
-          return
-        } else {
-          alert(`Failed to load data: ${error.data.detail}`)
-        }
-      } else {
-        alert('Failed to load data. Please check your connection and try again.')
-      }
-      // Set empty arrays on error
-      setHotels([])
-      setCreators([])
-    } finally {
-      setLoading(false)
-    }
+    // Marketplace endpoints have been removed from backend
+    // Backend only supports authentication endpoints
+    console.warn('Marketplace endpoints are not available. Backend only supports authentication.')
+    setHotels([])
+    setCreators([])
+    setLoading(false)
   }
+
+  const hasNoData = !loading && hotels.length === 0 && creators.length === 0
 
   const filteredHotels = hotels.filter((hotel) => {
     // Search filter
@@ -256,6 +235,19 @@ export default function MarketplacePage() {
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-100"></div>
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-primary-600 absolute top-0 left-0"></div>
             </div>
+          </div>
+        ) : hasNoData ? (
+          <div className="text-center py-12 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-8">
+            <svg className="w-16 h-16 text-yellow-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Marketplace Unavailable</h3>
+            <p className="text-gray-600 mb-4">
+              The marketplace endpoints have been removed from the backend. The backend now only supports authentication endpoints.
+            </p>
+            <p className="text-sm text-gray-500">
+              You can still register and login, but profile and marketplace features are not available.
+            </p>
           </div>
         ) : (
           <>

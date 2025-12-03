@@ -54,24 +54,11 @@ export default function HotelDetailPage() {
     if (!hotelId) return
     
     setLoading(true)
-    try {
-      const hotelData = await hotelService.getById(hotelId)
-      setHotel(hotelData)
-    } catch (error) {
-      console.error('Failed to load hotel:', error)
-      if (error instanceof ApiErrorResponse) {
-        if (error.status === 404) {
-          // Hotel not found - will be handled by the UI
-          setHotel(null)
-        } else {
-          alert(`Failed to load hotel: ${error.data.detail}`)
-        }
-      } else {
-        alert('Failed to load hotel. Please check your connection and try again.')
-      }
-    } finally {
-      setLoading(false)
-    }
+    // Hotel endpoints have been removed from backend
+    // Backend only supports authentication endpoints
+    console.warn('Hotel detail endpoints are not available. Backend only supports authentication.')
+    setHotel(null)
+    setLoading(false)
   }
 
   const handleRequestCollaboration = () => {
@@ -115,6 +102,32 @@ export default function HotelDetailPage() {
   }
 
   if (!hotel) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/30">
+        <AuthenticatedNavigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center py-12 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-8">
+            <svg className="w-16 h-16 text-yellow-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Hotel Details Unavailable</h3>
+            <p className="text-gray-600 mb-4">
+              Hotel detail endpoints have been removed from the backend. The backend now only supports authentication endpoints.
+            </p>
+            <Link href={ROUTES.MARKETPLACE}>
+              <Button variant="primary" size="md" className="mt-4">
+                <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                Back to Marketplace
+              </Button>
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (false) { // Original check - unreachable now
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/30">
         <AuthenticatedNavigation />

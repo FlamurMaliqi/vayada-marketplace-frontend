@@ -374,43 +374,10 @@ export default function ProfilePage() {
 
   const loadProfile = async () => {
     setLoading(true)
-    try {
-      if (userType === 'creator') {
-        // Creator profile - use real API call
-        const apiCreator = await creatorService.getMyProfile()
-        const transformedProfile = transformCreatorProfile(apiCreator)
-        setCreatorProfile(transformedProfile)
-        setLoading(false)
-      } else {
-        // Hotel profile - use real API call
-        const apiProfile = await hotelService.getMyProfile()
-        const transformedProfile = transformHotelProfile(apiProfile)
-        setHotelProfile(transformedProfile)
-        setLoading(false)
-      }
-    } catch (error) {
-      console.error('Failed to load profile:', error)
-      
-      // Handle specific error cases
-      if (error instanceof ApiErrorResponse) {
-        if (error.status === 401) {
-          // Token expired or invalid - redirect handled by API client
-          return
-        } else if (error.status === 404) {
-          // Profile not found - user needs to complete profile
-          const profileType = userType === 'creator' ? 'Creator' : 'Hotel'
-          console.warn(`${profileType} profile not found. User may need to complete profile setup.`)
-        } else {
-          // Other API errors
-          alert(`Failed to load profile: ${error.data.detail}`)
-        }
-      } else {
-        // Network or other errors
-        alert('Failed to load profile. Please check your connection and try again.')
-      }
-      
-      setLoading(false)
-    }
+    // Profile endpoints have been removed from backend
+    // Show empty state instead of trying to fetch
+    console.warn('Profile management endpoints are not available. Backend only supports authentication.')
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -597,6 +564,10 @@ export default function ProfilePage() {
   }
 
   const handleSaveHotelProfile = async () => {
+    // Profile endpoints have been removed from backend
+    alert('Profile management is not available. Backend only supports authentication endpoints.')
+    return
+    
     if (!hotelEditFormData.name || !hotelEditFormData.category || !hotelEditFormData.location) {
       return
     }
@@ -696,6 +667,10 @@ export default function ProfilePage() {
   }
 
   const handleSaveHotelContact = async () => {
+    // Profile endpoints have been removed from backend
+    alert('Profile management is not available. Backend only supports authentication endpoints.')
+    return
+    
     if (!email || !email.includes('@')) {
       return
     }
@@ -786,6 +761,10 @@ export default function ProfilePage() {
       return
     }
 
+    // Profile endpoints have been removed from backend
+    alert('Listing management is not available. Backend only supports authentication endpoints.')
+    return
+    
     setIsSavingListing(true)
     try {
       // For new listings, upload base64 images first if any
@@ -876,6 +855,10 @@ export default function ProfilePage() {
   }
 
   const handleDeleteListing = async (listingId: string) => {
+    // Profile endpoints have been removed from backend
+    alert('Listing management is not available. Backend only supports authentication endpoints.')
+    return
+    
     if (!confirm('Are you sure you want to delete this listing?')) {
       return
     }
@@ -905,6 +888,10 @@ export default function ProfilePage() {
     const files = e.target.files
     if (!files || files.length === 0) return
 
+    // Profile endpoints have been removed from backend
+    alert('Image upload is not available. Backend only supports authentication endpoints.')
+    return
+    
     // If we're editing an existing listing, upload images immediately
     if (editingListingId) {
       try {
@@ -2255,31 +2242,11 @@ export default function ProfilePage() {
                       }
                       reader.readAsDataURL(file)
                       
-                      // Upload picture to server
-                      try {
-                        const uploadResponse = await hotelService.uploadPicture(file)
-                        setHotelEditFormData({ ...hotelEditFormData, picture: uploadResponse.url })
-                        
-                        // Update profile with new picture URL
-                        const updatedProfile = await hotelService.updateMyProfile({
-                          picture: uploadResponse.url,
-                        })
-                        const transformedProfile = transformHotelProfile(updatedProfile)
-                        setHotelProfile(transformedProfile)
-                        
-                        setShowHotelPictureModal(false)
-                        setIsEditingHotelProfile(true)
-                      } catch (error) {
-                        console.error('Failed to upload picture:', error)
-                        if (error instanceof ApiErrorResponse) {
-                          alert(`Failed to upload picture: ${error.data.detail}`)
-                        } else {
-                          alert('Failed to upload picture. Please try again.')
-                        }
-                        // Reset preview on error
-                        setHotelPicturePreview(null)
-                        setHotelEditFormData({ ...hotelEditFormData, picture: hotelProfile?.picture || '' })
-                      }
+                      // Profile endpoints have been removed from backend
+                      alert('Image upload is not available. Backend only supports authentication endpoints.')
+                      // Reset preview
+                      setHotelPicturePreview(null)
+                      setHotelEditFormData({ ...hotelEditFormData, picture: hotelProfile?.picture || '' })
                     }
                   }}
                 />
