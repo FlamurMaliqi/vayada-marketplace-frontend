@@ -31,6 +31,22 @@ export const creatorService = {
   },
 
   /**
+   * Get current creator's profile
+   * GET /creators/me
+   */
+  getMyProfile: async (): Promise<Creator> => {
+    return apiClient.get<Creator>('/creators/me')
+  },
+
+  /**
+   * Update creator profile
+   * PUT /creators/me
+   */
+  updateMyProfile: async (data: Partial<Creator>): Promise<Creator> => {
+    return apiClient.put<Creator>('/creators/me', data)
+  },
+
+  /**
    * Create creator
    */
   create: async (data: Partial<Creator>): Promise<Creator> => {

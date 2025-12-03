@@ -8,8 +8,9 @@ import { MapPinIcon, CheckBadgeIcon, StarIcon, PencilIcon, PlusIcon, XMarkIcon }
 import { TrashIcon } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
-import type { CreatorRating, CollaborationReview, HotelProfile as ApiHotelProfile, HotelListing as ApiHotelListing } from '@/lib/types'
+import type { CreatorRating, CollaborationReview, HotelProfile as ApiHotelProfile, HotelListing as ApiHotelListing, Creator as ApiCreator } from '@/lib/types'
 import { hotelService } from '@/services/api/hotels'
+import { creatorService } from '@/services/api/creators'
 import { ApiErrorResponse } from '@/services/api/client'
 
 type UserType = 'hotel' | 'creator'
@@ -281,6 +282,25 @@ export default function ProfilePage() {
   }
 
   /**
+   * Transform API creator response to frontend CreatorProfile format
+   */
+  const transformCreatorProfile = (apiCreator: ApiCreator): CreatorProfile => {
+    return {
+      id: apiCreator.id,
+      name: apiCreator.name,
+      profilePicture: undefined, // Not available in API yet
+      shortDescription: '', // Not available in API yet - could use description if added
+      location: apiCreator.location,
+      status: apiCreator.status as 'verified' | 'pending' | 'rejected',
+      rating: apiCreator.rating,
+      platforms: apiCreator.platforms || [],
+      portfolioLink: apiCreator.portfolioLink,
+      email: '', // Not available in API - will need to get from user object or add to API
+      phone: '', // Not available in API - will need to get from user object or add to API
+    }
+  }
+
+  /**
    * Transform API hotel profile response to frontend format
    * Converts snake_case to camelCase and transforms nested structures
    */
@@ -356,117 +376,11 @@ export default function ProfilePage() {
     setLoading(true)
     try {
       if (userType === 'creator') {
-        // TODO: Implement creator profile API call when endpoint is available
-        // For now, keep mock data for creators
-        setTimeout(() => {
-        const now = new Date()
-        const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-        const twoMonthsAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
-        const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-        const fourMonthsAgo = new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000)
-
-        setCreatorProfile({
-          id: '1',
-          name: 'Sarah Travels',
-          shortDescription: 'Luxury travel & lifestyle creator focusing on boutique hotels and unique experiences.',
-          location: 'Los Angeles, USA',
-          status: 'verified',
-          rating: {
-            averageRating: 4.8,
-            totalReviews: 12,
-            reviews: [
-              {
-                id: 'r1',
-                hotelId: 'h1',
-                hotelName: 'Sunset Beach Villa',
-                rating: 5,
-                comment: 'Excellent collaboration! Sarah delivered high-quality content and was very professional throughout the process. The photos and videos exceeded our expectations.',
-                createdAt: oneMonthAgo,
-              },
-              {
-                id: 'r2',
-                hotelId: 'h2',
-                hotelName: 'Mountain View Lodge',
-                rating: 5,
-                comment: 'Amazing content creator. The photos and videos perfectly captured the essence of our lodge. Highly recommend!',
-                createdAt: twoMonthsAgo,
-              },
-              {
-                id: 'r3',
-                hotelId: 'h3',
-                hotelName: 'Urban Boutique Hotel',
-                rating: 4,
-                comment: 'Great collaboration, very responsive and delivered on time. The content was good quality.',
-                createdAt: threeMonthsAgo,
-              },
-              {
-                id: 'r4',
-                hotelId: 'h4',
-                hotelName: 'Desert Oasis Resort',
-                rating: 5,
-                comment: 'Outstanding work! Sarah perfectly showcased our resort and reached our target audience effectively.',
-                createdAt: fourMonthsAgo,
-              },
-            ],
-          },
-          platforms: [
-            {
-              name: 'Instagram',
-              handle: '@sarahtravels',
-              followers: 125000,
-              engagementRate: 4.2,
-              topCountries: [
-                { country: 'Indonesia', percentage: 35 },
-                { country: 'Australia', percentage: 22 },
-                { country: 'Singapore', percentage: 15 },
-              ],
-              topAgeGroups: [
-                { ageRange: '25-34', percentage: 48 },
-                { ageRange: '18-24', percentage: 28 },
-              ],
-              genderSplit: { male: 45, female: 55 },
-            },
-            {
-              name: 'TikTok',
-              handle: '@sarahtravels',
-              followers: 89000,
-              engagementRate: 8.5,
-              topCountries: [
-                { country: 'United States', percentage: 28 },
-                { country: 'United Kingdom', percentage: 18 },
-                { country: 'Canada', percentage: 11 },
-              ],
-              topAgeGroups: [
-                { ageRange: '18-24', percentage: 55 },
-                { ageRange: '25-34', percentage: 31 },
-              ],
-              genderSplit: { male: 54, female: 46 },
-            },
-            {
-              name: 'YouTube',
-              handle: '@sarahtravels',
-              followers: 45000,
-              engagementRate: 6.8,
-            },
-            {
-              name: 'Facebook',
-              handle: '@sarahtravels',
-              followers: 32000,
-              engagementRate: 3.2,
-            },
-            {
-              name: 'Blog/Website',
-              handle: 'sarahtravels.com',
-              followers: 15000,
-              engagementRate: 5.1,
-            },
-          ],
-          portfolioLink: 'https://sarahtravels.com/portfolio',
-          email: 'sarah.travels@example.com',
-          phone: '+1 (555) 123-4567',
-        })
+        // Creator profile - use real API call
+        const apiCreator = await creatorService.getMyProfile()
+        const transformedProfile = transformCreatorProfile(apiCreator)
+        setCreatorProfile(transformedProfile)
         setLoading(false)
-      }, 300)
       } else {
         // Hotel profile - use real API call
         const apiProfile = await hotelService.getMyProfile()
@@ -484,7 +398,8 @@ export default function ProfilePage() {
           return
         } else if (error.status === 404) {
           // Profile not found - user needs to complete profile
-          console.warn('Hotel profile not found. User may need to complete profile setup.')
+          const profileType = userType === 'creator' ? 'Creator' : 'Hotel'
+          console.warn(`${profileType} profile not found. User may need to complete profile setup.`)
         } else {
           // Other API errors
           alert(`Failed to load profile: ${error.data.detail}`)
