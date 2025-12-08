@@ -9,6 +9,7 @@ import { Navigation, Footer } from '@/components/layout'
 import { UserType } from '@/lib/types'
 import { authService } from '@/services/auth'
 import { ApiErrorResponse } from '@/services/api/client'
+import { checkProfileStatus } from '@/lib/utils'
 
 function SignUpForm() {
   const searchParams = useSearchParams()
@@ -105,9 +106,25 @@ function SignUpForm() {
       }
       
       // Call registration API (token is automatically stored by authService)
-      await authService.register(registrationData)
+      const response = await authService.register(registrationData)
       
-      // Redirect to marketplace on success
+      // Check profile status after registration
+      const userType = response.type as UserType
+      if (userType === 'creator' || userType === 'hotel') {
+        try {
+          const profileStatus = await checkProfileStatus(userType)
+          if (profileStatus && !profileStatus.profile_complete) {
+            // Profile is incomplete, redirect to profile completion page
+            router.push(ROUTES.PROFILE_COMPLETE)
+            return
+          }
+        } catch (error) {
+          // If profile status check fails, still allow registration
+          console.error('Failed to check profile status:', error)
+        }
+      }
+      
+      // Profile is complete or status check failed, redirect to marketplace
       router.push(ROUTES.MARKETPLACE)
     } catch (error) {
       setIsSubmitting(false)

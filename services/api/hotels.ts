@@ -3,7 +3,7 @@
  */
 
 import { apiClient } from './client'
-import type { Hotel, PaginatedResponse, HotelProfile, HotelListing, CollaborationOffering, CreatorRequirements } from '@/lib/types'
+import type { Hotel, PaginatedResponse, HotelProfile, HotelListing, CollaborationOffering, CreatorRequirements, HotelProfileStatus } from '@/lib/types'
 import { transformHotelListingToHotel } from '@/lib/utils'
 
 // Request/Response types for hotel profile endpoints
@@ -161,6 +161,14 @@ export const hotelService = {
    */
   delete: async (id: string): Promise<void> => {
     return apiClient.delete<void>(`/hotels/${id}`)
+  },
+
+  /**
+   * Get hotel profile completion status
+   * GET /hotels/me/profile-status
+   */
+  getProfileStatus: async (): Promise<HotelProfileStatus> => {
+    return apiClient.get<HotelProfileStatus>('/hotels/me/profile-status')
   },
 }
 

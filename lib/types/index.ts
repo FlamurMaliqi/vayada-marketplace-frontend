@@ -7,6 +7,24 @@ export type UserType = 'hotel' | 'creator' | 'admin'
 
 export type UserStatus = 'pending' | 'verified' | 'rejected' | 'suspended'
 
+// Profile Status types
+export interface CreatorProfileStatus {
+  profile_complete: boolean
+  missing_fields: string[]
+  missing_platforms: boolean
+  completion_steps: string[]
+}
+
+export interface HotelProfileStatus {
+  profile_complete: boolean
+  missing_fields: string[]
+  has_defaults: {
+    location: boolean
+    category: boolean
+  }
+  completion_steps: string[]
+}
+
 // Navigation
 export interface NavigationLink {
   label: string

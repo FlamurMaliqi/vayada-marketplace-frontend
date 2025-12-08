@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { AuthenticatedNavigation, ProfileWarningBanner } from '@/components/layout'
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
+import { ROUTES } from '@/lib/constants/routes'
 import { Button, Input, Textarea, StarRating } from '@/components/ui'
 import { MapPinIcon, CheckBadgeIcon, StarIcon, PencilIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { TrashIcon } from '@heroicons/react/24/outline'
@@ -12,6 +14,8 @@ import type { CreatorRating, CollaborationReview, HotelProfile as ApiHotelProfil
 import { hotelService } from '@/services/api/hotels'
 import { creatorService } from '@/services/api/creators'
 import { ApiErrorResponse } from '@/services/api/client'
+import { checkProfileStatus } from '@/lib/utils'
+import type { CreatorProfileStatus, HotelProfileStatus } from '@/lib/types'
 
 type UserType = 'hotel' | 'creator'
 
@@ -104,11 +108,14 @@ const COLLABORATION_TYPES = ['Free Stay', 'Paid', 'Discount'] as const
 const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherlands', 'Switzerland', 'Austria', 'Belgium', 'Canada', 'Australia', 'Japan', 'South Korea', 'Singapore', 'Thailand', 'Indonesia', 'Malaysia', 'Philippines', 'India', 'Brazil', 'Mexico', 'Argentina', 'Chile', 'South Africa', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Egypt']
 
 export default function ProfilePage() {
+  const router = useRouter()
   const { isCollapsed } = useSidebar()
   const [userType, setUserType] = useState<UserType>('creator')
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null)
   const [hotelProfile, setHotelProfile] = useState<HotelProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileStatus, setProfileStatus] = useState<CreatorProfileStatus | HotelProfileStatus | null>(null)
+  const [isProfileIncomplete, setIsProfileIncomplete] = useState(false)
   const [activeCreatorTab, setActiveCreatorTab] = useState<CreatorTab>('overview')
   const [activeHotelTab, setActiveHotelTab] = useState<HotelTab>('overview')
   const [email, setEmail] = useState('')
@@ -374,10 +381,29 @@ export default function ProfilePage() {
 
   const loadProfile = async () => {
     setLoading(true)
-    // Profile endpoints have been removed from backend
-    // Show empty state instead of trying to fetch
-    console.warn('Profile management endpoints are not available. Backend only supports authentication.')
-    setLoading(false)
+    try {
+      // Check profile status
+      const status = await checkProfileStatus(userType)
+      setProfileStatus(status)
+      
+      if (status && !status.profile_complete) {
+        // Profile is incomplete - show empty state
+        setIsProfileIncomplete(true)
+        setCreatorProfile(null)
+        setHotelProfile(null)
+      } else {
+        // Profile is complete or status unavailable
+        setIsProfileIncomplete(false)
+        // Profile endpoints have been removed from backend
+        // Show empty state instead of trying to fetch
+        console.warn('Profile management endpoints are not available. Backend only supports authentication.')
+      }
+    } catch (error) {
+      console.error('Failed to check profile status:', error)
+      setIsProfileIncomplete(false)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -1015,6 +1041,13 @@ export default function ProfilePage() {
     updatePlatform(platformIndex, 'genderSplit', newGenderSplit)
   }
 
+
+  // Redirect to completion page if profile is incomplete
+  useEffect(() => {
+    if (!loading && isProfileIncomplete && profileStatus) {
+      router.push(ROUTES.PROFILE_COMPLETE)
+    }
+  }, [loading, isProfileIncomplete, profileStatus, router])
 
   return (
     <main className="min-h-screen bg-white">

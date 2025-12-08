@@ -8,6 +8,8 @@ import { Button, Input } from '@/components/ui'
 import { Navigation, Footer } from '@/components/layout'
 import { authService } from '@/services/auth'
 import { ApiErrorResponse } from '@/services/api/client'
+import { checkProfileStatus } from '@/lib/utils'
+import type { UserType } from '@/lib/types'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -65,12 +67,28 @@ export default function LoginPage() {
     
     try {
       // Call login API (token is automatically stored by authService)
-      await authService.login({
+      const response = await authService.login({
         email: formData.email,
         password: formData.password,
       })
       
-      // Redirect to marketplace on success
+      // Check profile status after login
+      const userType = response.type as UserType
+      if (userType === 'creator' || userType === 'hotel') {
+        try {
+          const profileStatus = await checkProfileStatus(userType)
+          if (profileStatus && !profileStatus.profile_complete) {
+            // Profile is incomplete, redirect to profile completion page
+            router.push(ROUTES.PROFILE_COMPLETE)
+            return
+          }
+        } catch (error) {
+          // If profile status check fails, still allow login
+          console.error('Failed to check profile status:', error)
+        }
+      }
+      
+      // Profile is complete or status check failed, redirect to marketplace
       router.push(ROUTES.MARKETPLACE)
     } catch (error) {
       setIsSubmitting(false)

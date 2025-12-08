@@ -3,7 +3,7 @@
  */
 
 import { apiClient } from './client'
-import type { Creator, PaginatedResponse } from '@/lib/types'
+import type { Creator, PaginatedResponse, CreatorProfileStatus } from '@/lib/types'
 
 export const creatorService = {
   /**
@@ -65,6 +65,14 @@ export const creatorService = {
    */
   delete: async (id: string): Promise<void> => {
     return apiClient.delete<void>(`/creators/${id}`)
+  },
+
+  /**
+   * Get creator profile completion status
+   * GET /creators/me/profile-status
+   */
+  getProfileStatus: async (): Promise<CreatorProfileStatus> => {
+    return apiClient.get<CreatorProfileStatus>('/creators/me/profile-status')
   },
 }
 
