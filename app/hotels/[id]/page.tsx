@@ -8,6 +8,8 @@ import { AuthenticatedNavigation, Footer } from '@/components/layout'
 import { Button, Input, Textarea } from '@/components/ui'
 import { ROUTES } from '@/lib/constants/routes'
 import type { Hotel } from '@/lib/types'
+import { hotelService } from '@/services/api/hotels'
+import { ApiErrorResponse } from '@/services/api/client'
 import {
   MapPinIcon,
   CheckBadgeIcon,
@@ -47,16 +49,16 @@ export default function HotelDetailPage() {
     loadHotel()
   }, [params.id])
 
-  const loadHotel = () => {
+  const loadHotel = async () => {
     const hotelId = Array.isArray(params.id) ? params.id[0] : params.id
     if (!hotelId) return
     
     setLoading(true)
-    // Hardcoded mock data for frontend design
-    setTimeout(() => {
-      setHotel(getMockHotel(hotelId))
-      setLoading(false)
-    }, 300)
+    // Hotel endpoints have been removed from backend
+    // Backend only supports authentication endpoints
+    console.warn('Hotel detail endpoints are not available. Backend only supports authentication.')
+    setHotel(null)
+    setLoading(false)
   }
 
   const handleRequestCollaboration = () => {
@@ -100,6 +102,32 @@ export default function HotelDetailPage() {
   }
 
   if (!hotel) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/30">
+        <AuthenticatedNavigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center py-12 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-8">
+            <svg className="w-16 h-16 text-yellow-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Hotel Details Unavailable</h3>
+            <p className="text-gray-600 mb-4">
+              Hotel detail endpoints have been removed from the backend. The backend now only supports authentication endpoints.
+            </p>
+            <Link href={ROUTES.MARKETPLACE}>
+              <Button variant="primary" size="md" className="mt-4">
+                <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                Back to Marketplace
+              </Button>
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (false) { // Original check - unreachable now
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/30">
         <AuthenticatedNavigation />
@@ -436,34 +464,5 @@ export default function HotelDetailPage() {
       <Footer />
     </div>
   )
-}
-
-// Mock data for development
-function getMockHotel(id: string): Hotel {
-  const mockHotels: Record<string, Hotel> = {
-    '1': {
-      id: '1',
-      hotelProfileId: 'profile-1',
-      name: 'Sunset Beach Resort',
-      location: 'Bali, Indonesia',
-      description: 'Luxury beachfront resort with stunning ocean views and world-class amenities. Nestled on the pristine beaches of Bali, our resort offers an unparalleled experience combining traditional Balinese hospitality with modern luxury. Each room features private balconies overlooking the Indian Ocean, and our award-winning spa provides rejuvenating treatments using local ingredients.',
-      images: ['/hotel1.jpg'],
-      status: 'verified',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    '2': {
-      id: '2',
-      hotelProfileId: 'profile-1',
-      name: 'Mountain View Lodge',
-      location: 'Swiss Alps, Switzerland',
-      description: 'Cozy alpine lodge perfect for adventure seekers and nature lovers. Experience the magic of the Swiss Alps in our charming lodge, where traditional architecture meets modern comfort. Wake up to breathtaking mountain views, enjoy authentic Swiss cuisine, and explore endless hiking trails right from our doorstep.',
-      images: ['/hotel2.jpg'],
-      status: 'verified',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  }
-  return mockHotels[id] || mockHotels['1']
 }
 

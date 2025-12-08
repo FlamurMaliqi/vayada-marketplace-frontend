@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/constants/routes'
+import { authService } from '@/services/auth'
 import {
   BuildingStorefrontIcon,
   ArrowRightOnRectangleIcon,
@@ -50,9 +51,8 @@ export default function AuthenticatedNavigation() {
   }
 
   const handleLogout = () => {
-    // TODO: Implement logout
-    console.log('Logout')
-    router.push(ROUTES.HOME)
+    authService.logout()
+    // authService.logout() already redirects to /login, so no need to push here
   }
 
   const isActive = (path: string) => pathname === path

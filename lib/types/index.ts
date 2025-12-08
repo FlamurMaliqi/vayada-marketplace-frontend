@@ -7,6 +7,24 @@ export type UserType = 'hotel' | 'creator' | 'admin'
 
 export type UserStatus = 'pending' | 'verified' | 'rejected' | 'suspended'
 
+// Profile Status types
+export interface CreatorProfileStatus {
+  profile_complete: boolean
+  missing_fields: string[]
+  missing_platforms: boolean
+  completion_steps: string[]
+}
+
+export interface HotelProfileStatus {
+  profile_complete: boolean
+  missing_fields: string[]
+  has_defaults: {
+    location: boolean
+    category: boolean
+  }
+  completion_steps: string[]
+}
+
 // Navigation
 export interface NavigationLink {
   label: string
@@ -75,17 +93,66 @@ export interface Hotel {
   updatedAt: Date
 }
 
+// Collaboration Offering types
+export interface CollaborationOffering {
+  id: string
+  listing_id: string
+  collaboration_type: 'Free Stay' | 'Paid' | 'Discount'
+  availability_months: string[]
+  platforms: string[]
+  free_stay_min_nights?: number | null
+  free_stay_max_nights?: number | null
+  paid_max_amount?: number | null
+  discount_percentage?: number | null
+  created_at: string
+  updated_at: string
+}
+
+// Creator Requirements types
+export interface CreatorRequirements {
+  id: string
+  listing_id: string
+  platforms: string[]
+  min_followers?: number | null
+  target_countries: string[]
+  target_age_min?: number | null
+  target_age_max?: number | null
+  created_at: string
+  updated_at: string
+}
+
+// Hotel Listing with full details
+export interface HotelListing {
+  id: string
+  hotel_profile_id: string
+  name: string
+  location: string
+  description: string
+  accommodation_type?: string | null
+  images: string[]
+  status: 'pending' | 'verified' | 'rejected'
+  created_at: string
+  updated_at: string
+  collaboration_offerings: CollaborationOffering[]
+  creator_requirements: CreatorRequirements
+}
+
 // HotelProfile represents the main hotel account that can have multiple listings
 export interface HotelProfile {
   id: string
-  userId: string // Reference to the user account
+  user_id: string // Reference to the user account
   name: string // Company/Chain name
-  description?: string
-  logo?: string
-  listings: Hotel[] // All properties/listings owned by this hotel
+  category: string
+  location: string
+  picture?: string | null
+  website?: string | null
+  about?: string | null
+  email: string
+  phone?: string | null
   status: UserStatus
-  createdAt: Date
-  updatedAt: Date
+  created_at: string
+  updated_at: string
+  listings: HotelListing[] // All properties/listings owned by this hotel
 }
 
 // Creator types
@@ -170,4 +237,41 @@ export interface PaginatedResponse<T> {
     total: number
     totalPages: number
   }
+}
+
+// Auth types
+export interface RegisterRequest {
+  email: string
+  password: string
+  type: 'creator' | 'hotel'
+  name?: string
+}
+
+export interface RegisterResponse {
+  id: string
+  email: string
+  name: string
+  type: 'creator' | 'hotel'
+  status: UserStatus
+  access_token: string
+  token_type: string
+  expires_in: number
+  message: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  id: string
+  email: string
+  name: string
+  type: 'creator' | 'hotel'
+  status: UserStatus
+  access_token: string
+  token_type: string
+  expires_in: number
+  message: string
 }

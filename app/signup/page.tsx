@@ -7,17 +7,25 @@ import { ROUTES } from '@/lib/constants/routes'
 import { Button, Input } from '@/components/ui'
 import { Navigation, Footer } from '@/components/layout'
 import { UserType } from '@/lib/types'
+import { authService } from '@/services/auth'
+import { ApiErrorResponse } from '@/services/api/client'
+import { checkProfileStatus } from '@/lib/utils'
 
 function SignUpForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
     userType: 'creator' as UserType,
   })
   const [passwordError, setPasswordError] = useState('')
+  const [confirmPasswordError, setConfirmPasswordError] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   // Set user type from URL query parameter if present
   useEffect(() => {
@@ -34,35 +42,130 @@ function SignUpForm() {
       [name]: value,
     }))
     
-    // Clear password error when user types in confirm password field
-    if (name === 'confirmPassword' && passwordError) {
+    // Clear errors when user types
+    if (name === 'confirmPassword' && (confirmPasswordError || passwordError)) {
+      setConfirmPasswordError('')
       setPasswordError('')
     }
+    if (name === 'password' && passwordError) {
+      setPasswordError('')
+    }
+    if (name === 'email' && emailError) {
+      setEmailError('')
+    }
+    if (submitError) {
+      setSubmitError('')
+    }
+  }
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const validatePassword = (password: string): boolean => {
+    return password.length >= 8
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setPasswordError('Passwords do not match')
+    // Clear previous errors
+    setPasswordError('')
+    setConfirmPasswordError('')
+    setEmailError('')
+    setSubmitError('')
+    
+    // Validate email format
+    if (!validateEmail(formData.email)) {
+      setEmailError('Please enter a valid email address')
       return
     }
     
-    setPasswordError('')
-    // Form submission logic will be added later
-    console.log('Sign up:', formData)
-    
-    // For development: Set user as logged in but profile incomplete
-    // In production, this would come from the auth API response
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('profileComplete', 'false')
-      localStorage.setItem('hasProfile', 'false')
+    // Validate password length
+    if (!validatePassword(formData.password)) {
+      setPasswordError('Password must be at least 8 characters')
+      return
     }
     
-    // After successful signup, redirect to marketplace
-    router.push(ROUTES.MARKETPLACE)
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setConfirmPasswordError('Passwords do not match')
+      return
+    }
+    
+    setIsSubmitting(true)
+    
+    try {
+      // Prepare registration data
+      const registrationData = {
+        email: formData.email,
+        password: formData.password,
+        type: formData.userType as 'creator' | 'hotel',
+        ...(formData.name.trim() && { name: formData.name.trim() }),
+      }
+      
+      // Call registration API (token is automatically stored by authService)
+      const response = await authService.register(registrationData)
+      
+      // Check profile status after registration
+      const userType = response.type as UserType
+      if (userType === 'creator' || userType === 'hotel') {
+        try {
+          const profileStatus = await checkProfileStatus(userType)
+          if (profileStatus && !profileStatus.profile_complete) {
+            // Profile is incomplete, redirect to profile completion page
+            router.push(ROUTES.PROFILE_COMPLETE)
+            return
+          }
+        } catch (error) {
+          // If profile status check fails, still allow registration
+          console.error('Failed to check profile status:', error)
+        }
+      }
+      
+      // Profile is complete or status check failed, redirect to marketplace
+      router.push(ROUTES.MARKETPLACE)
+    } catch (error) {
+      setIsSubmitting(false)
+      
+      if (error instanceof ApiErrorResponse) {
+              // Handle different error status codes
+        if (error.status === 400) {
+          // Email already registered
+          setEmailError(error.data.detail as string || 'Email already registered')
+        } else if (error.status === 422) {
+          // Validation errors
+          const detail = error.data.detail
+          if (Array.isArray(detail)) {
+            // Handle field-specific validation errors
+            detail.forEach((err) => {
+              const field = err.loc[err.loc.length - 1] as string
+              if (field === 'email') {
+                setEmailError(err.msg)
+              } else if (field === 'password') {
+                setPasswordError(err.msg)
+              } else if (field === 'type') {
+                setSubmitError(err.msg)
+              } else {
+                setSubmitError(err.msg)
+              }
+            })
+          } else {
+            setSubmitError(detail as string || 'Validation error')
+          }
+        } else if (error.status === 500) {
+          // Server error
+          setSubmitError(error.data.detail as string || 'Server error. Please try again later.')
+        } else {
+          // Other errors
+          setSubmitError(error.data.detail as string || 'Registration failed. Please try again.')
+        }
+      } else {
+        // Network or other errors
+        setSubmitError('Network error. Please check your connection and try again.')
+      }
+    }
   }
 
   return (
@@ -133,6 +236,17 @@ function SignUpForm() {
 
               <div className="border-t border-gray-200 pt-6 space-y-6">
                 <Input
+                  label="Name (Optional)"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Your name"
+                  autoComplete="name"
+                  helperText="If left empty, will default to your email prefix"
+                />
+
+                <Input
                   label="Email address"
                   type="email"
                   name="email"
@@ -141,6 +255,7 @@ function SignUpForm() {
                   required
                   placeholder="you@example.com"
                   autoComplete="email"
+                  error={emailError}
                 />
 
                 <Input
@@ -153,6 +268,7 @@ function SignUpForm() {
                   placeholder="Create a strong password"
                   autoComplete="new-password"
                   helperText="Must be at least 8 characters"
+                  error={passwordError}
                 />
 
                 <Input
@@ -164,7 +280,7 @@ function SignUpForm() {
                   required
                   placeholder="Confirm your password"
                   autoComplete="new-password"
-                  error={passwordError}
+                  error={confirmPasswordError}
                 />
               </div>
 
@@ -194,13 +310,20 @@ function SignUpForm() {
                 </div>
               </div>
 
+              {submitError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-800 font-medium">{submitError}</p>
+                </div>
+              )}
+
               <Button
                 type="submit"
                 variant="primary"
                 size="lg"
                 className="w-full"
+                disabled={isSubmitting}
               >
-                Create Account
+                {isSubmitting ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>
 

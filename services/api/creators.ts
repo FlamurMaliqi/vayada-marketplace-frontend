@@ -3,7 +3,7 @@
  */
 
 import { apiClient } from './client'
-import type { Creator, PaginatedResponse } from '@/lib/types'
+import type { Creator, PaginatedResponse, CreatorProfileStatus } from '@/lib/types'
 
 export const creatorService = {
   /**
@@ -31,6 +31,22 @@ export const creatorService = {
   },
 
   /**
+   * Get current creator's profile
+   * GET /creators/me
+   */
+  getMyProfile: async (): Promise<Creator> => {
+    return apiClient.get<Creator>('/creators/me')
+  },
+
+  /**
+   * Update creator profile
+   * PUT /creators/me
+   */
+  updateMyProfile: async (data: Partial<Creator>): Promise<Creator> => {
+    return apiClient.put<Creator>('/creators/me', data)
+  },
+
+  /**
    * Create creator
    */
   create: async (data: Partial<Creator>): Promise<Creator> => {
@@ -49,6 +65,14 @@ export const creatorService = {
    */
   delete: async (id: string): Promise<void> => {
     return apiClient.delete<void>(`/creators/${id}`)
+  },
+
+  /**
+   * Get creator profile completion status
+   * GET /creators/me/profile-status
+   */
+  getProfileStatus: async (): Promise<CreatorProfileStatus> => {
+    return apiClient.get<CreatorProfileStatus>('/creators/me/profile-status')
   },
 }
 

@@ -1,14 +1,21 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { AuthenticatedNavigation, ProfileWarningBanner } from '@/components/layout'
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
+import { ROUTES } from '@/lib/constants/routes'
 import { Button, Input, Textarea, StarRating } from '@/components/ui'
 import { MapPinIcon, CheckBadgeIcon, StarIcon, PencilIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { TrashIcon } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
-import type { CreatorRating, CollaborationReview } from '@/lib/types'
+import type { CreatorRating, CollaborationReview, HotelProfile as ApiHotelProfile, HotelListing as ApiHotelListing, Creator as ApiCreator } from '@/lib/types'
+import { hotelService } from '@/services/api/hotels'
+import { creatorService } from '@/services/api/creators'
+import { ApiErrorResponse } from '@/services/api/client'
+import { checkProfileStatus } from '@/lib/utils'
+import type { CreatorProfileStatus, HotelProfileStatus } from '@/lib/types'
 
 type UserType = 'hotel' | 'creator'
 
@@ -101,11 +108,14 @@ const COLLABORATION_TYPES = ['Free Stay', 'Paid', 'Discount'] as const
 const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherlands', 'Switzerland', 'Austria', 'Belgium', 'Canada', 'Australia', 'Japan', 'South Korea', 'Singapore', 'Thailand', 'Indonesia', 'Malaysia', 'Philippines', 'India', 'Brazil', 'Mexico', 'Argentina', 'Chile', 'South Africa', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Egypt']
 
 export default function ProfilePage() {
+  const router = useRouter()
   const { isCollapsed } = useSidebar()
   const [userType, setUserType] = useState<UserType>('creator')
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null)
   const [hotelProfile, setHotelProfile] = useState<HotelProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileStatus, setProfileStatus] = useState<CreatorProfileStatus | HotelProfileStatus | null>(null)
+  const [isProfileIncomplete, setIsProfileIncomplete] = useState(false)
   const [activeCreatorTab, setActiveCreatorTab] = useState<CreatorTab>('overview')
   const [activeHotelTab, setActiveHotelTab] = useState<HotelTab>('overview')
   const [email, setEmail] = useState('')
@@ -181,6 +191,14 @@ export default function ProfilePage() {
   })
   const [isSavingListing, setIsSavingListing] = useState(false)
 
+  // Load user type from localStorage on mount
+  useEffect(() => {
+    const storedUserType = localStorage.getItem('userType') as UserType | null
+    if (storedUserType && (storedUserType === 'creator' || storedUserType === 'hotel')) {
+      setUserType(storedUserType)
+    }
+  }, [])
+
   useEffect(() => {
     loadProfile()
   }, [userType])
@@ -209,174 +227,183 @@ export default function ProfilePage() {
     }
   }, [creatorProfile])
 
+  /**
+   * Transform frontend listing format to API format for create/update
+   */
+  const transformListingToApi = (listingData: typeof listingFormData) => {
+    // Group collaboration offerings by type
+    const offerings: Array<{
+      collaboration_type: 'Free Stay' | 'Paid' | 'Discount'
+      availability_months: string[]
+      platforms: string[]
+      free_stay_min_nights?: number
+      free_stay_max_nights?: number
+      paid_max_amount?: number
+      discount_percentage?: number
+    }> = []
+
+    // Create offerings for each collaboration type
+    if (listingData.collaborationTypes.includes('Free Stay')) {
+      offerings.push({
+        collaboration_type: 'Free Stay',
+        availability_months: listingData.availability,
+        platforms: listingData.platforms,
+        free_stay_min_nights: listingData.freeStayMinNights,
+        free_stay_max_nights: listingData.freeStayMaxNights,
+      })
+    }
+
+    if (listingData.collaborationTypes.includes('Paid')) {
+      offerings.push({
+        collaboration_type: 'Paid',
+        availability_months: listingData.availability,
+        platforms: listingData.platforms,
+        paid_max_amount: listingData.paidMaxAmount,
+      })
+    }
+
+    if (listingData.collaborationTypes.includes('Discount')) {
+      offerings.push({
+        collaboration_type: 'Discount',
+        availability_months: listingData.availability,
+        platforms: listingData.platforms,
+        discount_percentage: listingData.discountPercentage,
+      })
+    }
+
+    return {
+      name: listingData.name,
+      location: listingData.location,
+      description: listingData.description,
+      accommodation_type: listingData.accommodationType || undefined,
+      images: listingData.images.filter((img) => !img.startsWith('data:')), // Filter out base64 previews
+      collaboration_offerings: offerings,
+      creator_requirements: {
+        platforms: listingData.lookingForPlatforms,
+        min_followers: listingData.lookingForMinFollowers || undefined,
+        target_countries: listingData.targetGroupCountries,
+        target_age_min: listingData.targetGroupAgeMin || undefined,
+        target_age_max: listingData.targetGroupAgeMax || undefined,
+      },
+    }
+  }
+
+  /**
+   * Transform API creator response to frontend CreatorProfile format
+   */
+  const transformCreatorProfile = (apiCreator: ApiCreator): CreatorProfile => {
+    return {
+      id: apiCreator.id,
+      name: apiCreator.name,
+      profilePicture: undefined, // Not available in API yet
+      shortDescription: '', // Not available in API yet - could use description if added
+      location: apiCreator.location,
+      status: apiCreator.status as 'verified' | 'pending' | 'rejected',
+      rating: apiCreator.rating,
+      platforms: apiCreator.platforms || [],
+      portfolioLink: apiCreator.portfolioLink,
+      email: '', // Not available in API - will need to get from user object or add to API
+      phone: '', // Not available in API - will need to get from user object or add to API
+    }
+  }
+
+  /**
+   * Transform API hotel profile response to frontend format
+   * Converts snake_case to camelCase and transforms nested structures
+   */
+  const transformHotelProfile = (apiProfile: ApiHotelProfile): HotelProfile => {
+    return {
+      id: apiProfile.id,
+      name: apiProfile.name,
+      picture: apiProfile.picture || undefined,
+      category: apiProfile.category,
+      location: apiProfile.location,
+      status: apiProfile.status as 'verified' | 'pending' | 'rejected',
+      website: apiProfile.website || undefined,
+      about: apiProfile.about || undefined,
+      email: apiProfile.email,
+      phone: apiProfile.phone || undefined,
+      listings: apiProfile.listings.map((apiListing) => {
+        // Extract collaboration types from offerings
+        const collaborationTypes = apiListing.collaboration_offerings.map(
+          (offering) => offering.collaboration_type
+        ) as ('Free Stay' | 'Paid' | 'Discount')[]
+
+        // Get availability months (union of all offerings)
+        const availabilityMonths = Array.from(
+          new Set(
+            apiListing.collaboration_offerings.flatMap((offering) => offering.availability_months)
+          )
+        )
+
+        // Get platforms (union of all offerings)
+        const platforms = Array.from(
+          new Set(
+            apiListing.collaboration_offerings.flatMap((offering) => offering.platforms)
+          )
+        )
+
+        // Extract collaboration-specific fields from the first offering of each type
+        const freeStayOffering = apiListing.collaboration_offerings.find(
+          (o) => o.collaboration_type === 'Free Stay'
+        )
+        const paidOffering = apiListing.collaboration_offerings.find(
+          (o) => o.collaboration_type === 'Paid'
+        )
+        const discountOffering = apiListing.collaboration_offerings.find(
+          (o) => o.collaboration_type === 'Discount'
+        )
+
+        return {
+          id: apiListing.id,
+          name: apiListing.name,
+          location: apiListing.location,
+          description: apiListing.description,
+          images: apiListing.images,
+          accommodationType: apiListing.accommodation_type || undefined,
+          collaborationTypes,
+          availability: availabilityMonths,
+          platforms,
+          freeStayMinNights: freeStayOffering?.free_stay_min_nights || undefined,
+          freeStayMaxNights: freeStayOffering?.free_stay_max_nights || undefined,
+          paidMaxAmount: paidOffering?.paid_max_amount || undefined,
+          discountPercentage: discountOffering?.discount_percentage || undefined,
+          lookingForPlatforms: apiListing.creator_requirements.platforms,
+          lookingForMinFollowers: apiListing.creator_requirements.min_followers || undefined,
+          targetGroupCountries: apiListing.creator_requirements.target_countries,
+          targetGroupAgeMin: apiListing.creator_requirements.target_age_min || undefined,
+          targetGroupAgeMax: apiListing.creator_requirements.target_age_max || undefined,
+          status: apiListing.status as 'verified' | 'pending' | 'rejected',
+        }
+      }),
+    }
+  }
+
   const loadProfile = async () => {
     setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      if (userType === 'creator') {
-        const now = new Date()
-        const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-        const twoMonthsAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
-        const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-        const fourMonthsAgo = new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000)
-
-        setCreatorProfile({
-          id: '1',
-          name: 'Sarah Travels',
-          shortDescription: 'Luxury travel & lifestyle creator focusing on boutique hotels and unique experiences.',
-          location: 'Los Angeles, USA',
-          status: 'verified',
-          rating: {
-            averageRating: 4.8,
-            totalReviews: 12,
-            reviews: [
-              {
-                id: 'r1',
-                hotelId: 'h1',
-                hotelName: 'Sunset Beach Villa',
-                rating: 5,
-                comment: 'Excellent collaboration! Sarah delivered high-quality content and was very professional throughout the process. The photos and videos exceeded our expectations.',
-                createdAt: oneMonthAgo,
-              },
-              {
-                id: 'r2',
-                hotelId: 'h2',
-                hotelName: 'Mountain View Lodge',
-                rating: 5,
-                comment: 'Amazing content creator. The photos and videos perfectly captured the essence of our lodge. Highly recommend!',
-                createdAt: twoMonthsAgo,
-              },
-              {
-                id: 'r3',
-                hotelId: 'h3',
-                hotelName: 'Urban Boutique Hotel',
-                rating: 4,
-                comment: 'Great collaboration, very responsive and delivered on time. The content was good quality.',
-                createdAt: threeMonthsAgo,
-              },
-              {
-                id: 'r4',
-                hotelId: 'h4',
-                hotelName: 'Desert Oasis Resort',
-                rating: 5,
-                comment: 'Outstanding work! Sarah perfectly showcased our resort and reached our target audience effectively.',
-                createdAt: fourMonthsAgo,
-              },
-            ],
-          },
-          platforms: [
-            {
-              name: 'Instagram',
-              handle: '@sarahtravels',
-              followers: 125000,
-              engagementRate: 4.2,
-              topCountries: [
-                { country: 'Indonesia', percentage: 35 },
-                { country: 'Australia', percentage: 22 },
-                { country: 'Singapore', percentage: 15 },
-              ],
-              topAgeGroups: [
-                { ageRange: '25-34', percentage: 48 },
-                { ageRange: '18-24', percentage: 28 },
-              ],
-              genderSplit: { male: 45, female: 55 },
-            },
-            {
-              name: 'TikTok',
-              handle: '@sarahtravels',
-              followers: 89000,
-              engagementRate: 8.5,
-              topCountries: [
-                { country: 'United States', percentage: 28 },
-                { country: 'United Kingdom', percentage: 18 },
-                { country: 'Canada', percentage: 11 },
-              ],
-              topAgeGroups: [
-                { ageRange: '18-24', percentage: 55 },
-                { ageRange: '25-34', percentage: 31 },
-              ],
-              genderSplit: { male: 54, female: 46 },
-            },
-            {
-              name: 'YouTube',
-              handle: '@sarahtravels',
-              followers: 45000,
-              engagementRate: 6.8,
-            },
-            {
-              name: 'Facebook',
-              handle: '@sarahtravels',
-              followers: 32000,
-              engagementRate: 3.2,
-            },
-            {
-              name: 'Blog/Website',
-              handle: 'sarahtravels.com',
-              followers: 15000,
-              engagementRate: 5.1,
-            },
-          ],
-          portfolioLink: 'https://sarahtravels.com/portfolio',
-          email: 'sarah.travels@example.com',
-          phone: '+1 (555) 123-4567',
-        })
+    try {
+      // Check profile status
+      const status = await checkProfileStatus(userType)
+      setProfileStatus(status)
+      
+      if (status && !status.profile_complete) {
+        // Profile is incomplete - show empty state
+        setIsProfileIncomplete(true)
+        setCreatorProfile(null)
+        setHotelProfile(null)
       } else {
-        setHotelProfile({
-          id: '1',
-          name: 'Luxury Villa Management',
-          picture: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-          category: 'Resort',
-          location: 'Bali, Indonesia',
-          status: 'verified',
-          website: 'https://luxuryvillamanagement.com',
-          about: 'A luxury resort offering unique experiences in the heart of Bali. We specialize in providing exceptional hospitality and creating memorable stays for our guests.',
-          email: 'contact@luxuryvillamanagement.com',
-          phone: '+62 361 123456',
-          listings: [
-            {
-              id: 'listing-1',
-              name: 'Luxury Beach Villa',
-              location: 'Bali, Indonesia',
-              description: 'A stunning beachfront villa with private pool and ocean views.',
-              images: ['https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-              accommodationType: 'Villa',
-              collaborationTypes: ['Free Stay', 'Discount'],
-              availability: ['January', 'February', 'March', 'April', 'May', 'June'],
-              platforms: ['Instagram', 'TikTok', 'YouTube'],
-              freeStayMinNights: 2,
-              freeStayMaxNights: 5,
-              discountPercentage: 20,
-              lookingForPlatforms: ['Instagram', 'TikTok'],
-              lookingForMinFollowers: 50000,
-              targetGroupCountries: ['USA', 'Germany', 'UK'],
-              targetGroupAgeMin: 25,
-              targetGroupAgeMax: 45,
-              status: 'verified',
-            },
-            {
-              id: 'listing-2',
-              name: 'Mountain Resort',
-              location: 'Swiss Alps, Switzerland',
-              description: 'A cozy mountain resort perfect for winter sports enthusiasts.',
-              images: ['https://images.unsplash.com/photo-1564501049412-61c2a3083791?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3'],
-              accommodationType: 'Resort',
-              collaborationTypes: ['Paid', 'Discount'],
-              availability: ['December', 'January', 'February', 'March'],
-              platforms: ['Instagram', 'Facebook'],
-              paidMaxAmount: 3000,
-              discountPercentage: 15,
-              lookingForPlatforms: ['Instagram', 'YouTube'],
-              lookingForMinFollowers: 75000,
-              targetGroupCountries: ['USA', 'UK', 'France'],
-              targetGroupAgeMin: 30,
-              targetGroupAgeMax: 50,
-              status: 'verified',
-            },
-          ],
-        })
+        // Profile is complete or status unavailable
+        setIsProfileIncomplete(false)
+        // Profile endpoints have been removed from backend
+        // Show empty state instead of trying to fetch
+        console.warn('Profile management endpoints are not available. Backend only supports authentication.')
       }
+    } catch (error) {
+      console.error('Failed to check profile status:', error)
+      setIsProfileIncomplete(false)
+    } finally {
       setLoading(false)
-    }, 300)
+    }
   }
 
   useEffect(() => {
@@ -563,28 +590,74 @@ export default function ProfilePage() {
   }
 
   const handleSaveHotelProfile = async () => {
+    // Profile endpoints have been removed from backend
+    alert('Profile management is not available. Backend only supports authentication endpoints.')
+    return
+    
     if (!hotelEditFormData.name || !hotelEditFormData.category || !hotelEditFormData.location) {
       return
     }
 
     setIsSavingHotelProfile(true)
-    setTimeout(() => {
-      if (hotelProfile) {
-        setHotelProfile({
-          ...hotelProfile,
-          name: hotelEditFormData.name,
-          picture: hotelEditFormData.picture || undefined,
-          category: hotelEditFormData.category,
-          location: hotelEditFormData.location,
-          website: hotelEditFormData.website || undefined,
-          about: hotelEditFormData.about || undefined,
-          email: email,
-          phone: phone,
-        })
+    try {
+      // Upload picture if a new file was selected
+      let pictureUrl = hotelEditFormData.picture
+      if (hotelFileInputRef.current?.files?.[0]) {
+        const file = hotelFileInputRef.current.files[0]
+        const uploadResponse = await hotelService.uploadPicture(file)
+        pictureUrl = uploadResponse.url
       }
+
+      // Update hotel profile
+      const updateData: {
+        name?: string
+        category?: string
+        location?: string
+        picture?: string
+        website?: string
+        about?: string
+        email?: string
+        phone?: string
+      } = {
+        name: hotelEditFormData.name,
+        category: hotelEditFormData.category,
+        location: hotelEditFormData.location,
+        website: hotelEditFormData.website || undefined,
+        about: hotelEditFormData.about || undefined,
+        email: email,
+        phone: phone || undefined,
+      }
+
+      if (pictureUrl && !pictureUrl.startsWith('data:')) {
+        // Only include picture URL if it's not a base64 preview
+        updateData.picture = pictureUrl
+      }
+
+      const updatedProfile = await hotelService.updateMyProfile(updateData)
+      const transformedProfile = transformHotelProfile(updatedProfile)
+      setHotelProfile(transformedProfile)
+      
+      // Update local state
+      setEmail(updatedProfile.email)
+      setPhone(updatedProfile.phone || '')
+      
       setIsEditingHotelProfile(false)
       setIsSavingHotelProfile(false)
-    }, 500)
+      
+      // Clear file input and preview
+      if (hotelFileInputRef.current) {
+        hotelFileInputRef.current.value = ''
+      }
+      setHotelPicturePreview(null)
+    } catch (error) {
+      console.error('Failed to save hotel profile:', error)
+      if (error instanceof ApiErrorResponse) {
+        alert(`Failed to save profile: ${error.data.detail}`)
+      } else {
+        alert('Failed to save profile. Please try again.')
+      }
+      setIsSavingHotelProfile(false)
+    }
   }
 
   const handleCancelHotelEdit = () => {
@@ -620,22 +693,33 @@ export default function ProfilePage() {
   }
 
   const handleSaveHotelContact = async () => {
+    // Profile endpoints have been removed from backend
+    alert('Profile management is not available. Backend only supports authentication endpoints.')
+    return
+    
     if (!email || !email.includes('@')) {
       return
     }
     
     setIsSavingContact(true)
-    setTimeout(() => {
-      if (hotelProfile) {
-        setHotelProfile({
-          ...hotelProfile,
-          email: email,
-          phone: phone,
-        })
-      }
+    try {
+      const updatedProfile = await hotelService.updateMyProfile({
+        email: email,
+        phone: phone || undefined,
+      })
+      const transformedProfile = transformHotelProfile(updatedProfile)
+      setHotelProfile(transformedProfile)
       setIsEditingContact(false)
       setIsSavingContact(false)
-    }, 500)
+    } catch (error) {
+      console.error('Failed to save contact information:', error)
+      if (error instanceof ApiErrorResponse) {
+        alert(`Failed to save contact information: ${error.data.detail}`)
+      } else {
+        alert('Failed to save contact information. Please try again.')
+      }
+      setIsSavingContact(false)
+    }
   }
 
   const openAddListingModal = () => {
@@ -693,40 +777,98 @@ export default function ProfilePage() {
       return
     }
 
+    if (!listingFormData.collaborationTypes.length || !listingFormData.availability.length) {
+      alert('Please add at least one collaboration offering with availability months.')
+      return
+    }
+
+    if (!listingFormData.lookingForPlatforms.length || !listingFormData.targetGroupCountries.length) {
+      alert('Please specify platforms and target countries for creator requirements.')
+      return
+    }
+
+    // Profile endpoints have been removed from backend
+    alert('Listing management is not available. Backend only supports authentication endpoints.')
+    return
+    
     setIsSavingListing(true)
-    setTimeout(() => {
-      if (hotelProfile) {
-        if (editingListingId) {
-          // Update existing listing
-          setHotelProfile({
-            ...hotelProfile,
-            listings: hotelProfile.listings.map((listing) =>
-              listing.id === editingListingId
-                ? {
-                    ...listing,
-                    ...listingFormData,
-                    images: listingFormData.images.length > 0 ? listingFormData.images : listing.images,
-                  }
-                : listing
-            ),
-          })
-        } else {
-          // Add new listing
-          const newListing: HotelListing = {
-            id: `listing-${Date.now()}`,
-            ...listingFormData,
-            status: 'pending',
+    try {
+      // For new listings, upload base64 images first if any
+      let imageUrls = listingFormData.images.filter((img) => !img.startsWith('data:'))
+      const base64Images = listingFormData.images.filter((img) => img.startsWith('data:'))
+      
+      // If we have base64 images and it's a new listing, we'll need to create the listing first,
+      // then upload images. For now, we'll just use the non-base64 images.
+      // TODO: Handle base64 image uploads for new listings after creation
+      
+      const apiListingData = transformListingToApi({
+        ...listingFormData,
+        images: imageUrls, // Only include non-base64 images for now
+      })
+      
+      if (editingListingId) {
+        // Update existing listing
+        const updatedListing = await hotelService.updateListing(editingListingId, apiListingData)
+        
+        // Upload any new base64 images if present
+        if (base64Images.length > 0) {
+          // Convert base64 to File objects and upload
+          const files: File[] = []
+          for (const base64 of base64Images) {
+            const response = await fetch(base64)
+            const blob = await response.blob()
+            const file = new File([blob], 'image.jpg', { type: blob.type })
+            files.push(file)
           }
-          setHotelProfile({
-            ...hotelProfile,
-            listings: [...hotelProfile.listings, newListing],
-          })
+          if (files.length > 0) {
+            await hotelService.uploadListingImages(editingListingId, files)
+          }
         }
+        
+        // Reload full profile to get updated data
+        const updatedProfile = await hotelService.getMyProfile()
+        const transformedProfile = transformHotelProfile(updatedProfile)
+        setHotelProfile(transformedProfile)
+      } else {
+        // Create new listing
+        const newListing = await hotelService.createListing(apiListingData)
+        
+        // Upload base64 images if any (convert to files first)
+        if (base64Images.length > 0) {
+          const files: File[] = []
+          for (const base64 of base64Images) {
+            const response = await fetch(base64)
+            const blob = await response.blob()
+            const file = new File([blob], 'image.jpg', { type: blob.type })
+            files.push(file)
+          }
+          if (files.length > 0) {
+            await hotelService.uploadListingImages(newListing.id, files)
+          }
+        }
+        
+        // Reload full profile to get updated data
+        const updatedProfile = await hotelService.getMyProfile()
+        const transformedProfile = transformHotelProfile(updatedProfile)
+        setHotelProfile(transformedProfile)
       }
+      
       setShowListingModal(false)
       setEditingListingId(null)
       setIsSavingListing(false)
-    }, 500)
+      setListingImagePreview(null)
+    } catch (error) {
+      console.error('Failed to save listing:', error)
+      if (error instanceof ApiErrorResponse) {
+        const errorDetail = typeof error.data.detail === 'string' 
+          ? error.data.detail 
+          : error.data.detail?.[0]?.msg || 'Validation error'
+        alert(`Failed to save listing: ${errorDetail}`)
+      } else {
+        alert('Failed to save listing. Please try again.')
+      }
+      setIsSavingListing(false)
+    }
   }
 
   const handleCancelListing = () => {
@@ -738,13 +880,28 @@ export default function ProfilePage() {
     }
   }
 
-  const handleDeleteListing = (listingId: string) => {
-    if (confirm('Are you sure you want to delete this listing?')) {
-      if (hotelProfile) {
-        setHotelProfile({
-          ...hotelProfile,
-          listings: hotelProfile.listings.filter((listing) => listing.id !== listingId),
-        })
+  const handleDeleteListing = async (listingId: string) => {
+    // Profile endpoints have been removed from backend
+    alert('Listing management is not available. Backend only supports authentication endpoints.')
+    return
+    
+    if (!confirm('Are you sure you want to delete this listing?')) {
+      return
+    }
+
+    try {
+      await hotelService.deleteListing(listingId)
+      
+      // Reload full profile to get updated data
+      const updatedProfile = await hotelService.getMyProfile()
+      const transformedProfile = transformHotelProfile(updatedProfile)
+      setHotelProfile(transformedProfile)
+    } catch (error) {
+      console.error('Failed to delete listing:', error)
+      if (error instanceof ApiErrorResponse) {
+        alert(`Failed to delete listing: ${error.data.detail}`)
+      } else {
+        alert('Failed to delete listing. Please try again.')
       }
     }
   }
@@ -753,9 +910,36 @@ export default function ProfilePage() {
     listingImageInputRef.current?.click()
   }
 
-  const handleListingImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
+  const handleListingImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    // Profile endpoints have been removed from backend
+    alert('Image upload is not available. Backend only supports authentication endpoints.')
+    return
+    
+    // If we're editing an existing listing, upload images immediately
+    if (editingListingId) {
+      try {
+        const fileArray = Array.from(files)
+        const uploadResponse = await hotelService.uploadListingImages(editingListingId, fileArray)
+        
+        // Add uploaded URLs to form data
+        setListingFormData({
+          ...listingFormData,
+          images: [...listingFormData.images, ...uploadResponse.urls],
+        })
+      } catch (error) {
+        console.error('Failed to upload listing images:', error)
+        if (error instanceof ApiErrorResponse) {
+          alert(`Failed to upload images: ${error.data.detail}`)
+        } else {
+          alert('Failed to upload images. Please try again.')
+        }
+      }
+    } else {
+      // For new listings, just show preview (will be uploaded when listing is saved)
+      const file = files[0]
       const reader = new FileReader()
       reader.onloadend = () => {
         const result = reader.result as string
@@ -766,6 +950,7 @@ export default function ProfilePage() {
       }
       reader.readAsDataURL(file)
     }
+    
     // Reset input so the same file can be selected again
     if (listingImageInputRef.current) {
       listingImageInputRef.current.value = ''
@@ -857,6 +1042,13 @@ export default function ProfilePage() {
   }
 
 
+  // Redirect to completion page if profile is incomplete
+  useEffect(() => {
+    if (!loading && isProfileIncomplete && profileStatus) {
+      router.push(ROUTES.PROFILE_COMPLETE)
+    }
+  }, [loading, isProfileIncomplete, profileStatus, router])
+
   return (
     <main className="min-h-screen bg-white">
       <AuthenticatedNavigation />
@@ -874,30 +1066,6 @@ export default function ProfilePage() {
             <p className="text-lg text-gray-600 font-medium mb-6">
               Manage your profile information
             </p>
-
-            {/* User Type Toggle */}
-            <div className="flex gap-2 bg-white/80 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-gray-200/50 w-fit">
-              <button
-                onClick={() => setUserType('creator')}
-                className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                  userType === 'creator'
-                    ? 'bg-primary-600 text-white shadow-md'
-                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                }`}
-              >
-                Creator Profile
-              </button>
-              <button
-                onClick={() => setUserType('hotel')}
-                className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                  userType === 'hotel'
-                    ? 'bg-primary-600 text-white shadow-md'
-                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                }`}
-              >
-                Hotel Profile
-              </button>
-            </div>
           </div>
 
           {loading ? (
@@ -2095,18 +2263,23 @@ export default function ProfilePage() {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0]
                     if (file) {
+                      // Show preview immediately
                       const reader = new FileReader()
                       reader.onloadend = () => {
                         const result = reader.result as string
                         setHotelPicturePreview(result)
                         setHotelEditFormData({ ...hotelEditFormData, picture: result })
-                        setShowHotelPictureModal(false)
-                        setIsEditingHotelProfile(true)
                       }
                       reader.readAsDataURL(file)
+                      
+                      // Profile endpoints have been removed from backend
+                      alert('Image upload is not available. Backend only supports authentication endpoints.')
+                      // Reset preview
+                      setHotelPicturePreview(null)
+                      setHotelEditFormData({ ...hotelEditFormData, picture: hotelProfile?.picture || '' })
                     }
                   }}
                 />
@@ -2687,3 +2860,4 @@ export default function ProfilePage() {
     </main>
   )
 }
+
