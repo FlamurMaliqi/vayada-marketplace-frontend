@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  AWS_REGION: us-east-1 # set your region or override via GitHub Variables
+  AWS_REGION: eu-west-1 # set your region or override via GitHub Variables
   ECR_REPOSITORY: vayada-creator-marketplace-frontend
 
 permissions:
