@@ -132,9 +132,9 @@ export default function ProfilePage() {
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null)
   const [hotelPicturePreview, setHotelPicturePreview] = useState<string | null>(null)
   const [listingImagePreview, setListingImagePreview] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const hotelFileInputRef = useRef<HTMLInputElement>(null)
-  const listingImageInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const hotelFileInputRef = useRef<HTMLInputElement | null>(null)
+  const listingImageInputRef = useRef<HTMLInputElement | null>(null)
   
   // Edit form state
   const [editFormData, setEditFormData] = useState({
@@ -395,8 +395,11 @@ export default function ProfilePage() {
         // Show empty state instead of trying to fetch
         console.warn('Profile management endpoints are not available. Backend only supports authentication.')
       }
-    } catch (error) {
-      console.error('Failed to check profile status:', error)
+    } catch (error: unknown) {
+      console.error(
+        'Failed to check profile status:',
+        error instanceof Error ? error : String(error)
+      )
       setIsProfileIncomplete(false)
     } finally {
       setLoading(false)
@@ -598,9 +601,10 @@ export default function ProfilePage() {
     try {
       // Upload picture if a new file was selected
       let pictureUrl = hotelEditFormData.picture
-      const file = hotelFileInputRef.current?.files?.[0]
+      const fileInput = hotelFileInputRef.current
+      const file = fileInput?.files?.item(0)
       if (file) {
-        const uploadResponse = await hotelService.uploadPicture(file)
+        const uploadResponse = await hotelService.uploadPicture(file as File)
         pictureUrl = uploadResponse.url
       }
 
@@ -639,14 +643,23 @@ export default function ProfilePage() {
       setIsSavingHotelProfile(false)
       
       // Clear file input and preview
-      if (hotelFileInputRef.current) {
-        hotelFileInputRef.current.value = ''
+      const hotelInput = hotelFileInputRef.current
+      if (!hotelInput) {
+        // no-op
+      } else {
+        hotelInput!.value = ''
       }
       setHotelPicturePreview(null)
-    } catch (error) {
-      console.error('Failed to save hotel profile:', error)
-      if (error instanceof ApiErrorResponse) {
-        alert(`Failed to save profile: ${error.data.detail}`)
+    } catch (error: unknown) {
+      const err = error as any
+      const detail =
+        err && typeof err === 'object' && 'data' in err && err.data?.detail
+          ? err.data.detail
+          : null
+      const logError = error instanceof Error ? error : new Error(String(error))
+      console.error('Failed to save hotel profile:', logError)
+      if (detail) {
+        alert(`Failed to save profile: ${detail}`)
       } else {
         alert('Failed to save profile. Please try again.')
       }
@@ -704,10 +717,16 @@ export default function ProfilePage() {
       setHotelProfile(transformedProfile)
       setIsEditingContact(false)
       setIsSavingContact(false)
-    } catch (error) {
-      console.error('Failed to save contact information:', error)
-      if (error instanceof ApiErrorResponse) {
-        alert(`Failed to save contact information: ${error.data.detail}`)
+    } catch (error: unknown) {
+      const err = error as any
+      const detail =
+        err && typeof err === 'object' && 'data' in err && err.data?.detail
+          ? err.data.detail
+          : null
+      const logError = error instanceof Error ? error : new Error(String(error))
+      console.error('Failed to save contact information:', logError)
+      if (detail) {
+        alert(`Failed to save contact information: ${detail}`)
       } else {
         alert('Failed to save contact information. Please try again.')
       }
@@ -800,8 +819,9 @@ export default function ProfilePage() {
       })
       
       if (editingListingId) {
+        const listingId = editingListingId as string
         // Update existing listing
-        const updatedListing = await hotelService.updateListing(editingListingId, apiListingData)
+        const updatedListing = await hotelService.updateListing(listingId, apiListingData)
         
         // Upload any new base64 images if present
         if (base64Images.length > 0) {
@@ -814,7 +834,7 @@ export default function ProfilePage() {
             files.push(file)
           }
           if (files.length > 0) {
-            await hotelService.uploadListingImages(editingListingId, files)
+            await hotelService.uploadListingImages(listingId, files)
           }
         }
         
@@ -850,12 +870,21 @@ export default function ProfilePage() {
       setEditingListingId(null)
       setIsSavingListing(false)
       setListingImagePreview(null)
-    } catch (error) {
-      console.error('Failed to save listing:', error)
-      if (error instanceof ApiErrorResponse) {
-        const errorDetail = typeof error.data.detail === 'string' 
-          ? error.data.detail 
-          : error.data.detail?.[0]?.msg || 'Validation error'
+    } catch (error: unknown) {
+      const err = error as any
+      const detail =
+        err && typeof err === 'object' && 'data' in err && err.data?.detail
+          ? err.data.detail
+          : null
+      const logError = error instanceof Error ? error : new Error(String(error))
+      console.error('Failed to save listing:', logError)
+      if (detail) {
+        const errorDetail =
+          typeof detail === 'string'
+            ? detail
+            : Array.isArray(detail) && detail[0]?.msg
+              ? detail[0].msg
+              : 'Validation error'
         alert(`Failed to save listing: ${errorDetail}`)
       } else {
         alert('Failed to save listing. Please try again.')
@@ -889,10 +918,16 @@ export default function ProfilePage() {
       const updatedProfile = await hotelService.getMyProfile()
       const transformedProfile = transformHotelProfile(updatedProfile)
       setHotelProfile(transformedProfile)
-    } catch (error) {
-      console.error('Failed to delete listing:', error)
-      if (error instanceof ApiErrorResponse) {
-        alert(`Failed to delete listing: ${error.data.detail}`)
+    } catch (error: unknown) {
+      const err = error as any
+      const detail =
+        err && typeof err === 'object' && 'data' in err && err.data?.detail
+          ? err.data.detail
+          : null
+      const logError = error instanceof Error ? error : new Error(String(error))
+      console.error('Failed to delete listing:', logError)
+      if (detail) {
+        alert(`Failed to delete listing: ${detail}`)
       } else {
         alert('Failed to delete listing. Please try again.')
       }
@@ -906,6 +941,7 @@ export default function ProfilePage() {
   const handleListingImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
+    const fileList = Array.from(files)
 
     // Profile endpoints have been removed from backend
     alert('Image upload is not available. Backend only supports authentication endpoints.')
@@ -913,26 +949,32 @@ export default function ProfilePage() {
     
     // If we're editing an existing listing, upload images immediately
     if (editingListingId) {
+      const listingId = editingListingId as string
       try {
-        const fileArray = Array.from(files)
-        const uploadResponse = await hotelService.uploadListingImages(editingListingId, fileArray)
+        const uploadResponse = await hotelService.uploadListingImages(listingId, fileList)
         
         // Add uploaded URLs to form data
         setListingFormData({
           ...listingFormData,
           images: [...listingFormData.images, ...uploadResponse.urls],
         })
-      } catch (error) {
-        console.error('Failed to upload listing images:', error)
-        if (error instanceof ApiErrorResponse) {
-          alert(`Failed to upload images: ${error.data.detail}`)
+      } catch (error: unknown) {
+        const err = error as any
+        const detail =
+          err && typeof err === 'object' && 'data' in err && err.data?.detail
+            ? err.data.detail
+            : null
+        const logError = error instanceof Error ? error : new Error(String(error))
+        console.error('Failed to upload listing images:', logError)
+        if (detail) {
+          alert(`Failed to upload images: ${detail}`)
         } else {
           alert('Failed to upload images. Please try again.')
         }
       }
     } else {
       // For new listings, just show preview (will be uploaded when listing is saved)
-      const file = files[0]
+      const file = fileList[0]
       const reader = new FileReader()
       reader.onloadend = () => {
         const result = reader.result as string
@@ -945,8 +987,11 @@ export default function ProfilePage() {
     }
     
     // Reset input so the same file can be selected again
-    if (listingImageInputRef.current) {
-      listingImageInputRef.current.value = ''
+    const listingInput = listingImageInputRef.current
+    if (!listingInput) {
+      // no-op
+    } else {
+      listingInput!.value = ''
     }
   }
 
