@@ -598,8 +598,8 @@ export default function ProfilePage() {
     try {
       // Upload picture if a new file was selected
       let pictureUrl = hotelEditFormData.picture
-      if (hotelFileInputRef.current?.files?.[0]) {
-        const file = hotelFileInputRef.current.files[0]
+      const file = hotelFileInputRef.current?.files?.[0]
+      if (file) {
         const uploadResponse = await hotelService.uploadPicture(file)
         pictureUrl = uploadResponse.url
       }
