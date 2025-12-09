@@ -8,6 +8,11 @@ import { Button } from '@/components/ui'
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
+  // Filter to only show "For Hotels" and "For Creators" in center
+  const centerLinks = NAVIGATION_LINKS.filter(link => 
+    link.label === 'For Hotels' || link.label === 'For Creators'
+  )
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,8 +23,9 @@ export default function Navigation() {
             </a>
           </div>
           
-          <div className="hidden md:flex items-center space-x-8">
-            {NAVIGATION_LINKS.map((link) => (
+          {/* Center Links */}
+          <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
+            {centerLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
@@ -28,6 +34,10 @@ export default function Navigation() {
                 {link.label}
               </a>
             ))}
+          </div>
+          
+          {/* Right Side - Sign In and Sign Up */}
+          <div className="hidden md:flex items-center space-x-4">
             <a
               href={ROUTES.LOGIN}
               className="text-gray-700 hover:text-primary-600 transition-colors"
@@ -36,7 +46,7 @@ export default function Navigation() {
             </a>
             <a href={ROUTES.SIGNUP}>
               <Button variant="primary" size="md">
-                Get Started
+                Sign Up
               </Button>
             </a>
           </div>
@@ -56,7 +66,7 @@ export default function Navigation() {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-4 py-4 space-y-4">
-            {NAVIGATION_LINKS.map((link) => (
+            {centerLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
@@ -79,7 +89,7 @@ export default function Navigation() {
               onClick={() => setIsMenuOpen(false)}
             >
               <Button variant="primary" size="md" className="w-full">
-                Get Started
+                Sign Up
               </Button>
             </a>
           </div>
