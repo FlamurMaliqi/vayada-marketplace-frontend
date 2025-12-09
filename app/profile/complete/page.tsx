@@ -24,6 +24,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   ChartBarIcon,
+  RocketLaunchIcon,
 } from '@heroicons/react/24/outline'
 
 const HOTEL_CATEGORIES = [
@@ -61,6 +62,7 @@ export default function ProfileCompletePage() {
   const [submitting, setSubmitting] = useState(false)
   const [profileStatus, setProfileStatus] = useState<CreatorProfileStatus | HotelProfileStatus | null>(null)
   const [error, setError] = useState('')
+  const [profileCompleted, setProfileCompleted] = useState(false)
   
   // Step management
   const [currentStep, setCurrentStep] = useState<number>(1)
@@ -135,7 +137,7 @@ export default function ProfileCompletePage() {
       }
       
       if (storedUserType) {
-        loadProfileStatus(storedUserType)
+        loadProfileStatus(storedUserType, true) // Skip redirect in closed beta, show completion message if already complete
       } else {
         // No user type, redirect to login
         router.push(ROUTES.LOGIN)
@@ -143,15 +145,16 @@ export default function ProfileCompletePage() {
     }
   }, [router])
 
-  const loadProfileStatus = async (type: UserType) => {
+  const loadProfileStatus = async (type: UserType, skipRedirect = false) => {
     setLoading(true)
     try {
       const status = await checkProfileStatus(type)
       setProfileStatus(status)
       
-      if (status && status.profile_complete) {
-        // Profile already complete, redirect to marketplace
-        router.push(ROUTES.MARKETPLACE)
+      if (status && status.profile_complete && !skipRedirect && !profileCompleted) {
+        // Profile already complete, but only redirect if not in completion flow
+        // In closed beta, we show completion message instead of redirecting
+        setProfileCompleted(true)
         return
       }
     } catch (error) {
@@ -522,10 +525,11 @@ export default function ProfileCompletePage() {
       // Check if profile is now complete after successful update
       const isComplete = await isProfileComplete('creator')
       if (isComplete) {
-        router.push(ROUTES.MARKETPLACE)
+        setProfileCompleted(true)
+        await loadProfileStatus('creator', true) // Skip redirect, show completion message
       } else {
         // Reload status to show updated completion steps
-        await loadProfileStatus('creator')
+        await loadProfileStatus('creator', true)
         setError('Profile updated, but some fields may still be missing. Please check the requirements.')
       }
     } catch (error) {
@@ -624,10 +628,11 @@ export default function ProfileCompletePage() {
       // Check if profile is now complete after successful update
       const isComplete = await isProfileComplete('hotel')
       if (isComplete) {
-        router.push(ROUTES.MARKETPLACE)
+        setProfileCompleted(true)
+        await loadProfileStatus('hotel', true) // Skip redirect, show completion message
       } else {
         // Reload status to show updated completion steps
-        await loadProfileStatus('hotel')
+        await loadProfileStatus('hotel', true)
         setError('Profile updated, but some fields may still be missing. Please check the requirements.')
       }
     } catch (error) {
@@ -701,6 +706,54 @@ export default function ProfileCompletePage() {
 
   if (!userType || !profileStatus) {
     return null
+  }
+
+  // Show completion screen if profile is completed
+  if (profileCompleted || profileStatus.profile_complete) {
+    return (
+      <div className="min-h-screen bg-white relative">
+        {/* Header */}
+        <div className="absolute top-0 left-0 right-0 bg-white border-b border-gray-200 px-6 py-4 z-20">
+          <div className="max-w-4xl mx-auto flex items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-primary-700 rounded-lg flex items-center justify-center">
+                <SparklesIcon className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-primary-600">
+                vayada
+              </h1>
+            </div>
+          </div>
+        </div>
+
+        {/* Completion Message - Overlapping with header */}
+        <div className="relative pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-200 p-8 md:p-12 -mt-8">
+            {/* Success Icon */}
+            <div className="mb-6 flex justify-center">
+              <div className="relative">
+                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
+                  <CheckCircleIcon className="w-12 h-12 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center">
+                  <SparklesIcon className="w-4 h-4 text-white" />
+                </div>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+              Profile Complete!
+            </h2>
+
+            {/* Message */}
+            <p className="text-gray-600 mb-6 text-center leading-relaxed text-lg">
+              Thank you for completing your profile! We're currently in closed beta preparing for launch, and we'll notify you as soon as the platform goes live.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const steps = userType === 'creator' ? creatorSteps : hotelSteps
