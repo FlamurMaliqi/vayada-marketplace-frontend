@@ -928,7 +928,7 @@ export default function ProfileCompletePage() {
                 value={creatorForm.phone}
                 onChange={(e) => setCreatorForm({ ...creatorForm, phone: e.target.value })}
                 placeholder="+1-555-123-4567"
-                helperText="Optional - Contact phone number"
+                helperText={undefined}
               />
               </div>
             )}
@@ -1284,22 +1284,18 @@ export default function ProfileCompletePage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="relative">
-                  <BuildingOfficeIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    label="Hotel Name"
-                    type="text"
-                    value={hotelForm.name}
-                    onChange={(e) => setHotelForm({ ...hotelForm, name: e.target.value })}
-                    required
-                    placeholder="Your hotel or company name"
-                    helperText="Pre-filled from registration"
-                    className="pl-12"
-                  />
-                </div>
+                <Input
+                  label="Hotel Name"
+                  type="text"
+                  value={hotelForm.name}
+                  onChange={(e) => setHotelForm({ ...hotelForm, name: e.target.value })}
+                  required
+                  placeholder="Your hotel or company name"
+                  helperText={undefined}
+                  leadingIcon={<BuildingOfficeIcon className="w-5 h-5" />}
+                />
 
-                <div className="relative md:col-span-2">
-                  <MapPinIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <div className="md:col-span-2">
                   <Input
                     label="Location"
                     type="text"
@@ -1309,29 +1305,27 @@ export default function ProfileCompletePage() {
                     placeholder="Enter your hotel location"
                     error={error && error.includes('Location') ? error : undefined}
                     helperText={
-                      hotelForm.location === 'Not specified' 
-                        ? '⚠️ Must be updated from default value' 
+                      hotelForm.location === 'Not specified'
+                        ? 'Country or island, e.g., Bali, Indonesia.'
                         : profileStatus && 'has_defaults' in profileStatus && profileStatus.has_defaults.location
-                        ? '⚠️ Please update from default value'
-                        : undefined
+                        ? 'Country or island, e.g., Bali, Indonesia.'
+                        : 'Country or island, e.g., Bali, Indonesia.'
                     }
-                    className={`pl-12 ${hotelForm.location === 'Not specified' ? 'border-red-300' : ''}`}
+                    className={`${hotelForm.location === 'Not specified' ? 'border-red-300' : ''}`}
+                    leadingIcon={<MapPinIcon className="w-5 h-5 text-gray-400" />}
                   />
                 </div>
 
-                <div className="relative">
-                  <EnvelopeIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    label="Email"
-                    type="email"
-                    value={hotelForm.email}
-                    onChange={(e) => setHotelForm({ ...hotelForm, email: e.target.value })}
-                    required
-                    placeholder="contact@hotel.com"
-                    helperText="Pre-filled from registration"
-                    className="pl-12"
-                  />
-                </div>
+                <Input
+                  label="Email"
+                  type="email"
+                  value={hotelForm.email}
+                  onChange={(e) => setHotelForm({ ...hotelForm, email: e.target.value })}
+                  required
+                  placeholder="contact@hotel.com"
+                  helperText={undefined}
+                  leadingIcon={<EnvelopeIcon className="w-5 h-5 text-gray-400" />}
+                />
               </div>
 
               {/* Additional Information */}
@@ -1353,38 +1347,36 @@ export default function ProfileCompletePage() {
                 placeholder="Describe your hotel, amenities, unique features, and what makes it special (10-5000 characters)"
                 rows={6}
                 maxLength={5000}
-                helperText={`${hotelForm.about.length}/5000 characters${profileStatus && 'missing_fields' in profileStatus && profileStatus.missing_fields.includes('about') ? ' ⚠️ Recommended' : ' (recommended)'}`}
+                helperText={`${hotelForm.about.length}/5000 characters`}
                 className="resize-none"
                 error={error && error.includes('About') ? error : undefined}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="relative">
-                  <GlobeAltIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    label="Website"
-                    type="url"
-                    value={hotelForm.website}
-                    onChange={(e) => setHotelForm({ ...hotelForm, website: e.target.value })}
-                    placeholder="https://your-hotel.com"
-                    helperText={profileStatus && 'missing_fields' in profileStatus && profileStatus.missing_fields.includes('website') ? '⚠️ Recommended' : 'Recommended - Your hotel website URL'}
-                    className="pl-12"
-                    error={error && error.includes('Website') ? error : undefined}
-                  />
-                </div>
+                <Input
+                  label="Website"
+                  type="url"
+                  value={hotelForm.website}
+                  onChange={(e) => setHotelForm({ ...hotelForm, website: e.target.value })}
+                  placeholder="https://your-hotel.com"
+                  helperText={
+                    profileStatus && 'missing_fields' in profileStatus && profileStatus.missing_fields.includes('website')
+                      ? undefined
+                      : undefined
+                  }
+                  error={error && error.includes('Website') ? error : undefined}
+                  leadingIcon={<GlobeAltIcon className="w-5 h-5 text-gray-400" />}
+                />
 
-                <div className="relative">
-                  <PhoneIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    label="Phone"
-                    type="tel"
-                    value={hotelForm.phone}
-                    onChange={(e) => setHotelForm({ ...hotelForm, phone: e.target.value })}
-                    placeholder="+1-555-123-4567"
-                    helperText="Optional - Contact phone number"
-                    className="pl-12"
-                  />
-                </div>
+                <Input
+                  label="Phone"
+                  type="tel"
+                  value={hotelForm.phone}
+                  onChange={(e) => setHotelForm({ ...hotelForm, phone: e.target.value })}
+                  placeholder="+1-555-123-4567"
+                  helperText={undefined}
+                  leadingIcon={<PhoneIcon className="w-5 h-5 text-gray-400" />}
+                />
               </div>
               </div>
               </div>
