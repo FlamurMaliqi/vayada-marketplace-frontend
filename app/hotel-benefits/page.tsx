@@ -4,7 +4,16 @@ import Link from "next/link"
 import { Navigation, Footer } from "@/components/layout"
 import { Button } from "@/components/ui"
 import { ROUTES } from "@/lib/constants/routes"
-import { CheckIcon, FolderIcon, ShieldCheckIcon, ArrowTrendingUpIcon } from "@heroicons/react/24/outline"
+import {
+  CheckIcon,
+  FolderIcon,
+  ShieldCheckIcon,
+  ArrowTrendingUpIcon,
+  MagnifyingGlassIcon,
+  ChatBubbleLeftRightIcon,
+  CalendarDaysIcon,
+  StarIcon,
+} from "@heroicons/react/24/outline"
 
 export default function HotelBenefitsPage() {
   return (
@@ -194,6 +203,76 @@ export default function HotelBenefitsPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 4-step journey */}
+        <section className="bg-[#f8f8fb] py-16 md:py-20">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">The Simple 4-Step Journey</h2>
+              <p className="text-base md:text-lg text-gray-600 mt-2">From discovery to successful partnership</p>
+            </div>
+
+            <div className="flex flex-col divide-y divide-gray-200">
+              {[
+                {
+                  number: "01",
+                  title: "Search & Filter",
+                  badge: "NOW",
+                  linkText: "Find the right creators for your property.",
+                  description:
+                    "Browse verified creator profiles filtered by audience demographics, engagement rates, platform, and content style. Find creators who match your target guest profile.",
+                  Icon: MagnifyingGlassIcon,
+                },
+                {
+                  number: "02",
+                  title: "Connect & Negotiate",
+                  badge: "NOW",
+                  linkText: "Centralize all proposals and terms.",
+                  description:
+                    "Send collaboration invitations directly through the platform. Negotiate terms, define deliverables, and agree on collaboration type (free stay, paid collaboration, etc.).",
+                  Icon: ChatBubbleLeftRightIcon,
+                },
+                {
+                  number: "03",
+                  title: "Manage & Approve",
+                  badge: "NOW",
+                  linkText: "Control scheduling and content.",
+                  description:
+                    "Manage booking dates, review content before publication, and maintain full control over the collaboration timeline and asset approval process.",
+                  Icon: CalendarDaysIcon,
+                },
+                {
+                  number: "04",
+                  title: "Rate & Grow",
+                  badge: "NOW",
+                  linkText: "Build your reputation in the marketplace.",
+                  description:
+                    "Leave reviews for creators to help other hotels. Attract better partners over time as your property builds a strong review history and reputation.",
+                  Icon: StarIcon,
+                },
+              ].map(({ number, title, badge, linkText, description, Icon }) => (
+                <div key={number} className="py-7 md:py-8 flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
+                  <div className="flex items-center gap-3 md:gap-4 min-w-[90px]">
+                    <span className="text-3xl md:text-4xl font-bold text-[#c7cdf6]">{number}</span>
+                    <div className="h-12 w-12 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl md:text-2xl font-semibold text-gray-900">{title}</h3>
+                      <span className="text-[10px] font-semibold tracking-wide text-primary-700 bg-primary-50 px-2 py-1 rounded uppercase">
+                        {badge}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold text-primary-700">{linkText}</p>
+                    <p className="text-gray-700 text-sm md:text-base leading-relaxed">{description}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
