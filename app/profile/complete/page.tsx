@@ -1390,26 +1390,29 @@ export default function ProfileCompletePage() {
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
                     Add at least one property listing <span className="font-semibold text-red-600">(required)</span>
-                    {profileStatus && 'missing_fields' in profileStatus && (profileStatus.missing_fields.includes('listings') || hotelListings.length === 0) && (
-                      <span className="ml-2 text-red-600 font-semibold">⚠️ Missing listings</span>
-                    )}
+                    {profileStatus && 'missing_fields' in profileStatus && (profileStatus.missing_fields.includes('listings') || hotelListings.length === 0) }
                   </p>
                 </div>
               </div>
 
               {hotelListings.length === 0 && (
-                <div className="border-2 border-dashed border-red-300 rounded-2xl p-8 text-center bg-red-50/50">
-                  <BuildingOfficeIcon className="w-12 h-12 text-red-400 mx-auto mb-3" />
-                  <p className="text-red-700 font-medium mb-2">No listings added yet</p>
-                  <p className="text-sm text-red-600">You must add at least one property listing to complete your profile</p>
+                <div className="border border-primary-200 rounded-2xl p-8 text-center bg-white shadow-sm">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary-50 flex items-center justify-center">
+                    <BuildingOfficeIcon className="w-6 h-6 text-primary-600" />
+                  </div>
+                  <p className="text-primary-800 font-semibold mb-2">No listings added yet</p>
+                  <p className="text-sm text-gray-600">Add at least one property listing to complete your profile.</p>
                 </div>
               )}
 
               {hotelListings.map((listing, index) => (
-                <div key={index} className="border-2 border-gray-200 rounded-2xl p-6 space-y-6 bg-gradient-to-br from-white to-gray-50/50 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+                <div
+                  key={index}
+                  className="border border-primary-100 rounded-2xl p-6 space-y-6 bg-white shadow-sm hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-primary-100/70">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md">
+                      <div className="w-10 h-10 bg-primary-50 text-primary-700 rounded-xl flex items-center justify-center font-semibold shadow-inner">
                         {index + 1}
                       </div>
                       <h4 className="font-bold text-gray-900 text-lg">Property Listing {index + 1}</h4>
@@ -1761,7 +1764,7 @@ export default function ProfileCompletePage() {
               <button
                 type="button"
                 onClick={addListing}
-                className="w-full py-4 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 hover:border-primary-500 hover:bg-primary-50 transition-all flex items-center justify-center gap-2 font-semibold group"
+                className="w-full py-4 border-2 border-dashed border-primary-200 rounded-xl text-primary-700 hover:border-primary-400 hover:bg-primary-50 transition-all flex items-center justify-center gap-2 font-semibold group"
               >
                 <PlusIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 Add Another Property Listing
