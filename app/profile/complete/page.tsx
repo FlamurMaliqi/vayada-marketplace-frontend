@@ -1562,54 +1562,6 @@ export default function ProfileCompletePage() {
                         </div>
                       </div>
 
-                      {/* Availability */}
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">Availability (Months)</label>
-                        <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-                          {MONTHS.map((month) => (
-                            <label key={month} className="flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={listing.availability.includes(month)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    updateListing(index, 'availability', [...listing.availability, month])
-                                  } else {
-                                    updateListing(index, 'availability', listing.availability.filter((m) => m !== month))
-                                  }
-                                }}
-                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                              />
-                              <span className="ml-2 text-gray-700 text-sm">{month}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Platforms */}
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">Platforms</label>
-                        <div className="flex flex-wrap gap-3">
-                          {PLATFORM_OPTIONS.map((platform) => (
-                            <label key={platform} className="flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={listing.platforms.includes(platform)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    updateListing(index, 'platforms', [...listing.platforms, platform])
-                                  } else {
-                                    updateListing(index, 'platforms', listing.platforms.filter((p) => p !== platform))
-                                  }
-                                }}
-                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                              />
-                              <span className="ml-2 text-gray-700">{platform}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-
                       {/* Free Stay Details */}
                       {listing.collaborationTypes.includes('Free Stay') && (
                         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -1669,6 +1621,54 @@ export default function ProfileCompletePage() {
                           />
                         </div>
                       )}
+
+                      {/* Availability */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">Availability (Months)</label>
+                        <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                          {MONTHS.map((month) => (
+                            <label key={month} className="flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={listing.availability.includes(month)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    updateListing(index, 'availability', [...listing.availability, month])
+                                  } else {
+                                    updateListing(index, 'availability', listing.availability.filter((m) => m !== month))
+                                  }
+                                }}
+                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                              />
+                              <span className="ml-2 text-gray-700 text-sm">{month}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Platforms */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">Platforms</label>
+                        <div className="flex flex-wrap gap-3">
+                          {PLATFORM_OPTIONS.map((platform) => (
+                            <label key={platform} className="flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={listing.platforms.includes(platform)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    updateListing(index, 'platforms', [...listing.platforms, platform])
+                                  } else {
+                                    updateListing(index, 'platforms', listing.platforms.filter((p) => p !== platform))
+                                  }
+                                }}
+                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                              />
+                              <span className="ml-2 text-gray-700">{platform}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
