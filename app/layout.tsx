@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'vayada - Where hotels and creators connect',
   description: 'A transparent marketplace connecting hotels with verified travel influencers for authentic collaborations.',
+  icons: {
+    icon: '/vayada-logo.svg',
+  },
 }
 
 export default function RootLayout({
