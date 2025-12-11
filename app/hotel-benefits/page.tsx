@@ -5,7 +5,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import { HOTELS_SECTION } from '@/lib/constants'
 import { Navigation, Footer } from '@/components/layout'
 import { Button } from '@/components/ui'
-import { CheckIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, FolderIcon, ShieldCheckIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline'
 
 export default function HotelBenefitsPage() {
   return (
@@ -77,6 +77,74 @@ export default function HotelBenefitsPage() {
                   <span>{item}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Advantage pillars */}
+        <section className="bg-[#f8f8fb]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">The vayada hotel advantage</h2>
+              <p className="text-base md:text-lg text-gray-600 mt-3">
+                Three pillars that transform how you manage creator partnerships
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+              {[
+                {
+                  title: 'Operational Control',
+                  tag: 'Efficiency',
+                  description:
+                    'Gain full control over your creator partnerships. All inquiries, applications, and messages are centralized in one dashboard.',
+                  footnote: 'Stop drowning in fragmented DMs and scattered requests across platforms.',
+                  Icon: FolderIcon,
+                },
+                {
+                  title: 'Data-Driven Vetting',
+                  tag: 'Risk Reduction',
+                  description:
+                    'Access verified creator profiles with audience demographics, engagement rates, and platform metrics. Make informed decisions instantly.',
+                  footnote: 'Eliminate manual work chasing portfolio links and unverified stat screenshots.',
+                  Icon: ShieldCheckIcon,
+                },
+                {
+                  title: 'Future Revenue Stream',
+                  tag: 'Future Hook',
+                  description:
+                    'Build your reputation now to access the 2026 affiliate system. Cut OTA commissions and drive performance-based direct bookings.',
+                  footnote: 'Position for 5–6% total booking cost vs 15–20% OTA fees.',
+                  Icon: ArrowTrendingUpIcon,
+                },
+              ].map(({ title, tag, description, footnote, Icon }) => (
+                <div
+                  key={title}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4 transition-all duration-200 hover:border-primary-200 hover:shadow-lg hover:-translate-y-1"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center text-primary-600">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-semibold text-gray-900">{title}</h3>
+                    <p className="text-sm font-semibold text-primary-600 mt-1">{tag}</p>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed text-sm md:text-base">{description}</p>
+                  <p className="text-gray-800 font-semibold text-sm md:text-base">→ {footnote}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-center mt-10">
+              <Link href={ROUTES.CREATOR_BENEFITS}>
+                <Button
+                  variant="outline"
+                  size="md"
+                  className="bg-white text-gray-800 border border-gray-200 hover:border-primary-300 hover:text-primary-700"
+                >
+                  See Creator Profiles
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
