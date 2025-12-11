@@ -12,6 +12,7 @@ export const ROUTES = {
   BLOG: '/blog',
   PRICING: '/pricing',
   CREATOR_BENEFITS: '/creator-benefits',
+  HOTEL_BENEFITS: '/hotel-benefits',
   
   // Auth routes
   LOGIN: '/login',

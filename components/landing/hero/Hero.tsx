@@ -26,7 +26,7 @@ export default function Hero() {
               <p className="text-lg md:text-xl text-white mb-8 leading-relaxed">
                 Replace fragmented tools. Turn creators into your booking channel.
               </p>
-              <Link href={ROUTES.CONTACT}>
+              <Link href={ROUTES.HOTEL_BENEFITS}>
                 <Button variant="primary" size="lg" className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl">
                   Learn More
                 </Button>
@@ -60,7 +60,7 @@ export default function Hero() {
               <p className="text-lg md:text-xl text-white mb-8 leading-relaxed">
                 Trade your travel influence for partnerships with curated & high-quality hotels worldwide.
               </p>
-              <Link href={ROUTES.CONTACT}>
+              <Link href={ROUTES.CREATOR_BENEFITS}>
                 <Button variant="outline" size="lg" className="bg-gray-800/50 backdrop-blur-sm border-gray-600 text-white hover:bg-gray-700/70 shadow-lg hover:shadow-xl">
                   Learn More
                 </Button>
