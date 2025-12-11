@@ -276,6 +276,29 @@ export default function HotelBenefitsPage() {
             </div>
           </div>
         </section>
+
+        {/* CTA */}
+        <section className="bg-white pt-20 md:pt-24 pb-24 md:pb-28">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="rounded-3xl border border-primary-100 bg-[#f4f5ff] px-6 py-10 md:px-12 md:py-14 shadow-[0_20px_60px_-40px_rgba(59,130,246,0.35)] text-center space-y-4">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900">Ready to streamline your creator partnerships?</h3>
+              <p className="text-base md:text-lg text-gray-600">
+                Join hotels who have centralized their creator management and reduced operational chaos.
+              </p>
+              <div className="pt-2">
+                <Link href={`${ROUTES.SIGNUP}?type=hotel`}>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl px-8"
+                  >
+                    Register hotel for free
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </div>
