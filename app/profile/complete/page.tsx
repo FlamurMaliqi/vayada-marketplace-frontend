@@ -386,8 +386,8 @@ export default function ProfileCompletePage() {
       return false
     }
     
-    if (hotelForm.about.trim().length < 10) {
-      setError('About section must be at least 10 characters')
+    if (hotelForm.about.trim().length < 50) {
+      setError('About section must be at least 50 characters')
       return false
     }
     
@@ -615,6 +615,10 @@ export default function ProfileCompletePage() {
       const isComplete = await isProfileComplete('creator')
       if (isComplete) {
         setProfileCompleted(true)
+        // Update localStorage so warning banner disappears
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('profileComplete', 'true')
+        }
         await loadProfileStatus('creator', true) // Skip redirect, show completion message
       } else {
         // Reload status to show updated completion steps
@@ -717,6 +721,10 @@ export default function ProfileCompletePage() {
       const isComplete = await isProfileComplete('hotel')
       if (isComplete) {
         setProfileCompleted(true)
+        // Update localStorage so warning banner disappears
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('profileComplete', 'true')
+        }
         await loadProfileStatus('hotel', true) // Skip redirect, show completion message
       } else {
         // Reload status to show updated completion steps
@@ -998,7 +1006,7 @@ export default function ProfileCompletePage() {
                   value={creatorForm.short_description}
                   onChange={(e) => setCreatorForm({ ...creatorForm, short_description: e.target.value })}
                   required
-                  placeholder="Tell us about yourself (10-500 characters)"
+                  placeholder="Tell us about yourself (50-500 characters)"
                   rows={4}
                   maxLength={500}
                   error={error && error.includes('description') ? error : undefined}
@@ -1459,7 +1467,7 @@ export default function ProfileCompletePage() {
                   label="About"
                   value={hotelForm.about}
                   onChange={(e) => setHotelForm({ ...hotelForm, about: e.target.value })}
-                  placeholder="Describe your hotel, amenities, unique features, and what makes it special (10-5000 characters)"
+                  placeholder="Describe your hotel, amenities, unique features, and what makes it special (minimum 50 characters)"
                   rows={6}
                   maxLength={5000}
                   required

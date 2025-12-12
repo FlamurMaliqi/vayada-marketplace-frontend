@@ -77,8 +77,12 @@ export default function LoginPage() {
       if (userType === 'creator' || userType === 'hotel') {
         try {
           const profileStatus = await checkProfileStatus(userType)
-          if (profileStatus && !profileStatus.profile_complete) {
-            // Profile is incomplete, redirect to profile completion page
+          if (profileStatus && profileStatus.profile_complete) {
+            // Profile is complete, update localStorage so warning banner doesn't show
+            localStorage.setItem('profileComplete', 'true')
+          } else if (profileStatus && !profileStatus.profile_complete) {
+            // Profile is incomplete, set to false and redirect to profile completion page
+            localStorage.setItem('profileComplete', 'false')
             router.push(ROUTES.PROFILE_COMPLETE)
             return
           }

@@ -8,6 +8,7 @@ import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters'
 import { HotelCard } from '@/components/marketplace/HotelCard'
 import { CreatorCard } from '@/components/marketplace/CreatorCard'
 import { Button } from '@/components/ui'
+import { FeatureUnavailableModal } from '@/components/ui/FeatureUnavailableModal'
 import { ROUTES } from '@/lib/constants/routes'
 import type { Hotel, Creator, UserType } from '@/lib/types'
 import { hotelService } from '@/services/api/hotels'
@@ -28,6 +29,7 @@ export default function MarketplacePage() {
     availability?: string | string[]
     budget?: number
   }>({})
+  const [showUnavailableModal, setShowUnavailableModal] = useState(false)
 
   // Get userType from localStorage on mount
   useEffect(() => {
@@ -56,6 +58,13 @@ export default function MarketplacePage() {
   }
 
   const hasNoData = !loading && hotels.length === 0 && creators.length === 0
+
+  // Show modal when data is unavailable
+  useEffect(() => {
+    if (hasNoData && !loading) {
+      setShowUnavailableModal(true)
+    }
+  }, [hasNoData, loading])
 
   const filteredHotels = hotels.filter((hotel) => {
     // Search filter
@@ -237,17 +246,8 @@ export default function MarketplacePage() {
             </div>
           </div>
         ) : hasNoData ? (
-          <div className="text-center py-12 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-8">
-            <svg className="w-16 h-16 text-yellow-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Marketplace Unavailable</h3>
-            <p className="text-gray-600 mb-4">
-              The marketplace endpoints have been removed from the backend. The backend now only supports authentication endpoints.
-            </p>
-            <p className="text-sm text-gray-500">
-              You can still register and login, but profile and marketplace features are not available.
-            </p>
+          <div className="text-center py-12">
+            <p className="text-gray-500">The marketplace will be available shortly.</p>
           </div>
         ) : (
           <>
@@ -288,6 +288,13 @@ export default function MarketplacePage() {
         )}
         </div>
       </div>
+
+      {/* Feature Unavailable Modal */}
+      <FeatureUnavailableModal
+        isOpen={showUnavailableModal}
+        onClose={() => setShowUnavailableModal(false)}
+        featureName="The Marketplace"
+      />
     </main>
   )
 }

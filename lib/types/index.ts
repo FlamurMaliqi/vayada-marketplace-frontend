@@ -20,8 +20,8 @@ export interface HotelProfileStatus {
   missing_fields: string[]
   has_defaults: {
     location: boolean
-    category: boolean
   }
+  missing_listings: boolean
   completion_steps: string[]
 }
 

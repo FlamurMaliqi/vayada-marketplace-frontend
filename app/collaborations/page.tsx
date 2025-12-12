@@ -6,6 +6,7 @@ import { AuthenticatedNavigation, ProfileWarningBanner } from '@/components/layo
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
 import { CollaborationCard, CollaborationRejectedModal, CollaborationRequestDetailModal } from '@/components/marketplace'
 import { Button, Input } from '@/components/ui'
+import { FeatureUnavailableModal } from '@/components/ui/FeatureUnavailableModal'
 import { ROUTES } from '@/lib/constants/routes'
 import type { Collaboration, CollaborationStatus, Hotel, Creator, UserType } from '@/lib/types'
 import { collaborationService } from '@/services/api/collaborations'
@@ -34,6 +35,7 @@ function CollaborationsPageContent() {
   const [detailCollaboration, setDetailCollaboration] = useState<
     (Collaboration & { hotel?: Hotel; creator?: Creator }) | null
   >(null)
+  const [showUnavailableModal, setShowUnavailableModal] = useState(false)
   
   // Initialize userType from searchParams (available on both server and client)
   // This ensures server and client render the same initial value
@@ -76,6 +78,13 @@ function CollaborationsPageContent() {
     setCollaborations([])
     setLoading(false)
   }
+
+  // Show modal when collaborations are unavailable
+  useEffect(() => {
+    if (!loading && collaborations.length === 0) {
+      setShowUnavailableModal(true)
+    }
+  }, [loading, collaborations.length])
 
   const handleStatusUpdate = async (id: string, newStatus: CollaborationStatus) => {
     // Collaboration endpoints have been removed from backend
@@ -242,24 +251,8 @@ function CollaborationsPageContent() {
             </div>
           </div>
         ) : !loading && collaborations.length === 0 ? (
-          <div className="text-center py-12 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-8">
-            <svg className="w-16 h-16 text-yellow-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Collaborations Unavailable</h3>
-            <p className="text-gray-600 mb-4">
-              Collaboration endpoints have been removed from the backend. The backend now only supports authentication endpoints.
-            </p>
-            <p className="text-sm text-gray-500 mb-4">
-              You can still register and login, but collaboration management features are not available.
-            </p>
-            <Button
-              variant="primary"
-              onClick={() => (window.location.href = ROUTES.MARKETPLACE)}
-              size="lg"
-            >
-              Browse Marketplace
-            </Button>
+          <div className="text-center py-12">
+            <p className="text-gray-500">Collaborations will be available shortly.</p>
           </div>
         ) : filteredAndSortedCollaborations.length > 0 ? (
           <div className="space-y-4">
@@ -311,6 +304,13 @@ function CollaborationsPageContent() {
         currentUserType={userType}
         onAccept={handleAcceptFromModal}
         onDecline={handleDeclineFromModal}
+      />
+
+      {/* Feature Unavailable Modal */}
+      <FeatureUnavailableModal
+        isOpen={showUnavailableModal}
+        onClose={() => setShowUnavailableModal(false)}
+        featureName="Collaborations"
       />
     </main>
   )
