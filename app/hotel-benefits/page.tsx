@@ -13,7 +13,11 @@ import {
   ChatBubbleLeftRightIcon,
   CalendarDaysIcon,
   StarIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline"
+import { useState } from "react"
 
 export default function HotelBenefitsPage() {
   return (
@@ -299,8 +303,187 @@ export default function HotelBenefitsPage() {
             </div>
           </div>
         </section>
+
+        {/* Performance revenue highlight */}
+        <section className="bg-[#0c2140] py-18 md:py-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
+            <div className="max-w-4xl space-y-3">
+              <span className="inline-flex items-center rounded-full bg-primary-600/20 text-primary-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                Coming 2026
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold">Cut OTA Commissions. Drive Performance Revenue.</h2>
+              <p className="text-base md:text-lg text-slate-200">
+                Build your marketplace reputation now and gain early access to the 2026 affiliate tracking system. Replace expensive OTA fees with performance-based direct bookings.
+              </p>
+            </div>
+
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              {[
+                { label: "Lower Commission Cost", value: "70%", sub: "Compared to traditional 15–20% OTA fees" },
+                { label: "Total Booking Cost", value: "5–6%", sub: "Creator payout + vayada fee combined" },
+                { label: "Guest Data Ownership", value: "100%", sub: "Build direct relationships, remarket commission-free" },
+              ].map(({ label, value, sub }) => (
+                <div key={label} className="rounded-2xl bg-white/5 border border-white/10 px-6 py-5 shadow-[0_20px_50px_-40px_rgba(0,0,0,0.6)]">
+                  <div className="text-3xl font-bold text-primary-100">{value}</div>
+                  <div className="mt-1 text-sm font-semibold text-white">{label}</div>
+                  <p className="text-sm text-slate-200 mt-2">{sub}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              {[
+                {
+                  title: "Zero Risk Payouts",
+                  body: "Commission is only paid after the guest has checked out. Cancellation or no-show? You pay nothing. Only pay for completed, profitable stays.",
+                  highlights: [
+                    { label: "Problem Solved", text: "Upfront marketing costs for bookings that cancel or no-show." },
+                    { label: "Financial Impact", text: "Eliminate risk entirely. Every commission paid represents actual revenue earned." },
+                  ],
+                },
+                {
+                  title: "Transparent Tracking",
+                  body: "Every creator receives a unique, trackable link. We handle all technical tracking for accurate attribution and automated commission calculation.",
+                  highlights: [
+                    { label: "Problem Solved", text: "Manual tracking, disputed commissions, and complex spreadsheet management." },
+                    { label: "Financial Impact", text: "Single monthly overview of all commissions. Hassle-free, automated payments." },
+                  ],
+                },
+              ].map(({ title, body, highlights }) => (
+                <div key={title} className="rounded-2xl bg-white/5 border border-white/10 px-6 py-6 shadow-[0_20px_50px_-40px_rgba(0,0,0,0.6)] space-y-4">
+                  <h3 className="text-xl font-semibold text-white">{title}</h3>
+                  <p className="text-sm md:text-base text-slate-100 leading-relaxed">{body}</p>
+                  <div className="space-y-3">
+                    {highlights.map(({ label, text }) => (
+                      <div key={label} className="rounded-xl bg-white/5 border border-white/10 px-4 py-3">
+                        <p className="text-xs font-semibold text-primary-100">{label}</p>
+                        <p className="text-sm text-slate-100 mt-1 leading-relaxed">{text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8">
+              <div className="rounded-2xl bg-white/5 border border-white/10 px-6 py-5 shadow-[0_20px_50px_-40px_rgba(0,0,0,0.6)]">
+                <div className="text-sm font-semibold text-white mb-3">OTA vs vayada comparison</div>
+                <div className="space-y-3 text-sm text-slate-100">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <span>Traditional OTA commission</span>
+                    <span className="text-red-200 font-semibold">15–20%</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <span>vayada total cost</span>
+                    <span className="text-primary-100 font-semibold">5–6%</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <span>Your savings</span>
+                    <span className="text-green-200 font-semibold">~70%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Guest data ownership</span>
+                    <span className="text-primary-100 font-semibold">100% yours</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-slate-200 mt-4">
+                Register your hotel now and complete successful collaborations to build your reputation, guaranteeing your place in the 2026 affiliate program.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="bg-white py-16 md:py-20">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Frequently Asked Questions</h2>
+              <p className="text-base md:text-lg text-gray-600 mt-2">Everything you need to know about joining vayada</p>
+            </div>
+
+            <FAQAccordion />
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="bg-[#f8f8fb] py-16 md:py-20">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Ready to take control of your creator partnerships?</h2>
+            <p className="text-base md:text-lg text-gray-600">
+              Join the marketplace where verified data replaces inbox chaos and professional partnerships drive direct bookings.
+            </p>
+            <div className="pt-2">
+              <Link href={`${ROUTES.SIGNUP}?type=hotel`}>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl px-8 inline-flex items-center gap-2"
+                >
+                  Register our property for free
+                  <ArrowRightIcon className="w-5 h-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
+    </div>
+  )
+}
+
+function FAQAccordion() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0)
+
+  const faqs = [
+    {
+      question: "Is the marketplace really free for hotels?",
+      answer:
+        "Yes, registering your property and accessing the creator marketplace is completely free. There are no subscription fees or hidden costs for the current Phase 1 features.",
+    },
+    {
+      question: "How do you verify creator data?",
+      answer:
+        "Creators put in the data about their metrics including follower counts, engagement rates, and audience demographics. We verify it with public sources and ask for proof when our algorithm alerts.",
+    },
+    {
+      question: "What collaboration types can I offer?",
+      answer:
+        "You have full flexibility: free stays, discounted rates, paid collaborations or custom packages. You define the terms and deliverables for each collaboration.",
+    },
+    {
+      question: "Will there be commission fees in the future?",
+      answer:
+        "In 2026, we're launching an optional affiliate tracking system where you can offer creators a commission on direct bookings they generate. You can decide the amount, the average will be around 5%. This is far lower than the 15-20% OTA fees, and you only pay after a completed stay.",
+    },
+  ]
+
+  return (
+    <div className="space-y-0">
+      {faqs.map((faq, index) => {
+        const isOpen = openIndex === index
+        return (
+          <div key={index} className="border-b border-gray-200">
+            <button
+              onClick={() => setOpenIndex(isOpen ? null : index)}
+              className="w-full py-5 flex items-center justify-between text-left hover:text-primary-600 transition-colors"
+            >
+              <span className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</span>
+              {isOpen ? (
+                <ChevronUpIcon className="w-5 h-5 text-gray-600 flex-shrink-0" />
+              ) : (
+                <ChevronDownIcon className="w-5 h-5 text-gray-600 flex-shrink-0" />
+              )}
+            </button>
+            {isOpen && (
+              <div className="pb-5 pl-0">
+                <p className="text-base text-gray-600 leading-relaxed">{faq.answer}</p>
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
