@@ -158,11 +158,15 @@ export interface HotelProfile {
 // Creator types
 export interface Creator {
   id: string
+  email: string
   name: string
   platforms: Platform[]
   audienceSize: number
   location: string
   portfolioLink?: string
+  shortDescription?: string
+  phone?: string | null
+  profilePicture?: string | null
   rating?: CreatorRating
   status: UserStatus
   createdAt: Date

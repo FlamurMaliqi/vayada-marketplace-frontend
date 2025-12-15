@@ -289,21 +289,29 @@ export default function ProfilePage() {
   /**
    * Transform API creator response to frontend CreatorProfile format
    */
-  const transformCreatorProfile = (apiCreator: ApiCreator): CreatorProfile => {
-    return {
-      id: apiCreator.id,
-      name: apiCreator.name,
-      profilePicture: undefined, // Not available in API yet
-      shortDescription: '', // Not available in API yet - could use description if added
-      location: apiCreator.location,
-      status: apiCreator.status as 'verified' | 'pending' | 'rejected',
-      rating: apiCreator.rating,
-      platforms: apiCreator.platforms || [],
-      portfolioLink: apiCreator.portfolioLink,
-      email: '', // Not available in API - will need to get from user object or add to API
-      phone: '', // Not available in API - will need to get from user object or add to API
-    }
-  }
+  const transformCreatorProfile = (apiCreator: ApiCreator): CreatorProfile => ({
+    id: apiCreator.id,
+    name: apiCreator.name,
+    profilePicture: apiCreator.profilePicture || undefined,
+    shortDescription: apiCreator.shortDescription || '',
+    location: apiCreator.location,
+    status:
+      apiCreator.status === 'verified' || apiCreator.status === 'pending' || apiCreator.status === 'rejected'
+        ? apiCreator.status
+        : 'pending',
+    rating: apiCreator.rating,
+    platforms: (apiCreator.platforms || []).map((platform) => ({
+      ...platform,
+      followers: platform.followers ?? 0,
+      engagementRate: platform.engagementRate ?? 0,
+      topCountries: platform.topCountries || [],
+      topAgeGroups: platform.topAgeGroups || [],
+      genderSplit: platform.genderSplit || { male: 0, female: 0 },
+    })),
+    portfolioLink: apiCreator.portfolioLink,
+    email: apiCreator.email,
+    phone: apiCreator.phone || '',
+  })
 
   /**
    * Transform API hotel profile response to frontend format
@@ -397,22 +405,7 @@ export default function ProfilePage() {
       if (userType === 'creator') {
         try {
           const apiProfile = await creatorService.getMyProfile()
-          // Transform API response to local CreatorProfile format
-          const profile: CreatorProfile = {
-            id: apiProfile.id,
-            name: apiProfile.name,
-            email: (apiProfile as any).email || '',
-            phone: (apiProfile as any).phone || undefined,
-            location: apiProfile.location,
-            portfolioLink: apiProfile.portfolioLink,
-            shortDescription: (apiProfile as any).shortDescription || '',
-            profilePicture: (apiProfile as any).profilePicture || undefined,
-            platforms: apiProfile.platforms || [],
-            rating: apiProfile.rating,
-            status: (apiProfile.status === 'verified' || apiProfile.status === 'pending' || apiProfile.status === 'rejected') 
-              ? apiProfile.status 
-              : 'pending',
-          }
+          const profile = transformCreatorProfile(apiProfile)
           setCreatorProfile(profile)
         } catch (error) {
           // Check if it's a 405 (Method Not Allowed) - endpoint not implemented yet
@@ -1552,9 +1545,9 @@ export default function ProfilePage() {
                                     <div className="flex items-center gap-2 text-gray-700">
                                       <span className="font-medium">{platform.handle}</span>
                                       <span className="text-gray-400">•</span>
-                                      <span>{formatFollowersDE(platform.followers)} Follower</span>
+                                    <span>{formatFollowersDE(platform.followers ?? 0)} Follower</span>
                                       <span className="text-gray-400">•</span>
-                                      <span>{platform.engagementRate.toFixed(1).replace('.', ',')}% Engagement</span>
+                                    <span>{(platform.engagementRate ?? 0).toFixed(1).replace('.', ',')}% Engagement</span>
                                     </div>
                                   </div>
                                 </div>
