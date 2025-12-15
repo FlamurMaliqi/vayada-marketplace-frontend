@@ -5,11 +5,11 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ROUTES } from '@/lib/constants/routes'
 import { Button, Input } from '@/components/ui'
-import { Navigation, Footer } from '@/components/layout'
 import { UserType } from '@/lib/types'
 import { authService } from '@/services/auth'
 import { ApiErrorResponse } from '@/services/api/client'
 import { checkProfileStatus } from '@/lib/utils'
+import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 
 function SignUpForm() {
   const searchParams = useSearchParams()
@@ -21,11 +21,14 @@ function SignUpForm() {
     confirmPassword: '',
     userType: 'creator' as UserType,
   })
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [passwordError, setPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [emailError, setEmailError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   // Set user type from URL query parameter if present
   useEffect(() => {
@@ -75,6 +78,12 @@ function SignUpForm() {
     setConfirmPasswordError('')
     setEmailError('')
     setSubmitError('')
+    
+    // Validate terms acceptance
+    if (!termsAccepted) {
+      setSubmitError('You must agree to the Terms & Privacy to continue')
+      return
+    }
     
     // Validate email format
     if (!validateEmail(formData.email)) {
@@ -173,180 +182,261 @@ function SignUpForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex flex-col">
-      <Navigation />
-      
-      <main className="flex-1 pt-24 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-lg mx-auto">
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-8 py-6">
-              <h1 className="text-3xl font-bold text-white mb-2 text-center">vayada</h1>
+    <div className="min-h-screen flex">
+      {/* Left Side - Sign Up Form (50% width) */}
+      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 relative">
+        {/* Back to Home Button */}
+        <Link
+          href={ROUTES.HOME}
+          className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors"
+        >
+          <ArrowLeftIcon className="w-5 h-5" />
+          <span className="text-sm font-medium">Back to Home</span>
+        </Link>
+
+        <div className="w-full max-w-md">
+          {/* Logo/Icon */}
+          <div className="mb-6">
+            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Title */}
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Sign up</h1>
+          <p className="text-gray-600 mb-8">Enter your credentials to create your account</p>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* User Type Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                I am a
+              </label>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, userType: 'creator' }))}
+                  className={`
+                    flex-1 px-4 py-3 rounded-lg border transition-all font-medium text-sm flex items-center justify-center gap-2
+                    ${formData.userType === 'creator'
+                      ? 'border-primary-600 bg-primary-600 text-white'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-primary-300'
+                    }
+                  `}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Creator
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, userType: 'hotel' }))}
+                  className={`
+                    flex-1 px-4 py-3 rounded-lg border transition-all font-medium text-sm flex items-center justify-center gap-2
+                    ${formData.userType === 'hotel'
+                      ? 'border-primary-600 bg-primary-600 text-white'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-primary-300'
+                    }
+                  `}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Hotel
+                </button>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              {/* User Type Selection */}
-              <div className="space-y-4">
-                <label className="block text-base font-semibold text-gray-900 mb-4">
-                  I am a
-                  <span className="text-red-500 ml-1">*</span>
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, userType: 'creator' }))}
-                    className={`
-                      px-6 py-6 rounded-xl border-2 transition-all font-medium
-                      ${formData.userType === 'creator'
-                        ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-md scale-105'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-primary-300 hover:bg-primary-50/50'
-                      }
-                    `}
-                  >
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${formData.userType === 'creator' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <span className="text-lg">Creator</span>
-                      <span className="text-xs text-gray-500">Influencer or Content Creator</span>
-                    </div>
-                  </button>
-                  
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, userType: 'hotel' }))}
-                    className={`
-                      px-6 py-6 rounded-xl border-2 transition-all font-medium
-                      ${formData.userType === 'hotel'
-                        ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-md scale-105'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-primary-300 hover:bg-primary-50/50'
-                      }
-                    `}
-                  >
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${formData.userType === 'hotel' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                      </div>
-                      <span className="text-lg">Hotel</span>
-                      <span className="text-xs text-gray-500">Hotel or Accommodation</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
+            {/* Name Field */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Your name"
+                autoComplete="name"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white"
+              />
+            </div>
 
-              <div className="border-t border-gray-200 pt-6 space-y-6">
-                <Input
-                  label="Name (Optional)"
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Your name"
-                  autoComplete="name"
-                  helperText="If left empty, will default to your email prefix"
-                />
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email address
+              </label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder="you@example.com"
+                autoComplete="email"
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white ${
+                  emailError ? 'border-red-300' : 'border-gray-300'
+                }`}
+              />
+              {emailError && (
+                <p className="mt-1 text-sm text-red-600">{emailError}</p>
+              )}
+            </div>
 
-                <Input
-                  label="Email address"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  error={emailError}
-                />
-
-                <Input
-                  label="Password"
-                  type="password"
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  placeholder="Create a strong password"
+                  placeholder="min 8 characters"
                   autoComplete="new-password"
-                  helperText="Must be at least 8 characters"
-                  error={passwordError}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white pr-12 ${
+                    passwordError ? 'border-red-300' : 'border-gray-300'
+                  }`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {passwordError && (
+                <p className="mt-1 text-sm text-red-600">{passwordError}</p>
+              )}
+            </div>
 
-                <Input
-                  label="Confirm Password"
-                  type="password"
+            {/* Confirm Password Field */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  placeholder="Confirm your password"
+                  placeholder="Repeat password"
                   autoComplete="new-password"
-                  error={confirmPasswordError}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white pr-12 ${
+                    confirmPasswordError ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showConfirmPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {confirmPasswordError && (
+                <p className="mt-1 text-sm text-red-600">{confirmPasswordError}</p>
+              )}
+            </div>
+
+            {/* Terms & Privacy Checkbox */}
+            <div className="flex items-start">
+              <div className="flex items-center h-5">
+                <input
+                  id="terms"
+                  name="terms"
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  required
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded-full"
                 />
               </div>
-
-              <div className="border-t border-gray-200 pt-6">
-                <div className="flex items-start">
-                  <div className="flex items-center h-5">
-                    <input
-                      id="terms"
-                      name="terms"
-                      type="checkbox"
-                      required
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                    />
-                  </div>
-                  <div className="ml-3 text-base">
-                    <label htmlFor="terms" className="text-gray-700">
-                      I agree to the{' '}
-                      <Link href="/terms" className="text-primary-600 hover:text-primary-700 font-medium">
-                        Terms of Service
-                      </Link>
-                      {' '}and{' '}
-                      <Link href="/privacy" className="text-primary-600 hover:text-primary-700 font-medium">
-                        Privacy Policy
-                      </Link>
-                    </label>
-                  </div>
-                </div>
+              <div className="ml-3 text-sm">
+                <label htmlFor="terms" className="text-gray-700">
+                  I agree to the{' '}
+                  <Link href={ROUTES.TERMS} className="text-primary-600 hover:text-primary-700 font-medium">
+                    Terms
+                  </Link>
+                  {' '}&{' '}
+                  <Link href={ROUTES.PRIVACY} className="text-primary-600 hover:text-primary-700 font-medium">
+                    Privacy
+                  </Link>
+                </label>
               </div>
-
-              {submitError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-sm text-red-800 font-medium">{submitError}</p>
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Creating Account...' : 'Create Account'}
-              </Button>
-            </form>
-
-            <div className="px-8 pb-8 text-center border-t border-gray-200 pt-6">
-              <p className="text-base text-gray-700">
-                Already have an account?{' '}
-                <Link
-                  href={ROUTES.LOGIN}
-                  className="text-primary-600 hover:text-primary-700 font-semibold"
-                >
-                  Sign in
-                </Link>
-              </p>
             </div>
+
+            {/* Error Message */}
+            {submitError && (
+              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+                <p className="text-sm text-red-800 font-semibold">{submitError}</p>
+              </div>
+            )}
+
+            {/* Create Account Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting || !termsAccepted}
+              className={`
+                w-full px-4 py-3 rounded-lg font-medium text-sm transition-all
+                ${isSubmitting || !termsAccepted
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-primary-600 text-white hover:bg-primary-700'
+                }
+              `}
+            >
+              {isSubmitting ? 'Creating Account...' : 'Create Account'}
+            </button>
+          </form>
+
+          {/* Sign In Link */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Have an account?{' '}
+              <Link
+                href={ROUTES.LOGIN}
+                className="text-primary-600 hover:text-primary-700 font-semibold"
+              >
+                Sign in
+              </Link>
+            </p>
           </div>
         </div>
-      </main>
+      </div>
 
-      <Footer />
+      {/* Right Side - Image (50% width) */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <div className="absolute inset-0">
+          <img
+            src="/signup-hero.jpg"
+            alt="Luxury resort with hot tub and caldera view"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </div>
     </div>
   )
 }
@@ -354,23 +444,19 @@ function SignUpForm() {
 export default function SignUpPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex flex-col">
-        <Navigation />
-        <main className="flex-1 pt-24 pb-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-lg mx-auto">
-            <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-8">
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-6"></div>
-                <div className="space-y-4">
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
-                </div>
-              </div>
+      <div className="min-h-screen flex">
+        <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8">
+          <div className="w-full max-w-md">
+            <div className="animate-pulse space-y-4">
+              <div className="h-12 bg-gray-200 rounded w-12 mb-6"></div>
+              <div className="h-10 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
             </div>
           </div>
-        </main>
-        <Footer />
+        </div>
+        <div className="hidden lg:block lg:w-1/2 bg-gray-200"></div>
       </div>
     }>
       <SignUpForm />
