@@ -101,7 +101,7 @@ export default function ProfileCompletePage() {
     }
     return 'An error occurred'
   }
-  
+
   // Step management
   const [currentStep, setCurrentStep] = useState<number>(1)
   const creatorSteps = ['Basic Information', 'Social Media Platforms']
@@ -158,10 +158,10 @@ export default function ProfileCompletePage() {
     if (typeof window !== 'undefined') {
       const storedUserType = localStorage.getItem('userType') as UserType | null
       setUserType(storedUserType)
-      
+
       // Pre-fill forms with user data
       const userName = localStorage.getItem('userName') || ''
-      
+
       if (storedUserType === 'hotel') {
         setHotelForm(prev => ({
           ...prev,
@@ -173,7 +173,7 @@ export default function ProfileCompletePage() {
           name: userName,
         }))
       }
-      
+
       if (storedUserType) {
         loadProfileStatus(storedUserType, true) // Skip redirect in closed beta, show completion message if already complete
       } else {
@@ -188,7 +188,7 @@ export default function ProfileCompletePage() {
     try {
       const status = await checkProfileStatus(type)
       setProfileStatus(status)
-      
+
       if (status && status.profile_complete && !skipRedirect && !profileCompleted) {
         // Profile already complete, but only redirect if not in completion flow
         // In closed beta, we show completion message instead of redirecting
@@ -216,7 +216,7 @@ export default function ProfileCompletePage() {
 
   const removePlatform = (index: number) => {
     setCreatorPlatforms(creatorPlatforms.filter((_, i) => i !== index))
-    
+
     // Clean up collapsedPlatformCards: remove the deleted index and adjust all indices greater than it
     const newCollapsed = new Set<number>()
     collapsedPlatformCards.forEach((collapsedIndex) => {
@@ -230,7 +230,7 @@ export default function ProfileCompletePage() {
       // Skip the removed index itself
     })
     setCollapsedPlatformCards(newCollapsed)
-    
+
     // Clean up expandedPlatforms: remove the deleted index and adjust all indices greater than it
     const newExpanded = new Set<number>()
     expandedPlatforms.forEach((expandedIndex) => {
@@ -328,12 +328,20 @@ export default function ProfileCompletePage() {
     setCreatorPlatforms(updated)
   }
 
-  const updateGenderSplit = (platformIndex: number, field: 'male' | 'female', value: number) => {
+  const updateGenderSplit = (platformIndex: number, field: 'male' | 'female', value: string) => {
     const updated = [...creatorPlatforms]
     if (!updated[platformIndex].gender_split) {
       updated[platformIndex].gender_split = { male: 0, female: 0 }
     }
-    updated[platformIndex].gender_split![field] = value
+    // Parse the value, handling empty string
+    if (value === '' || value === null || value === undefined) {
+      updated[platformIndex].gender_split![field] = 0
+    } else {
+      const numValue = parseFloat(value) || 0
+      // Clamp between 0 and 100
+      const clampedValue = Math.max(0, Math.min(100, numValue))
+      updated[platformIndex].gender_split![field] = clampedValue
+    }
     setCreatorPlatforms(updated)
   }
 
@@ -342,32 +350,32 @@ export default function ProfileCompletePage() {
       setError('Name is required')
       return false
     }
-    
+
     if (!creatorForm.location.trim()) {
       setError('Location is required')
       return false
     }
-    
+
     if (!creatorForm.short_description.trim()) {
       setError('Short description is required')
       return false
     }
-    
+
     if (creatorForm.short_description.trim().length < 10) {
       setError('Short description must be at least 10 characters')
       return false
     }
-    
+
     if (creatorForm.short_description.trim().length > 500) {
       setError('Short description must be at most 500 characters')
       return false
     }
-    
+
     if (creatorPlatforms.length === 0) {
       setError('At least one platform is required')
       return false
     }
-    
+
     for (let i = 0; i < creatorPlatforms.length; i++) {
       const platform = creatorPlatforms[i]
       if (!platform.name) {
@@ -387,7 +395,7 @@ export default function ProfileCompletePage() {
         return false
       }
     }
-    
+
     return true
   }
 
@@ -396,32 +404,32 @@ export default function ProfileCompletePage() {
       setError('Hotel name must be at least 2 characters')
       return false
     }
-    
+
     if (!hotelForm.location.trim()) {
       setError('Location is required')
       return false
     }
-    
+
     if (!hotelForm.about.trim()) {
       setError('About section is recommended. Please add a description about your hotel.')
       return false
     }
-    
+
     if (hotelForm.about.trim().length < 50) {
       setError('About section must be at least 50 characters')
       return false
     }
-    
+
     if (!hotelForm.website.trim()) {
       setError('Website is recommended. Please add your hotel website URL.')
       return false
     }
-    
+
     if (hotelListings.length === 0) {
       setError('At least one property listing is required. Please add a listing.')
       return false
     }
-    
+
     // Validate each listing
     for (let i = 0; i < hotelListings.length; i++) {
       const listing = hotelListings[i]
@@ -491,7 +499,7 @@ export default function ProfileCompletePage() {
         }
       }
     }
-    
+
     return true
   }
 
@@ -517,7 +525,7 @@ export default function ProfileCompletePage() {
   const removeListing = (index: number) => {
     setHotelListings(hotelListings.filter((_, i) => i !== index))
     listingImageInputRefs.current = listingImageInputRefs.current.filter((_, i) => i !== index)
-    
+
     // Clean up collapsedListingCards: remove the deleted index and adjust all indices greater than it
     const newCollapsed = new Set<number>()
     collapsedListingCards.forEach((collapsedIndex) => {
@@ -599,39 +607,63 @@ export default function ProfileCompletePage() {
   const handleCreatorSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    
+
     if (!validateCreatorForm()) {
       return
     }
-    
+
     setSubmitting(true)
     try {
       // Prepare platform data
+      // Use camelCase for genderSplit, snake_case for other fields
       const platforms = creatorPlatforms.map(p => ({
         name: p.name,
         handle: p.handle,
         followers: Number(p.followers),
-        engagementRate: Number(p.engagement_rate),
-        ...(p.top_countries && { topCountries: p.top_countries }),
-        ...(p.top_age_groups && { topAgeGroups: p.top_age_groups }),
-        ...(p.gender_split && { genderSplit: p.gender_split }),
+        engagementRate: Number(p.engagement_rate), // camelCase for engagementRate
+        ...(p.top_countries && p.top_countries.length > 0 && {
+          topCountries: p.top_countries.map(tc => ({
+            country: tc.country,
+            percentage: tc.percentage,
+          })),
+        }),
+        ...(p.top_age_groups && p.top_age_groups.length > 0 && {
+          topAgeGroups: p.top_age_groups.map(tag => ({
+            ageRange: tag.ageRange,
+            percentage: tag.percentage,
+          })),
+        }),
+        ...(p.gender_split && (p.gender_split.male > 0 || p.gender_split.female > 0) && {
+          genderSplit: {
+            male: p.gender_split.male,
+            female: p.gender_split.female,
+          },
+        }),
       }))
 
       // Calculate total audience size from platforms
       const audienceSize = platforms.reduce((sum, p) => sum + p.followers, 0)
 
       // Update creator profile
-      // Note: short_description and phone may not be in Creator type but are accepted by API
-      await creatorService.updateMyProfile({
+      // Profile completion endpoint expects camelCase for platforms (genderSplit, engagementRate, etc.)
+      const updatePayload = {
         name: creatorForm.name,
         location: creatorForm.location,
-        portfolioLink: creatorForm.portfolio_link || undefined,
-        platforms: platforms,
-        audienceSize: audienceSize,
-        ...(creatorForm.short_description && { short_description: creatorForm.short_description }),
-        ...(creatorForm.phone && { phone: creatorForm.phone }),
-      } as any)
-      
+        platforms: platforms, // Already in camelCase format
+        audienceSize: audienceSize, // camelCase
+        ...(creatorForm.portfolio_link && creatorForm.portfolio_link.trim() && {
+          portfolioLink: creatorForm.portfolio_link.trim(), // camelCase
+        }),
+        ...(creatorForm.short_description && creatorForm.short_description.trim() && {
+          shortDescription: creatorForm.short_description.trim(), // camelCase
+        }),
+        ...(creatorForm.phone && creatorForm.phone.trim() && {
+          phone: creatorForm.phone.trim(),
+        }),
+      }
+
+      await creatorService.updateMyProfile(updatePayload as any)
+
       // Check if profile is now complete after successful update
       const isComplete = await isProfileComplete('creator')
       if (isComplete) {
@@ -661,22 +693,22 @@ export default function ProfileCompletePage() {
   const handleHotelSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    
+
     if (!validateHotelForm()) {
       return
     }
-    
+
     setSubmitting(true)
     try {
       // Get email from localStorage (stored during login) - backend requires it
       const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
-      
+
       if (!userEmail) {
         setError('Email is required. Please log in again.')
         setSubmitting(false)
         return
       }
-      
+
       // Update hotel profile
       await hotelService.updateMyProfile({
         name: hotelForm.name,
@@ -686,7 +718,7 @@ export default function ProfileCompletePage() {
         phone: hotelForm.phone || undefined,
         email: userEmail, // Backend requires email
       })
-      
+
       // Create listings
       for (const listing of hotelListings) {
         // Transform collaboration types to offerings
@@ -747,7 +779,7 @@ export default function ProfileCompletePage() {
           },
         })
       }
-      
+
       // Check if profile is now complete after successful update
       const isComplete = await isProfileComplete('hotel')
       if (isComplete) {
@@ -952,18 +984,17 @@ export default function ProfileCompletePage() {
               const stepNumber = index + 1
               const isActive = currentStep === stepNumber
               const isCompleted = currentStep > stepNumber
-              
+
               return (
                 <div key={index} className="flex items-center">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
-                        isActive
+                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
                           ? 'bg-primary-600 text-white shadow-lg scale-110'
                           : isCompleted
-                          ? 'bg-green-500 text-white'
-                          : 'bg-gray-200 text-gray-600'
-                      }`}
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-200 text-gray-600'
+                        }`}
                     >
                       {isCompleted ? (
                         <CheckCircleIcon className="w-6 h-6" />
@@ -972,18 +1003,16 @@ export default function ProfileCompletePage() {
                       )}
                     </div>
                     <span
-                      className={`mt-2 text-sm font-medium ${
-                        isActive ? 'text-primary-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
-                      }`}
+                      className={`mt-2 text-sm font-medium ${isActive ? 'text-primary-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                        }`}
                     >
                       {step}
                     </span>
                   </div>
                   {index < steps.length - 1 && (
                     <div
-                      className={`w-24 h-1 mx-4 transition-all ${
-                        isCompleted ? 'bg-green-500' : currentStep > stepNumber ? 'bg-primary-300' : 'bg-gray-200'
-                      }`}
+                      className={`w-24 h-1 mx-4 transition-all ${isCompleted ? 'bg-green-500' : currentStep > stepNumber ? 'bg-primary-300' : 'bg-gray-200'
+                        }`}
                     />
                   )}
                 </div>
@@ -1019,7 +1048,7 @@ export default function ProfileCompletePage() {
                     error={error && error.includes('Name') ? error : undefined}
                     leadingIcon={<UserIcon className="w-5 h-5 text-gray-400" />}
                   />
-                  
+
                   <Input
                     label="Location"
                     type="text"
@@ -1071,333 +1100,342 @@ export default function ProfileCompletePage() {
             {/* Step 2: Platforms Section */}
             {currentStep === 2 && (
               <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <SparklesIcon className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-bold text-gray-900">Social Media Platforms</h3>
-                    <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-semibold">
-                      {creatorPlatforms.length} platform{creatorPlatforms.length !== 1 ? 's' : ''}
-                    </span>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <SparklesIcon className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Add at least one platform <span className="font-semibold text-red-600">(required)</span>
-                  </p>
-                </div>
-              </div>
-
-              {creatorPlatforms.length === 0 && (
-                <div className="border border-primary-200 rounded-2xl p-8 text-center bg-white shadow-sm">
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary-50 flex items-center justify-center">
-                    <SparklesIcon className="w-6 h-6 text-primary-600" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-2xl font-bold text-gray-900">Social Media Platforms</h3>
+                      <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-semibold">
+                        {creatorPlatforms.length} platform{creatorPlatforms.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Add at least one platform <span className="font-semibold text-red-600">(required)</span>
+                    </p>
                   </div>
-                  <p className="text-primary-800 font-semibold mb-2">No platforms added yet</p>
-                  <p className="text-sm text-gray-600">Add at least one social media platform to complete your profile.</p>
                 </div>
-              )}
 
-              {creatorPlatforms.map((platform, index) => (
-                <div
-                  key={index}
-                  className="border border-primary-100 rounded-2xl p-5 space-y-4 bg-white shadow-sm hover:shadow-md transition-all"
-                >
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-primary-100/70">
-                    <button
-                      type="button"
-                      onClick={() => togglePlatformCardCollapse(index)}
-                      className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
-                    >
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-sm ${
-                        platform.name && platform.handle && platform.followers && platform.engagement_rate
-                          ? 'bg-green-50 text-green-700'
-                          : 'bg-primary-50 text-primary-700'
-                      }`}>
-                        {platform.name && platform.handle && platform.followers && platform.engagement_rate ? (
-                          <CheckCircleIcon className="w-5 h-5" />
+                {creatorPlatforms.length === 0 && (
+                  <div className="border border-primary-200 rounded-2xl p-8 text-center bg-white shadow-sm">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary-50 flex items-center justify-center">
+                      <SparklesIcon className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <p className="text-primary-800 font-semibold mb-2">No platforms added yet</p>
+                    <p className="text-sm text-gray-600">Add at least one social media platform to complete your profile.</p>
+                  </div>
+                )}
+
+                {creatorPlatforms.map((platform, index) => (
+                  <div
+                    key={index}
+                    className="border border-primary-100 rounded-2xl p-5 space-y-4 bg-white shadow-sm hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-center justify-between mb-3 pb-3 border-b border-primary-100/70">
+                      <button
+                        type="button"
+                        onClick={() => togglePlatformCardCollapse(index)}
+                        className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-sm ${platform.name && platform.handle && platform.followers && platform.engagement_rate
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-primary-50 text-primary-700'
+                          }`}>
+                          {platform.name && platform.handle && platform.followers && platform.engagement_rate ? (
+                            <CheckCircleIcon className="w-5 h-5" />
+                          ) : (
+                            index + 1
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-gray-900">
+                              {platform.name || `Platform ${index + 1}`}
+                            </h4>
+                            {platform.name && platform.handle && platform.followers && platform.engagement_rate && (
+                              <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">
+                                Complete
+                              </span>
+                            )}
+                          </div>
+                          {collapsedPlatformCards.has(index) && platform.name && (
+                            <p className="text-sm text-gray-500 mt-0.5">
+                              {platform.handle && `@${platform.handle.replace('@', '')}`} {platform.followers && `• ${Number(platform.followers).toLocaleString()} followers`}
+                            </p>
+                          )}
+                        </div>
+                        {collapsedPlatformCards.has(index) ? (
+                          <ChevronDownIcon className="w-5 h-5 text-gray-600" />
                         ) : (
-                          index + 1
+                          <ChevronUpIcon className="w-5 h-5 text-gray-600" />
                         )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-gray-900">
-                            {platform.name || `Platform ${index + 1}`}
-                          </h4>
-                          {platform.name && platform.handle && platform.followers && platform.engagement_rate && (
-                            <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">
-                              Complete
-                            </span>
-                          )}
-                        </div>
-                        {collapsedPlatformCards.has(index) && platform.name && (
-                          <p className="text-sm text-gray-500 mt-0.5">
-                            {platform.handle && `@${platform.handle.replace('@', '')}`} {platform.followers && `• ${Number(platform.followers).toLocaleString()} followers`}
-                          </p>
-                        )}
-                      </div>
-                      {collapsedPlatformCards.has(index) ? (
-                        <ChevronDownIcon className="w-5 h-5 text-gray-600" />
-                      ) : (
-                        <ChevronUpIcon className="w-5 h-5 text-gray-600" />
-                      )}
-                    </button>
-                    <div className="flex items-center gap-2">
-                      {creatorPlatforms.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removePlatform(index)}
-                          className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Remove platform"
-                        >
-                          <XMarkIcon className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {!collapsedPlatformCards.has(index) && (
-                    <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Platform Name <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={platform.name}
-                          onChange={(e) => updatePlatform(index, 'name', e.target.value)}
-                          required
-                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white font-medium text-gray-900"
-                        >
-                          <option value="">Select platform</option>
-                          {PLATFORM_OPTIONS.map((opt) => (
-                            <option key={opt} value={opt}>
-                              {opt}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <Input
-                        label="Handle/Username"
-                        type="text"
-                        value={platform.handle}
-                        onChange={(e) => updatePlatform(index, 'handle', e.target.value)}
-                        required
-                        placeholder="@username or username"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Input
-                        label="Followers"
-                        type="number"
-                        value={platform.followers}
-                        onChange={(e) => updatePlatform(index, 'followers', e.target.value === '' ? '' : parseInt(e.target.value))}
-                        required
-                        placeholder="0"
-                        min={1}
-                        helperText="Must be greater than 0"
-                      />
-
-                      <Input
-                        label="Engagement Rate (%)"
-                        type="number"
-                        value={platform.engagement_rate}
-                        onChange={(e) => updatePlatform(index, 'engagement_rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                        required
-                        placeholder="0.00"
-                        min={0.01}
-                        max={100}
-                        step="0.01"
-                        helperText="Must be greater than 0"
-                      />
-                    </div>
-
-                  {/* Optional Analytics Section */}
-                  <div className="pt-3 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={() => togglePlatformExpanded(index)}
-                      className="w-full flex items-center justify-between p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
+                      </button>
                       <div className="flex items-center gap-2">
-                        <ChartBarIcon className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm font-semibold text-gray-700">Analytics Data (Optional)</span>
+                        {creatorPlatforms.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removePlatform(index)}
+                            className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Remove platform"
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
-                      {expandedPlatforms.has(index) ? (
-                        <ChevronUpIcon className="w-4 h-4 text-gray-600" />
-                      ) : (
-                        <ChevronDownIcon className="w-4 h-4 text-gray-600" />
-                      )}
-                    </button>
+                    </div>
 
-                    {expandedPlatforms.has(index) && (
-                      <div className="mt-3 space-y-4">
-                        {/* Top Countries */}
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <label className="block text-sm font-semibold text-gray-700">
-                              Top Countries
+                    {!collapsedPlatformCards.has(index) && (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Platform Name <span className="text-red-500">*</span>
                             </label>
-                            <button
-                              type="button"
-                              onClick={() => addTopCountry(index)}
-                              className="px-3 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors flex items-center gap-1.5"
+                            <select
+                              value={platform.name}
+                              onChange={(e) => updatePlatform(index, 'name', e.target.value)}
+                              required
+                              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white font-medium text-gray-900"
                             >
-                              <PlusIcon className="w-3.5 h-3.5" />
-                              Add Country
-                            </button>
+                              <option value="">Select platform</option>
+                              {PLATFORM_OPTIONS.map((opt) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
                           </div>
-                          {platform.top_countries && platform.top_countries.length > 0 ? (
-                            <div className="space-y-2">
-                              {platform.top_countries.map((country, countryIndex) => (
-                                <div key={countryIndex} className="flex gap-2 items-end">
-                                  <div className="flex-1">
-                                    <Input
-                                      label="Country"
-                                      type="text"
-                                      value={country.country}
-                                      onChange={(e) => updateTopCountry(index, countryIndex, 'country', e.target.value)}
-                                      placeholder="e.g., United States"
-                                    />
-                                  </div>
-                                  <div className="w-32">
-                                    <Input
-                                      label="%"
-                                      type="number"
-                                      value={country.percentage}
-                                      onChange={(e) => updateTopCountry(index, countryIndex, 'percentage', parseFloat(e.target.value) || 0)}
-                                      placeholder="0"
-                                      min={0}
-                                      max={100}
-                                      step="0.1"
-                                    />
-                                  </div>
+
+                          <Input
+                            label="Handle/Username"
+                            type="text"
+                            value={platform.handle}
+                            onChange={(e) => updatePlatform(index, 'handle', e.target.value)}
+                            required
+                            placeholder="@username or username"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Input
+                            label="Followers"
+                            type="number"
+                            value={platform.followers}
+                            onChange={(e) => updatePlatform(index, 'followers', e.target.value === '' ? '' : parseInt(e.target.value))}
+                            required
+                            placeholder="0"
+                            min={1}
+                            helperText="Must be greater than 0"
+                          />
+
+                          <Input
+                            label="Engagement Rate (%)"
+                            type="number"
+                            value={platform.engagement_rate}
+                            onChange={(e) => updatePlatform(index, 'engagement_rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                            required
+                            placeholder="0.00"
+                            min={0.01}
+                            max={100}
+                            step="0.01"
+                            helperText="Must be greater than 0"
+                          />
+                        </div>
+
+                        {/* Optional Analytics Section */}
+                        <div className="pt-3 border-t border-gray-200">
+                          <button
+                            type="button"
+                            onClick={() => togglePlatformExpanded(index)}
+                            className="w-full flex items-center justify-between p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <ChartBarIcon className="w-4 h-4 text-gray-600" />
+                              <span className="text-sm font-semibold text-gray-700">Analytics Data (Optional)</span>
+                            </div>
+                            {expandedPlatforms.has(index) ? (
+                              <ChevronUpIcon className="w-4 h-4 text-gray-600" />
+                            ) : (
+                              <ChevronDownIcon className="w-4 h-4 text-gray-600" />
+                            )}
+                          </button>
+
+                          {expandedPlatforms.has(index) && (
+                            <div className="mt-3 space-y-4">
+                              {/* Top Countries */}
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <label className="block text-sm font-semibold text-gray-700">
+                                    Top Countries
+                                  </label>
                                   <button
                                     type="button"
-                                    onClick={() => removeTopCountry(index, countryIndex)}
-                                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors mb-1"
+                                    onClick={() => addTopCountry(index)}
+                                    className="px-3 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors flex items-center gap-1.5"
                                   >
-                                    <XMarkIcon className="w-5 h-5" />
+                                    <PlusIcon className="w-3.5 h-3.5" />
+                                    Add Country
                                   </button>
                                 </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="border border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50 text-center">
-                              <p className="text-sm text-gray-400">No countries added yet</p>
-                            </div>
-                          )}
-                        </div>
+                                {platform.top_countries && platform.top_countries.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {platform.top_countries.map((country, countryIndex) => (
+                                      <div key={countryIndex} className="flex gap-2 items-end">
+                                        <div className="flex-1">
+                                          <Input
+                                            label="Country"
+                                            type="text"
+                                            value={country.country}
+                                            onChange={(e) => updateTopCountry(index, countryIndex, 'country', e.target.value)}
+                                            placeholder="e.g., United States"
+                                          />
+                                        </div>
+                                        <div className="w-32">
+                                          <Input
+                                            label="%"
+                                            type="number"
+                                            value={country.percentage}
+                                            onChange={(e) => updateTopCountry(index, countryIndex, 'percentage', parseFloat(e.target.value) || 0)}
+                                            placeholder="0"
+                                            min={0}
+                                            max={100}
+                                            step="0.1"
+                                          />
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeTopCountry(index, countryIndex)}
+                                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors mb-1"
+                                        >
+                                          <XMarkIcon className="w-5 h-5" />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="border border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50 text-center">
+                                    <p className="text-sm text-gray-400">No countries added yet</p>
+                                  </div>
+                                )}
+                              </div>
 
-                        {/* Top Age Groups */}
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <label className="block text-sm font-semibold text-gray-700">
-                              Top Age Groups
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => addTopAgeGroup(index)}
-                              className="px-3 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors flex items-center gap-1.5"
-                            >
-                              <PlusIcon className="w-3.5 h-3.5" />
-                              Add Age Group
-                            </button>
-                          </div>
-                          {platform.top_age_groups && platform.top_age_groups.length > 0 ? (
-                            <div className="space-y-2">
-                              {platform.top_age_groups.map((ageGroup, ageGroupIndex) => (
-                                <div key={ageGroupIndex} className="flex gap-2 items-end">
-                                  <div className="flex-1">
-                                    <Input
-                                      label="Age Range"
-                                      type="text"
-                                      value={ageGroup.ageRange}
-                                      onChange={(e) => updateTopAgeGroup(index, ageGroupIndex, 'ageRange', e.target.value)}
-                                      placeholder="e.g., 18-24, 25-34"
-                                    />
-                                  </div>
-                                  <div className="w-32">
-                                    <Input
-                                      label="%"
-                                      type="number"
-                                      value={ageGroup.percentage}
-                                      onChange={(e) => updateTopAgeGroup(index, ageGroupIndex, 'percentage', parseFloat(e.target.value) || 0)}
-                                      placeholder="0"
-                                      min={0}
-                                      max={100}
-                                      step="0.1"
-                                    />
-                                  </div>
+                              {/* Top Age Groups */}
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <label className="block text-sm font-semibold text-gray-700">
+                                    Top Age Groups
+                                  </label>
                                   <button
                                     type="button"
-                                    onClick={() => removeTopAgeGroup(index, ageGroupIndex)}
-                                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors mb-1"
+                                    onClick={() => addTopAgeGroup(index)}
+                                    className="px-3 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors flex items-center gap-1.5"
                                   >
-                                    <XMarkIcon className="w-5 h-5" />
+                                    <PlusIcon className="w-3.5 h-3.5" />
+                                    Add Age Group
                                   </button>
                                 </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="border border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50 text-center">
-                              <p className="text-sm text-gray-400">No age groups added yet</p>
-                            </div>
-                          )}
-                        </div>
+                                {platform.top_age_groups && platform.top_age_groups.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {platform.top_age_groups.map((ageGroup, ageGroupIndex) => (
+                                      <div key={ageGroupIndex} className="flex gap-2 items-end">
+                                        <div className="flex-1">
+                                          <Input
+                                            label="Age Range"
+                                            type="text"
+                                            value={ageGroup.ageRange}
+                                            onChange={(e) => updateTopAgeGroup(index, ageGroupIndex, 'ageRange', e.target.value)}
+                                            placeholder="e.g., 18-24, 25-34"
+                                          />
+                                        </div>
+                                        <div className="w-32">
+                                          <Input
+                                            label="%"
+                                            type="number"
+                                            value={ageGroup.percentage}
+                                            onChange={(e) => updateTopAgeGroup(index, ageGroupIndex, 'percentage', parseFloat(e.target.value) || 0)}
+                                            placeholder="0"
+                                            min={0}
+                                            max={100}
+                                            step="0.1"
+                                          />
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeTopAgeGroup(index, ageGroupIndex)}
+                                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors mb-1"
+                                        >
+                                          <XMarkIcon className="w-5 h-5" />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="border border-dashed border-gray-200 rounded-lg p-4 bg-gray-50/50 text-center">
+                                    <p className="text-sm text-gray-400">No age groups added yet</p>
+                                  </div>
+                                )}
+                              </div>
 
-                        {/* Gender Split */}
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Gender Split (%)
-                          </label>
-                          <div className="grid grid-cols-2 gap-3">
-                            <Input
-                              label="Male"
-                              type="number"
-                              value={platform.gender_split?.male || 0}
-                              onChange={(e) => updateGenderSplit(index, 'male', parseFloat(e.target.value) || 0)}
-                              placeholder="0"
-                              min={0}
-                              max={100}
-                              step="0.1"
-                              helperText="Percentage of male audience"
-                            />
-                            <Input
-                              label="Female"
-                              type="number"
-                              value={platform.gender_split?.female || 0}
-                              onChange={(e) => updateGenderSplit(index, 'female', parseFloat(e.target.value) || 0)}
-                              placeholder="0"
-                              min={0}
-                              max={100}
-                              step="0.1"
-                              helperText="Percentage of female audience"
-                            />
-                          </div>
-                          {platform.gender_split && (platform.gender_split.male + platform.gender_split.female) > 100 && (
-                            <p className="text-sm text-red-600 mt-2">⚠️ Total percentage should not exceed 100%</p>
+                              {/* Gender Split */}
+                              <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                  Gender Split (%)
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <Input
+                                    label="Male"
+                                    type="number"
+                                    value={platform.gender_split?.male && platform.gender_split.male > 0 ? platform.gender_split.male : ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value
+                                      // Remove leading zeros (e.g., "094" -> "94", "06" -> "6")
+                                      const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
+                                      updateGenderSplit(index, 'male', cleanVal)
+                                    }}
+                                    placeholder="0"
+                                    min={0}
+                                    max={100}
+                                    step="0.1"
+                                    helperText="Percentage of male audience"
+                                  />
+                                  <Input
+                                    label="Female"
+                                    type="number"
+                                    value={platform.gender_split?.female && platform.gender_split.female > 0 ? platform.gender_split.female : ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value
+                                      // Remove leading zeros (e.g., "094" -> "94", "06" -> "6")
+                                      const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
+                                      updateGenderSplit(index, 'female', cleanVal)
+                                    }}
+                                    placeholder="0"
+                                    min={0}
+                                    max={100}
+                                    step="0.1"
+                                    helperText="Percentage of female audience"
+                                  />
+                                </div>
+                                {platform.gender_split && (platform.gender_split.male + platform.gender_split.female) > 100 && (
+                                  <p className="text-sm text-red-600 mt-2">⚠️ Total percentage should not exceed 100%</p>
+                                )}
+                              </div>
+                            </div>
                           )}
                         </div>
-                      </div>
+                      </>
                     )}
                   </div>
-                    </>
-                  )}
-                </div>
-              ))}
+                ))}
 
-              <button
-                type="button"
-                onClick={addPlatform}
-                className="w-full py-4 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 hover:border-primary-500 hover:bg-primary-50 transition-all flex items-center justify-center gap-2 font-semibold group"
-              >
-                <PlusIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                Add Another Platform
-              </button>
+                <button
+                  type="button"
+                  onClick={addPlatform}
+                  className="w-full py-4 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 hover:border-primary-500 hover:bg-primary-50 transition-all flex items-center justify-center gap-2 font-semibold group"
+                >
+                  <PlusIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  Add Another Platform
+                </button>
               </div>
             )}
 
@@ -1455,87 +1493,87 @@ export default function ProfileCompletePage() {
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <BuildingOfficeIcon className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <BuildingOfficeIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">Basic Information</h3>
+                    <p className="text-sm text-gray-500">Your hotel details</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">Basic Information</h3>
-                  <p className="text-sm text-gray-500">Your hotel details</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <Input
-                    label="Hotel Name"
-                    type="text"
-                    value={hotelForm.name}
-                    onChange={(e) => setHotelForm({ ...hotelForm, name: e.target.value })}
-                    required
-                    placeholder="Your hotel or company name"
-                    helperText={undefined}
-                    leadingIcon={<BuildingOfficeIcon className="w-5 h-5" />}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <Input
-                    label="Location"
-                    type="text"
-                    value={hotelForm.location}
-                    onChange={(e) => setHotelForm({ ...hotelForm, location: e.target.value })}
-                    required
-                    placeholder="Enter your hotel location"
-                    error={error && error.includes('Location') ? error : undefined}
-                    helperText="Country or island, e.g., Bali, Indonesia."
-                    leadingIcon={<MapPinIcon className="w-5 h-5 text-gray-400" />}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <Textarea
-                  label="About"
-                  value={hotelForm.about}
-                  onChange={(e) => setHotelForm({ ...hotelForm, about: e.target.value })}
-                  placeholder="Describe your hotel, amenities, unique features, and what makes it special (minimum 50 characters)"
-                  rows={6}
-                  maxLength={5000}
-                  required
-                  helperText={`${hotelForm.about.length}/5000 characters`}
-                  className="resize-none"
-                  error={error && error.includes('About') ? error : undefined}
-                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Input
-                    label="Website"
-                    type="url"
-                    value={hotelForm.website}
-                    onChange={(e) => setHotelForm({ ...hotelForm, website: e.target.value })}
-                    placeholder="https://your-hotel.com"
+                  <div className="md:col-span-2">
+                    <Input
+                      label="Hotel Name"
+                      type="text"
+                      value={hotelForm.name}
+                      onChange={(e) => setHotelForm({ ...hotelForm, name: e.target.value })}
+                      required
+                      placeholder="Your hotel or company name"
+                      helperText={undefined}
+                      leadingIcon={<BuildingOfficeIcon className="w-5 h-5" />}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Input
+                      label="Location"
+                      type="text"
+                      value={hotelForm.location}
+                      onChange={(e) => setHotelForm({ ...hotelForm, location: e.target.value })}
+                      required
+                      placeholder="Enter your hotel location"
+                      error={error && error.includes('Location') ? error : undefined}
+                      helperText="Country or island, e.g., Bali, Indonesia."
+                      leadingIcon={<MapPinIcon className="w-5 h-5 text-gray-400" />}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <Textarea
+                    label="About"
+                    value={hotelForm.about}
+                    onChange={(e) => setHotelForm({ ...hotelForm, about: e.target.value })}
+                    placeholder="Describe your hotel, amenities, unique features, and what makes it special (minimum 50 characters)"
+                    rows={6}
+                    maxLength={5000}
                     required
-                    helperText={
-                      profileStatus && 'missing_fields' in profileStatus && profileStatus.missing_fields.includes('website')
-                        ? undefined
-                        : undefined
-                    }
-                    error={error && error.includes('Website') ? error : undefined}
-                    leadingIcon={<GlobeAltIcon className="w-5 h-5 text-gray-400" />}
+                    helperText={`${hotelForm.about.length}/5000 characters`}
+                    className="resize-none"
+                    error={error && error.includes('About') ? error : undefined}
                   />
 
-                  <Input
-                    label="Phone"
-                    type="tel"
-                    value={hotelForm.phone}
-                    onChange={(e) => setHotelForm({ ...hotelForm, phone: e.target.value })}
-                    placeholder="+1-555-123-4567"
-                    required
-                    helperText={undefined}
-                    leadingIcon={<PhoneIcon className="w-5 h-5 text-gray-400" />}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input
+                      label="Website"
+                      type="url"
+                      value={hotelForm.website}
+                      onChange={(e) => setHotelForm({ ...hotelForm, website: e.target.value })}
+                      placeholder="https://your-hotel.com"
+                      required
+                      helperText={
+                        profileStatus && 'missing_fields' in profileStatus && profileStatus.missing_fields.includes('website')
+                          ? undefined
+                          : undefined
+                      }
+                      error={error && error.includes('Website') ? error : undefined}
+                      leadingIcon={<GlobeAltIcon className="w-5 h-5 text-gray-400" />}
+                    />
+
+                    <Input
+                      label="Phone"
+                      type="tel"
+                      value={hotelForm.phone}
+                      onChange={(e) => setHotelForm({ ...hotelForm, phone: e.target.value })}
+                      placeholder="+1-555-123-4567"
+                      required
+                      helperText={undefined}
+                      leadingIcon={<PhoneIcon className="w-5 h-5 text-gray-400" />}
+                    />
+                  </div>
                 </div>
-              </div>
               </div>
             )}
 
@@ -1544,636 +1582,629 @@ export default function ProfileCompletePage() {
               <div className="space-y-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <BuildingOfficeIcon className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-bold text-gray-900">Property Listings</h3>
-                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
-                      {hotelListings.length} listing{hotelListings.length !== 1 ? 's' : ''}
-                    </span>
+                    <BuildingOfficeIcon className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Add at least one property listing <span className="font-semibold text-red-600">(required)</span>
-                  </p>
-                </div>
-              </div>
-
-              {hotelListings.length === 0 && (
-                <div className="border border-primary-200 rounded-2xl p-8 text-center bg-white shadow-sm">
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary-50 flex items-center justify-center">
-                    <BuildingOfficeIcon className="w-6 h-6 text-primary-600" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-2xl font-bold text-gray-900">Property Listings</h3>
+                      <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
+                        {hotelListings.length} listing{hotelListings.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Add at least one property listing <span className="font-semibold text-red-600">(required)</span>
+                    </p>
                   </div>
-                  <p className="text-primary-800 font-semibold mb-2">No listings added yet</p>
-                  <p className="text-sm text-gray-600">Add at least one property listing to complete your profile.</p>
                 </div>
-              )}
 
-              {hotelListings.map((listing, index) => {
-                // Check if listing is complete (has all required basic fields)
-                const isComplete = listing.name.trim() && 
-                                  listing.location.trim() && 
-                                  listing.accommodation_type.trim() && 
-                                  listing.description.trim() &&
-                                  listing.collaborationTypes.length > 0 &&
-                                  listing.availability.length > 0 &&
-                                  listing.platforms.length > 0 &&
-                                  listing.lookingForPlatforms.length > 0 &&
-                                  listing.targetGroupCountries.length > 0
-                
-                return (
-                <div
-                  key={index}
-                  className="border border-primary-100 rounded-2xl p-5 space-y-4 bg-white shadow-sm hover:shadow-md transition-all"
-                >
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-primary-100/70">
-                    <button
-                      type="button"
-                      onClick={() => toggleListingCardCollapse(index)}
-                      className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
+                {hotelListings.length === 0 && (
+                  <div className="border border-primary-200 rounded-2xl p-8 text-center bg-white shadow-sm">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary-50 flex items-center justify-center">
+                      <BuildingOfficeIcon className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <p className="text-primary-800 font-semibold mb-2">No listings added yet</p>
+                    <p className="text-sm text-gray-600">Add at least one property listing to complete your profile.</p>
+                  </div>
+                )}
+
+                {hotelListings.map((listing, index) => {
+                  // Check if listing is complete (has all required basic fields)
+                  const isComplete = listing.name.trim() &&
+                    listing.location.trim() &&
+                    listing.accommodation_type.trim() &&
+                    listing.description.trim() &&
+                    listing.collaborationTypes.length > 0 &&
+                    listing.availability.length > 0 &&
+                    listing.platforms.length > 0 &&
+                    listing.lookingForPlatforms.length > 0 &&
+                    listing.targetGroupCountries.length > 0
+
+                  return (
+                    <div
+                      key={index}
+                      className="border border-primary-100 rounded-2xl p-5 space-y-4 bg-white shadow-sm hover:shadow-md transition-all"
                     >
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-sm ${
-                        isComplete
-                          ? 'bg-green-50 text-green-700'
-                          : 'bg-primary-50 text-primary-700'
-                      }`}>
-                        {isComplete ? (
-                          <CheckCircleIcon className="w-5 h-5" />
-                        ) : (
-                          index + 1
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-gray-900">
-                            {listing.name || `Property Listing ${index + 1}`}
-                          </h4>
-                          {isComplete && (
-                            <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">
-                              Complete
-                            </span>
-                          )}
-                        </div>
-                        {collapsedListingCards.has(index) && listing.name && (
-                          <p className="text-sm text-gray-500 mt-0.5">
-                            {listing.location && `${listing.location}`} {listing.accommodation_type && `• ${listing.accommodation_type}`}
-                          </p>
-                        )}
-                      </div>
-                      {collapsedListingCards.has(index) ? (
-                        <ChevronDownIcon className="w-5 h-5 text-gray-600" />
-                      ) : (
-                        <ChevronUpIcon className="w-5 h-5 text-gray-600" />
-                      )}
-                    </button>
-                    <div className="flex items-center gap-2">
-                      {hotelListings.length > 1 && (
+                      <div className="flex items-center justify-between mb-3 pb-3 border-b border-primary-100/70">
                         <button
                           type="button"
-                          onClick={() => removeListing(index)}
-                          className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Remove listing"
+                          onClick={() => toggleListingCardCollapse(index)}
+                          className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
                         >
-                          <XMarkIcon className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {!collapsedListingCards.has(index) && (
-                    <>
-                  {/* Basic Information */}
-                  <div className="space-y-4">
-                    <h5 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Basic Information</h5>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Input
-                        label="Listing Name"
-                        type="text"
-                        value={listing.name}
-                        onChange={(e) => updateListing(index, 'name', e.target.value)}
-                        required
-                        placeholder="Luxury Beach Villa"
-                      />
-
-                      <Input
-                        label="Location"
-                        type="text"
-                        value={listing.location}
-                        onChange={(e) => updateListing(index, 'location', e.target.value)}
-                        required
-                        placeholder="Bali, Indonesia"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Accommodation Type <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={listing.accommodation_type}
-                        onChange={(e) => updateListing(index, 'accommodation_type', e.target.value)}
-                        required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white font-medium text-gray-900"
-                      >
-                        <option value="">Select type</option>
-                        {HOTEL_CATEGORIES.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <Textarea
-                      label="Description"
-                      value={listing.description}
-                      onChange={(e) => updateListing(index, 'description', e.target.value)}
-                      required
-                      rows={4}
-                      placeholder="A stunning beachfront villa with private pool and ocean views."
-                    />
-
-                    {/* Images */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Images</label>
-                      <div className="space-y-4">
-                        {listing.images.length > 0 && (
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {listing.images.map((image, imageIndex) => (
-                              <div key={imageIndex} className="relative group">
-                                <img
-                                  src={image}
-                                  alt={`Listing ${index + 1} - Image ${imageIndex + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none'
-                                  }}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeListingImage(index, imageIndex)}
-                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <XMarkIcon className="w-4 h-4" />
-                                </button>
-                              </div>
-                            ))}
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-sm ${isComplete
+                              ? 'bg-green-50 text-green-700'
+                              : 'bg-primary-50 text-primary-700'
+                            }`}>
+                            {isComplete ? (
+                              <CheckCircleIcon className="w-5 h-5" />
+                            ) : (
+                              index + 1
+                            )}
                           </div>
-                        )}
-                        <input
-                          ref={(el) => {
-                            listingImageInputRefs.current[index] = el
-                          }}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleListingImageChange(index, e)}
-                        />
-                        <Button
-                          variant="outline"
-                          type="button"
-                          onClick={() => listingImageInputRefs.current[index]?.click()}
-                        >
-                          <PlusIcon className="w-5 h-5 mr-2" />
-                          Add Image
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Offerings Section */}
-                  <div className="pt-3 border-t border-gray-200">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                      <h5 className="text-lg font-semibold text-gray-900">Offerings</h5>
-                    </div>
-                    <div className="space-y-4">
-                      {/* Collaboration Types */}
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
-                          Collaboration Types <span className="text-red-500">*</span>
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          {COLLABORATION_TYPES.map((type) => {
-                            const isSelected = listing.collaborationTypes.includes(type)
-                            const icons = {
-                              'Free Stay': GiftIcon,
-                              'Paid': CurrencyDollarIcon,
-                              'Discount': TagIcon,
-                            }
-                            const Icon = icons[type as keyof typeof icons]
-                            
-                            return (
-                              <label
-                                key={type}
-                                className={`relative flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                                  isSelected
-                                    ? 'bg-primary-50 border-primary-300 shadow-sm'
-                                    : 'bg-white border-gray-200 hover:border-primary-200 hover:shadow-sm'
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      updateListing(index, 'collaborationTypes', [...listing.collaborationTypes, type])
-                                    } else {
-                                      updateListing(index, 'collaborationTypes', listing.collaborationTypes.filter((t) => t !== type))
-                                    }
-                                  }}
-                                  className="sr-only"
-                                />
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                                  isSelected
-                                    ? 'bg-gradient-to-br from-primary-500 to-primary-600'
-                                    : 'bg-gray-100'
-                                }`}>
-                                  <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-gray-600'}`} />
-                                </div>
-                                <div className="flex-1">
-                                  <div className={`font-semibold ${isSelected ? 'text-primary-900' : 'text-gray-900'}`}>{type}</div>
-                                  {isSelected && (
-                                    <div className="mt-1 flex items-center gap-1">
-                                      <CheckCircleIcon className="w-4 h-4 text-primary-600" />
-                                      <span className="text-xs text-primary-600">Selected</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </label>
-                            )
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Free Stay Details */}
-                      {listing.collaborationTypes.includes('Free Stay') && (
-                        <div className="p-5 bg-primary-50/50 rounded-xl border border-primary-200 shadow-sm transition-all">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                              <GiftIcon className="w-5 h-5 text-white" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-gray-900">
+                                {listing.name || `Property Listing ${index + 1}`}
+                              </h4>
+                              {isComplete && (
+                                <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">
+                                  Complete
+                                </span>
+                              )}
                             </div>
-                            <div>
-                              <h6 className="font-semibold text-gray-900">Free Stay Details</h6>
-                              <p className="text-xs text-gray-600">Specify the night range for free stays</p>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Input
-                              label="Min. Nights"
-                              type="number"
-                              value={listing.freeStayMinNights || ''}
-                              min={1}
-                              onChange={(e) => {
-                                const { value } = e.target
-                                if (value === '') {
-                                  updateListing(index, 'freeStayMinNights', undefined)
-                                  return
-                                }
-                                const parsed = parseInt(value)
-                                updateListing(index, 'freeStayMinNights', Number.isNaN(parsed) ? undefined : Math.max(1, parsed))
-                              }}
-                              placeholder="1"
-                              required
-                            />
-                            <Input
-                              label="Max. Nights"
-                              type="number"
-                              value={listing.freeStayMaxNights || ''}
-                              onChange={(e) => updateListing(index, 'freeStayMaxNights', parseInt(e.target.value) || undefined)}
-                              placeholder="5"
-                              required
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Paid Details */}
-                      {listing.collaborationTypes.includes('Paid') && (
-                        <div className="p-5 bg-primary-50/50 rounded-xl border border-primary-200 shadow-sm transition-all">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                              <CurrencyDollarIcon className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                              <h6 className="font-semibold text-gray-900">Paid Details</h6>
-                              <p className="text-xs text-gray-600">Set the maximum payment amount</p>
-                            </div>
-                          </div>
-                          <Input
-                            label="Max. Amount ($)"
-                            type="number"
-                            value={listing.paidMaxAmount || ''}
-                            onChange={(e) => updateListing(index, 'paidMaxAmount', parseInt(e.target.value) || undefined)}
-                            placeholder="5000"
-                            required
-                          />
-                        </div>
-                      )}
-
-                      {/* Discount Details */}
-                      {listing.collaborationTypes.includes('Discount') && (
-                        <div className="p-5 bg-primary-50/50 rounded-xl border border-primary-200 shadow-sm transition-all">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                              <TagIcon className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                              <h6 className="font-semibold text-gray-900">Discount Details</h6>
-                              <p className="text-xs text-gray-600">Set the discount percentage</p>
-                            </div>
-                          </div>
-                          <Input
-                            label="Discount Percentage (%)"
-                            type="number"
-                            value={listing.discountPercentage || ''}
-                            onChange={(e) => updateListing(index, 'discountPercentage', parseInt(e.target.value) || undefined)}
-                            placeholder="20"
-                            min={1}
-                            max={100}
-                            required
-                          />
-                        </div>
-                      )}
-
-                      {/* Availability */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-4">
-                          <CalendarDaysIcon className="w-5 h-5 text-primary-600" />
-                          <label className="block text-sm font-semibold text-gray-700">
-                            Availability (Months) <span className="text-red-500">*</span>
-                          </label>
-                        </div>
-                        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                          <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                            {MONTHS.map((month) => {
-                              const isSelected = listing.availability.includes(month)
-                              const monthAbbr = month.substring(0, 3)
-                              
-                              return (
-                                <label
-                                  key={month}
-                                  className={`relative flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                                    isSelected
-                                      ? 'bg-primary-50 border-primary-400 shadow-sm'
-                                      : 'bg-white border-gray-200 hover:border-primary-200 hover:bg-primary-50/30'
-                                  }`}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        updateListing(index, 'availability', [...listing.availability, month])
-                                      } else {
-                                        updateListing(index, 'availability', listing.availability.filter((m) => m !== month))
-                                      }
-                                    }}
-                                    className="sr-only"
-                                  />
-                                  <div className={`text-xs font-medium mb-1 ${isSelected ? 'text-primary-700' : 'text-gray-500'}`}>
-                                    {monthAbbr}
-                                  </div>
-                                  <div className={`text-[10px] font-normal ${isSelected ? 'text-primary-600' : 'text-gray-400'}`}>
-                                    {month.length > 6 ? month.substring(6) : ''}
-                                  </div>
-                                  {isSelected && (
-                                    <div className="absolute top-1 right-1">
-                                      <CheckCircleIcon className="w-4 h-4 text-primary-600" />
-                                    </div>
-                                  )}
-                                </label>
-                              )
-                            })}
-                          </div>
-                          {listing.availability.length > 0 && (
-                            <div className="mt-4 pt-3 border-t border-gray-200">
-                              <p className="text-xs text-gray-600">
-                                <span className="font-medium text-primary-700">{listing.availability.length}</span> month{listing.availability.length !== 1 ? 's' : ''} selected: {listing.availability.join(', ')}
+                            {collapsedListingCards.has(index) && listing.name && (
+                              <p className="text-sm text-gray-500 mt-0.5">
+                                {listing.location && `${listing.location}`} {listing.accommodation_type && `• ${listing.accommodation_type}`}
                               </p>
-                            </div>
+                            )}
+                          </div>
+                          {collapsedListingCards.has(index) ? (
+                            <ChevronDownIcon className="w-5 h-5 text-gray-600" />
+                          ) : (
+                            <ChevronUpIcon className="w-5 h-5 text-gray-600" />
+                          )}
+                        </button>
+                        <div className="flex items-center gap-2">
+                          {hotelListings.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeListing(index)}
+                              className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Remove listing"
+                            >
+                              <XMarkIcon className="w-4 h-4" />
+                            </button>
                           )}
                         </div>
                       </div>
 
-                      {/* Platforms */}
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Posting platforms for this collaboration</label>
-                        <p className="text-sm text-gray-500 mb-2">Where the creator will post for this listing (choose at least one).</p>
-                        <div className="flex flex-wrap gap-3">
-                          {PLATFORM_OPTIONS.map((platform) => (
-                            <label key={platform} className="flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={listing.platforms.includes(platform)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    updateListing(index, 'platforms', [...listing.platforms, platform])
-                                  } else {
-                                    updateListing(index, 'platforms', listing.platforms.filter((p) => p !== platform))
-                                  }
-                                }}
-                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                      {!collapsedListingCards.has(index) && (
+                        <>
+                          {/* Basic Information */}
+                          <div className="space-y-4">
+                            <h5 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Basic Information</h5>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <Input
+                                label="Listing Name"
+                                type="text"
+                                value={listing.name}
+                                onChange={(e) => updateListing(index, 'name', e.target.value)}
+                                required
+                                placeholder="Luxury Beach Villa"
                               />
-                              <span className="ml-2 text-gray-700">{platform}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Looking For Section */}
-                  <div className="pt-3 border-t border-gray-200">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                      <h5 className="text-lg font-semibold text-gray-900">Looking For</h5>
-                    </div>
-                    <div className="space-y-4">
-                      {/* Platforms */}
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Creator's existing platforms</label>
-                        <p className="text-sm text-gray-500 mb-2">Platforms the creator should already have. Pick at least one.</p>
-                        <div className="flex flex-wrap gap-3">
-                          {PLATFORM_OPTIONS.map((platform) => (
-                            <label key={platform} className="flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={listing.lookingForPlatforms.includes(platform)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    updateListing(index, 'lookingForPlatforms', [...listing.lookingForPlatforms, platform])
-                                  } else {
-                                    updateListing(index, 'lookingForPlatforms', listing.lookingForPlatforms.filter((p) => p !== platform))
-                                  }
-                                }}
-                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                              <Input
+                                label="Location"
+                                type="text"
+                                value={listing.location}
+                                onChange={(e) => updateListing(index, 'location', e.target.value)}
+                                required
+                                placeholder="Bali, Indonesia"
                               />
-                              <span className="ml-2 text-gray-700">{platform}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
+                            </div>
 
-                      {/* Min Followers */}
-                      <Input
-                        label="Min. Follower Amount (optional)"
-                        type="number"
-                        value={listing.lookingForMinFollowers || ''}
-                        onChange={(e) => updateListing(index, 'lookingForMinFollowers', parseInt(e.target.value) || undefined)}
-                        placeholder="50000"
-                      />
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Accommodation Type <span className="text-red-500">*</span>
+                              </label>
+                              <select
+                                value={listing.accommodation_type}
+                                onChange={(e) => updateListing(index, 'accommodation_type', e.target.value)}
+                                required
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white font-medium text-gray-900"
+                              >
+                                <option value="">Select type</option>
+                                {HOTEL_CATEGORIES.map((cat) => (
+                                  <option key={cat} value={cat}>
+                                    {cat}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
 
-                      {/* Target Group Countries */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                            <GlobeAltIcon className="w-5 h-5 text-white" />
-                          </div>
-                          <label className="block text-sm font-semibold text-gray-700">
-                            Target Group - Countries <span className="text-red-500">*</span>
-                          </label>
-                        </div>
-                        <div className="space-y-2 max-h-96 overflow-y-auto p-4">
-                          {CONTINENT_ORDER.map((continent) => {
-                            const countries = COUNTRIES_BY_CONTINENT[continent]
-                            // Default to collapsed - only expand if explicitly in the expanded Set
-                            const isCollapsed = !expandedContinents[index]?.has(continent)
-                            const selectedInContinent = countries.filter((c) => listing.targetGroupCountries.includes(c))
-                            const allSelected = selectedInContinent.length === countries.length
-                            const someSelected = selectedInContinent.length > 0 && selectedInContinent.length < countries.length
-                            
-                            return (
-                              <div key={continent} className="border-2 rounded-xl overflow-hidden shadow-sm transition-all hover:shadow-md">
-                                <button
-                                  type="button"
-                                  onClick={() => toggleContinent(index, continent)}
-                                  className={`w-full flex items-center justify-between p-4 transition-all ${
-                                    allSelected
-                                      ? 'bg-gradient-to-r from-primary-50 to-primary-100/50 border-primary-300'
-                                      : someSelected
-                                      ? 'bg-gradient-to-r from-primary-50/70 to-primary-50/30 border-primary-200'
-                                      : 'bg-white hover:bg-gray-50 border-gray-200'
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                                      allSelected
-                                        ? 'bg-gradient-to-br from-primary-500 to-primary-600'
-                                        : someSelected
-                                        ? 'bg-primary-200'
-                                        : 'bg-gray-100'
-                                    }`}>
-                                      {isCollapsed ? (
-                                        <ChevronDownIcon className={`w-5 h-5 ${allSelected ? 'text-white' : 'text-gray-600'}`} />
-                                      ) : (
-                                        <ChevronUpIcon className={`w-5 h-5 ${allSelected ? 'text-white' : 'text-gray-600'}`} />
-                                      )}
-                                    </div>
-                                    <span className={`font-semibold ${allSelected ? 'text-primary-900' : 'text-gray-900'}`}>
-                                      {continent}
-                                    </span>
-                                    {allSelected && (
-                                      <div className="flex items-center gap-1 px-2 py-1 bg-primary-600 text-white rounded-full">
-                                        <CheckCircleIcon className="w-3.5 h-3.5" />
-                                        <span className="text-xs font-medium">All</span>
+                            <Textarea
+                              label="Description"
+                              value={listing.description}
+                              onChange={(e) => updateListing(index, 'description', e.target.value)}
+                              required
+                              rows={4}
+                              placeholder="A stunning beachfront villa with private pool and ocean views."
+                            />
+
+                            {/* Images */}
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">Images</label>
+                              <div className="space-y-4">
+                                {listing.images.length > 0 && (
+                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    {listing.images.map((image, imageIndex) => (
+                                      <div key={imageIndex} className="relative group">
+                                        <img
+                                          src={image}
+                                          alt={`Listing ${index + 1} - Image ${imageIndex + 1}`}
+                                          className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                                          onError={(e) => {
+                                            e.currentTarget.style.display = 'none'
+                                          }}
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => removeListingImage(index, imageIndex)}
+                                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                          <XMarkIcon className="w-4 h-4" />
+                                        </button>
                                       </div>
-                                    )}
-                                    {someSelected && (
-                                      <div className="flex items-center gap-1 px-2 py-1 bg-primary-200 text-primary-700 rounded-full">
-                                        <span className="text-xs font-medium">{selectedInContinent.length} selected</span>
-                                      </div>
-                                    )}
+                                    ))}
                                   </div>
-                                </button>
-                                {!isCollapsed && (
-                                  <div className="p-4 bg-white border-t-2 border-gray-100">
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
-                                      {countries.map((country) => {
-                                        const isSelected = listing.targetGroupCountries.includes(country)
-                                        return (
-                                          <label
-                                            key={country}
-                                            className={`flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer transition-all border-2 ${
-                                              isSelected
-                                                ? 'bg-primary-50 border-primary-300 shadow-sm'
-                                                : 'bg-white border-gray-200 hover:border-primary-200 hover:bg-primary-50/30'
+                                )}
+                                <input
+                                  ref={(el) => {
+                                    listingImageInputRefs.current[index] = el
+                                  }}
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleListingImageChange(index, e)}
+                                />
+                                <Button
+                                  variant="outline"
+                                  type="button"
+                                  onClick={() => listingImageInputRefs.current[index]?.click()}
+                                >
+                                  <PlusIcon className="w-5 h-5 mr-2" />
+                                  Add Image
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Offerings Section */}
+                          <div className="pt-3 border-t border-gray-200">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                              <h5 className="text-lg font-semibold text-gray-900">Offerings</h5>
+                            </div>
+                            <div className="space-y-4">
+                              {/* Collaboration Types */}
+                              <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                  Collaboration Types <span className="text-red-500">*</span>
+                                </label>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                  {COLLABORATION_TYPES.map((type) => {
+                                    const isSelected = listing.collaborationTypes.includes(type)
+                                    const icons = {
+                                      'Free Stay': GiftIcon,
+                                      'Paid': CurrencyDollarIcon,
+                                      'Discount': TagIcon,
+                                    }
+                                    const Icon = icons[type as keyof typeof icons]
+
+                                    return (
+                                      <label
+                                        key={type}
+                                        className={`relative flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${isSelected
+                                            ? 'bg-primary-50 border-primary-300 shadow-sm'
+                                            : 'bg-white border-gray-200 hover:border-primary-200 hover:shadow-sm'
+                                          }`}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={isSelected}
+                                          onChange={(e) => {
+                                            if (e.target.checked) {
+                                              updateListing(index, 'collaborationTypes', [...listing.collaborationTypes, type])
+                                            } else {
+                                              updateListing(index, 'collaborationTypes', listing.collaborationTypes.filter((t) => t !== type))
+                                            }
+                                          }}
+                                          className="sr-only"
+                                        />
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isSelected
+                                            ? 'bg-gradient-to-br from-primary-500 to-primary-600'
+                                            : 'bg-gray-100'
+                                          }`}>
+                                          <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-gray-600'}`} />
+                                        </div>
+                                        <div className="flex-1">
+                                          <div className={`font-semibold ${isSelected ? 'text-primary-900' : 'text-gray-900'}`}>{type}</div>
+                                          {isSelected && (
+                                            <div className="mt-1 flex items-center gap-1">
+                                              <CheckCircleIcon className="w-4 h-4 text-primary-600" />
+                                              <span className="text-xs text-primary-600">Selected</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </label>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* Free Stay Details */}
+                              {listing.collaborationTypes.includes('Free Stay') && (
+                                <div className="p-5 bg-primary-50/50 rounded-xl border border-primary-200 shadow-sm transition-all">
+                                  <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                                      <GiftIcon className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                      <h6 className="font-semibold text-gray-900">Free Stay Details</h6>
+                                      <p className="text-xs text-gray-600">Specify the night range for free stays</p>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Input
+                                      label="Min. Nights"
+                                      type="number"
+                                      value={listing.freeStayMinNights || ''}
+                                      min={1}
+                                      onChange={(e) => {
+                                        const { value } = e.target
+                                        if (value === '') {
+                                          updateListing(index, 'freeStayMinNights', undefined)
+                                          return
+                                        }
+                                        const parsed = parseInt(value)
+                                        updateListing(index, 'freeStayMinNights', Number.isNaN(parsed) ? undefined : Math.max(1, parsed))
+                                      }}
+                                      placeholder="1"
+                                      required
+                                    />
+                                    <Input
+                                      label="Max. Nights"
+                                      type="number"
+                                      value={listing.freeStayMaxNights || ''}
+                                      onChange={(e) => updateListing(index, 'freeStayMaxNights', parseInt(e.target.value) || undefined)}
+                                      placeholder="5"
+                                      required
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Paid Details */}
+                              {listing.collaborationTypes.includes('Paid') && (
+                                <div className="p-5 bg-primary-50/50 rounded-xl border border-primary-200 shadow-sm transition-all">
+                                  <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                                      <CurrencyDollarIcon className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                      <h6 className="font-semibold text-gray-900">Paid Details</h6>
+                                      <p className="text-xs text-gray-600">Set the maximum payment amount</p>
+                                    </div>
+                                  </div>
+                                  <Input
+                                    label="Max. Amount ($)"
+                                    type="number"
+                                    value={listing.paidMaxAmount || ''}
+                                    onChange={(e) => updateListing(index, 'paidMaxAmount', parseInt(e.target.value) || undefined)}
+                                    placeholder="5000"
+                                    required
+                                  />
+                                </div>
+                              )}
+
+                              {/* Discount Details */}
+                              {listing.collaborationTypes.includes('Discount') && (
+                                <div className="p-5 bg-primary-50/50 rounded-xl border border-primary-200 shadow-sm transition-all">
+                                  <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                                      <TagIcon className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                      <h6 className="font-semibold text-gray-900">Discount Details</h6>
+                                      <p className="text-xs text-gray-600">Set the discount percentage</p>
+                                    </div>
+                                  </div>
+                                  <Input
+                                    label="Discount Percentage (%)"
+                                    type="number"
+                                    value={listing.discountPercentage || ''}
+                                    onChange={(e) => updateListing(index, 'discountPercentage', parseInt(e.target.value) || undefined)}
+                                    placeholder="20"
+                                    min={1}
+                                    max={100}
+                                    required
+                                  />
+                                </div>
+                              )}
+
+                              {/* Availability */}
+                              <div>
+                                <div className="flex items-center gap-2 mb-4">
+                                  <CalendarDaysIcon className="w-5 h-5 text-primary-600" />
+                                  <label className="block text-sm font-semibold text-gray-700">
+                                    Availability (Months) <span className="text-red-500">*</span>
+                                  </label>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                                  <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                                    {MONTHS.map((month) => {
+                                      const isSelected = listing.availability.includes(month)
+                                      const monthAbbr = month.substring(0, 3)
+
+                                      return (
+                                        <label
+                                          key={month}
+                                          className={`relative flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected
+                                              ? 'bg-primary-50 border-primary-400 shadow-sm'
+                                              : 'bg-white border-gray-200 hover:border-primary-200 hover:bg-primary-50/30'
                                             }`}
-                                          >
-                                            <input
-                                              type="checkbox"
-                                              checked={isSelected}
-                                              onChange={(e) => {
-                                                if (e.target.checked) {
-                                                  updateListing(index, 'targetGroupCountries', [...listing.targetGroupCountries, country])
-                                                } else {
-                                                  updateListing(index, 'targetGroupCountries', listing.targetGroupCountries.filter((c) => c !== country))
-                                                }
-                                              }}
-                                              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
-                                            />
-                                            <span className={`text-sm font-medium ${isSelected ? 'text-primary-900' : 'text-gray-700'}`}>
-                                              {country}
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={isSelected}
+                                            onChange={(e) => {
+                                              if (e.target.checked) {
+                                                updateListing(index, 'availability', [...listing.availability, month])
+                                              } else {
+                                                updateListing(index, 'availability', listing.availability.filter((m) => m !== month))
+                                              }
+                                            }}
+                                            className="sr-only"
+                                          />
+                                          <div className={`text-xs font-medium mb-1 ${isSelected ? 'text-primary-700' : 'text-gray-500'}`}>
+                                            {monthAbbr}
+                                          </div>
+                                          <div className={`text-[10px] font-normal ${isSelected ? 'text-primary-600' : 'text-gray-400'}`}>
+                                            {month.length > 6 ? month.substring(6) : ''}
+                                          </div>
+                                          {isSelected && (
+                                            <div className="absolute top-1 right-1">
+                                              <CheckCircleIcon className="w-4 h-4 text-primary-600" />
+                                            </div>
+                                          )}
+                                        </label>
+                                      )
+                                    })}
+                                  </div>
+                                  {listing.availability.length > 0 && (
+                                    <div className="mt-4 pt-3 border-t border-gray-200">
+                                      <p className="text-xs text-gray-600">
+                                        <span className="font-medium text-primary-700">{listing.availability.length}</span> month{listing.availability.length !== 1 ? 's' : ''} selected: {listing.availability.join(', ')}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Platforms */}
+                              <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Posting platforms for this collaboration</label>
+                                <p className="text-sm text-gray-500 mb-2">Where the creator will post for this listing (choose at least one).</p>
+                                <div className="flex flex-wrap gap-3">
+                                  {PLATFORM_OPTIONS.map((platform) => (
+                                    <label key={platform} className="flex items-center cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={listing.platforms.includes(platform)}
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            updateListing(index, 'platforms', [...listing.platforms, platform])
+                                          } else {
+                                            updateListing(index, 'platforms', listing.platforms.filter((p) => p !== platform))
+                                          }
+                                        }}
+                                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                      />
+                                      <span className="ml-2 text-gray-700">{platform}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Looking For Section */}
+                          <div className="pt-3 border-t border-gray-200">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                              <h5 className="text-lg font-semibold text-gray-900">Looking For</h5>
+                            </div>
+                            <div className="space-y-4">
+                              {/* Platforms */}
+                              <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Creator's existing platforms</label>
+                                <p className="text-sm text-gray-500 mb-2">Platforms the creator should already have. Pick at least one.</p>
+                                <div className="flex flex-wrap gap-3">
+                                  {PLATFORM_OPTIONS.map((platform) => (
+                                    <label key={platform} className="flex items-center cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={listing.lookingForPlatforms.includes(platform)}
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            updateListing(index, 'lookingForPlatforms', [...listing.lookingForPlatforms, platform])
+                                          } else {
+                                            updateListing(index, 'lookingForPlatforms', listing.lookingForPlatforms.filter((p) => p !== platform))
+                                          }
+                                        }}
+                                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                      />
+                                      <span className="ml-2 text-gray-700">{platform}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Min Followers */}
+                              <Input
+                                label="Min. Follower Amount (optional)"
+                                type="number"
+                                value={listing.lookingForMinFollowers || ''}
+                                onChange={(e) => updateListing(index, 'lookingForMinFollowers', parseInt(e.target.value) || undefined)}
+                                placeholder="50000"
+                              />
+
+                              {/* Target Group Countries */}
+                              <div>
+                                <div className="flex items-center gap-2 mb-4">
+                                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                                    <GlobeAltIcon className="w-5 h-5 text-white" />
+                                  </div>
+                                  <label className="block text-sm font-semibold text-gray-700">
+                                    Target Group - Countries <span className="text-red-500">*</span>
+                                  </label>
+                                </div>
+                                <div className="space-y-2 max-h-96 overflow-y-auto p-4">
+                                  {CONTINENT_ORDER.map((continent) => {
+                                    const countries = COUNTRIES_BY_CONTINENT[continent]
+                                    // Default to collapsed - only expand if explicitly in the expanded Set
+                                    const isCollapsed = !expandedContinents[index]?.has(continent)
+                                    const selectedInContinent = countries.filter((c) => listing.targetGroupCountries.includes(c))
+                                    const allSelected = selectedInContinent.length === countries.length
+                                    const someSelected = selectedInContinent.length > 0 && selectedInContinent.length < countries.length
+
+                                    return (
+                                      <div key={continent} className="border-2 rounded-xl overflow-hidden shadow-sm transition-all hover:shadow-md">
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleContinent(index, continent)}
+                                          className={`w-full flex items-center justify-between p-4 transition-all ${allSelected
+                                              ? 'bg-gradient-to-r from-primary-50 to-primary-100/50 border-primary-300'
+                                              : someSelected
+                                                ? 'bg-gradient-to-r from-primary-50/70 to-primary-50/30 border-primary-200'
+                                                : 'bg-white hover:bg-gray-50 border-gray-200'
+                                            }`}
+                                        >
+                                          <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${allSelected
+                                                ? 'bg-gradient-to-br from-primary-500 to-primary-600'
+                                                : someSelected
+                                                  ? 'bg-primary-200'
+                                                  : 'bg-gray-100'
+                                              }`}>
+                                              {isCollapsed ? (
+                                                <ChevronDownIcon className={`w-5 h-5 ${allSelected ? 'text-white' : 'text-gray-600'}`} />
+                                              ) : (
+                                                <ChevronUpIcon className={`w-5 h-5 ${allSelected ? 'text-white' : 'text-gray-600'}`} />
+                                              )}
+                                            </div>
+                                            <span className={`font-semibold ${allSelected ? 'text-primary-900' : 'text-gray-900'}`}>
+                                              {continent}
                                             </span>
-                                          </label>
-                                        )
-                                      })}
+                                            {allSelected && (
+                                              <div className="flex items-center gap-1 px-2 py-1 bg-primary-600 text-white rounded-full">
+                                                <CheckCircleIcon className="w-3.5 h-3.5" />
+                                                <span className="text-xs font-medium">All</span>
+                                              </div>
+                                            )}
+                                            {someSelected && (
+                                              <div className="flex items-center gap-1 px-2 py-1 bg-primary-200 text-primary-700 rounded-full">
+                                                <span className="text-xs font-medium">{selectedInContinent.length} selected</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </button>
+                                        {!isCollapsed && (
+                                          <div className="p-4 bg-white border-t-2 border-gray-100">
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+                                              {countries.map((country) => {
+                                                const isSelected = listing.targetGroupCountries.includes(country)
+                                                return (
+                                                  <label
+                                                    key={country}
+                                                    className={`flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer transition-all border-2 ${isSelected
+                                                        ? 'bg-primary-50 border-primary-300 shadow-sm'
+                                                        : 'bg-white border-gray-200 hover:border-primary-200 hover:bg-primary-50/30'
+                                                      }`}
+                                                  >
+                                                    <input
+                                                      type="checkbox"
+                                                      checked={isSelected}
+                                                      onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                          updateListing(index, 'targetGroupCountries', [...listing.targetGroupCountries, country])
+                                                        } else {
+                                                          updateListing(index, 'targetGroupCountries', listing.targetGroupCountries.filter((c) => c !== country))
+                                                        }
+                                                      }}
+                                                      className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
+                                                    />
+                                                    <span className={`text-sm font-medium ${isSelected ? 'text-primary-900' : 'text-gray-700'}`}>
+                                                      {country}
+                                                    </span>
+                                                  </label>
+                                                )
+                                              })}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                                {listing.targetGroupCountries.length > 0 && (
+                                  <div className="mt-4 p-4 bg-gradient-to-r from-primary-50 to-primary-100/50 rounded-xl border-2 border-primary-200 shadow-sm">
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircleIcon className="w-5 h-5 text-primary-600" />
+                                      <p className="text-sm text-gray-700">
+                                        <span className="font-bold text-primary-700">{listing.targetGroupCountries.length}</span> countr{listing.targetGroupCountries.length !== 1 ? 'ies' : 'y'} selected
+                                      </p>
                                     </div>
                                   </div>
                                 )}
                               </div>
-                            )
-                          })}
-                        </div>
-                        {listing.targetGroupCountries.length > 0 && (
-                          <div className="mt-4 p-4 bg-gradient-to-r from-primary-50 to-primary-100/50 rounded-xl border-2 border-primary-200 shadow-sm">
-                            <div className="flex items-center gap-2">
-                              <CheckCircleIcon className="w-5 h-5 text-primary-600" />
-                              <p className="text-sm text-gray-700">
-                                <span className="font-bold text-primary-700">{listing.targetGroupCountries.length}</span> countr{listing.targetGroupCountries.length !== 1 ? 'ies' : 'y'} selected
-                              </p>
+
+                              {/* Target Group Age */}
+                              <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">Target Group - Age Group</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <Input
+                                    label="Min. Age (optional)"
+                                    type="number"
+                                    value={listing.targetGroupAgeMin || ''}
+                                    onChange={(e) => updateListing(index, 'targetGroupAgeMin', parseInt(e.target.value) || undefined)}
+                                    placeholder="25"
+                                  />
+                                  <Input
+                                    label="Max. Age (optional)"
+                                    type="number"
+                                    value={listing.targetGroupAgeMax || ''}
+                                    onChange={(e) => updateListing(index, 'targetGroupAgeMax', parseInt(e.target.value) || undefined)}
+                                    placeholder="45"
+                                  />
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        )}
-                      </div>
-
-                      {/* Target Group Age */}
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">Target Group - Age Group</label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <Input
-                            label="Min. Age (optional)"
-                            type="number"
-                            value={listing.targetGroupAgeMin || ''}
-                            onChange={(e) => updateListing(index, 'targetGroupAgeMin', parseInt(e.target.value) || undefined)}
-                            placeholder="25"
-                          />
-                          <Input
-                            label="Max. Age (optional)"
-                            type="number"
-                            value={listing.targetGroupAgeMax || ''}
-                            onChange={(e) => updateListing(index, 'targetGroupAgeMax', parseInt(e.target.value) || undefined)}
-                            placeholder="45"
-                          />
-                        </div>
-                      </div>
+                        </>
+                      )}
                     </div>
-                  </div>
-                    </>
-                  )}
-                </div>
-                )
-              })}
+                  )
+                })}
 
-              <button
-                type="button"
-                onClick={addListing}
-                className="w-full py-4 border-2 border-dashed border-primary-200 rounded-xl text-primary-700 hover:border-primary-400 hover:bg-primary-50 transition-all flex items-center justify-center gap-2 font-semibold group"
-              >
-                <PlusIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                Add Another Property Listing
-              </button>
+                <button
+                  type="button"
+                  onClick={addListing}
+                  className="w-full py-4 border-2 border-dashed border-primary-200 rounded-xl text-primary-700 hover:border-primary-400 hover:bg-primary-50 transition-all flex items-center justify-center gap-2 font-semibold group"
+                >
+                  <PlusIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  Add Another Property Listing
+                </button>
               </div>
             )}
 
