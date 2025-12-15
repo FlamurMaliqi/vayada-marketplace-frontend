@@ -34,8 +34,11 @@ export function StarRating({
   const starSize = sizeClasses[size]
   const textSize = textSizeClasses[size]
 
+  // Ensure rating is a valid number, default to 0 if invalid
+  const validRating = typeof rating === 'number' && !isNaN(rating) ? rating : 0
+  
   // Clamp rating between 0 and 5
-  const clampedRating = Math.max(0, Math.min(5, rating))
+  const clampedRating = Math.max(0, Math.min(5, validRating))
   const fullStars = Math.floor(clampedRating)
   const hasHalfStar = clampedRating % 1 >= 0.5
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0)

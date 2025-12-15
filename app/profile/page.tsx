@@ -35,6 +35,7 @@ interface PlatformGenderSplit {
 }
 
 interface Platform {
+  id?: string
   name: string
   handle: string
   followers: number
@@ -297,30 +298,77 @@ export default function ProfilePage() {
 
   /**
    * Transform API creator response to frontend CreatorProfile format
+   * Handles both snake_case and camelCase API responses
    */
-  const transformCreatorProfile = (apiCreator: ApiCreator): CreatorProfile => ({
-    id: apiCreator.id,
-    name: apiCreator.name,
-    profilePicture: apiCreator.profilePicture || undefined,
-    shortDescription: apiCreator.shortDescription || '',
-    location: apiCreator.location,
-    status:
-      apiCreator.status === 'verified' || apiCreator.status === 'pending' || apiCreator.status === 'rejected'
-        ? apiCreator.status
-        : 'pending',
-    rating: apiCreator.rating,
-    platforms: (apiCreator.platforms || []).map((platform) => ({
-      ...platform,
-      followers: platform.followers ?? 0,
-      engagementRate: platform.engagementRate ?? 0,
-      topCountries: platform.topCountries || [],
-      topAgeGroups: platform.topAgeGroups || [],
-      genderSplit: platform.genderSplit || { male: 0, female: 0 },
-    })),
-    portfolioLink: apiCreator.portfolioLink,
-    email: apiCreator.email || '', // Ensure email is always a string, default to empty if missing
-    phone: apiCreator.phone || '',
-  })
+  const transformCreatorProfile = (apiCreator: any): CreatorProfile => {
+    // Handle both snake_case and camelCase field names
+    const profilePicture = apiCreator.profilePicture || apiCreator.profile_picture || undefined
+    const shortDescription = apiCreator.shortDescription || apiCreator.short_description || ''
+    const portfolioLink = apiCreator.portfolioLink || apiCreator.portfolio_link || undefined
+    const email = apiCreator.email || ''
+    const phone = apiCreator.phone || ''
+    
+    // Transform platforms - handle both snake_case and camelCase
+    const platforms = (apiCreator.platforms || []).map((platform: any) => {
+      // Handle genderSplit - might be a string (JSON) or object
+      let genderSplit = platform.genderSplit || platform.gender_split
+      if (typeof genderSplit === 'string') {
+        try {
+          genderSplit = JSON.parse(genderSplit)
+        } catch (e) {
+          genderSplit = { male: 0, female: 0 }
+        }
+      }
+      if (!genderSplit || typeof genderSplit !== 'object') {
+        genderSplit = { male: 0, female: 0 }
+      }
+
+      return {
+        id: platform.id,
+        name: platform.name,
+        handle: platform.handle || '',
+        followers: platform.followers ?? 0,
+        engagementRate: (platform.engagementRate || platform.engagement_rate) ?? 0,
+        topCountries: platform.topCountries || platform.top_countries || [],
+        topAgeGroups: platform.topAgeGroups || platform.top_age_groups || [],
+        genderSplit: genderSplit,
+      }
+    })
+
+    // Handle rating - might be missing or have different structure
+    // Handle both snake_case and camelCase, ensure averageRating is always a valid number
+    const ratingData = apiCreator.rating || {}
+    const averageRating = ratingData.averageRating ?? ratingData.average_rating ?? 0
+    const totalReviews = ratingData.totalReviews ?? ratingData.total_reviews ?? 0
+    const reviews = ratingData.reviews || []
+    
+    const rating = {
+      averageRating: typeof averageRating === 'number' && !isNaN(averageRating) 
+        ? averageRating 
+        : 0,
+      totalReviews: typeof totalReviews === 'number' && !isNaN(totalReviews)
+        ? totalReviews
+        : 0,
+      reviews: Array.isArray(reviews) ? reviews : [],
+    }
+
+    return {
+      id: apiCreator.id,
+      name: apiCreator.name || '',
+      profilePicture,
+      shortDescription,
+      location: apiCreator.location || '',
+      status:
+        apiCreator.status === 'verified' || apiCreator.status === 'pending' || apiCreator.status === 'rejected'
+          ? apiCreator.status
+          : 'pending',
+      rating,
+      platforms,
+      portfolioLink,
+      email,
+      phone,
+    }
+  }
 
   /**
    * Transform API hotel profile response to frontend format
@@ -444,7 +492,9 @@ export default function ProfilePage() {
       if (userType === 'creator') {
         try {
           const apiProfile = await creatorService.getMyProfile()
+          console.log('Raw API profile response:', apiProfile)
           const profile = transformCreatorProfile(apiProfile)
+          console.log('Transformed profile:', profile)
           setCreatorProfile(profile)
         } catch (error) {
           // Check if it's a 405 (Method Not Allowed) - endpoint not implemented yet
@@ -651,29 +701,129 @@ export default function ProfilePage() {
     }, 500)
   }
 
+  /**
+   * Validate creator profile edit form
+   * Matches backend validation rules
+   */
+  const validateCreatorEdit = (): string | null => {
+    if (!editFormData.name || !editFormData.name.trim()) {
+      return 'Name is required'
+    }
+    if (!editFormData.location || !editFormData.location.trim()) {
+      return 'Location is required'
+    }
+    if (!editFormData.shortDescription || editFormData.shortDescription.trim().length < 10) {
+      return 'Short description must be at least 10 characters'
+    }
+    if (editFormData.shortDescription.trim().length > 500) {
+      return 'Short description must be at most 500 characters'
+    }
+    if (editFormData.portfolioLink && editFormData.portfolioLink.trim() && !/^https?:\/\//i.test(editFormData.portfolioLink.trim())) {
+      return 'Portfolio link must start with http or https'
+    }
+    if (editFormData.platforms.length === 0) {
+      return 'At least one platform is required'
+    }
+    // Validate each platform
+    for (let i = 0; i < editFormData.platforms.length; i++) {
+      const platform = editFormData.platforms[i]
+      if (!platform.name || !['Instagram', 'TikTok', 'YouTube', 'Facebook'].includes(platform.name)) {
+        return `Platform ${i + 1}: Platform name must be one of: Instagram, TikTok, YouTube, Facebook`
+      }
+      if (!platform.handle || !platform.handle.trim()) {
+        return `Platform ${i + 1}: Handle is required`
+      }
+      if (!platform.followers || platform.followers <= 0) {
+        return `Platform ${i + 1}: Followers must be greater than 0`
+      }
+      if (!platform.engagementRate || platform.engagementRate <= 0) {
+        return `Platform ${i + 1}: Engagement rate must be greater than 0`
+      }
+    }
+    return null
+  }
+
   const handleSaveProfile = async () => {
-    if (!editFormData.name || !editFormData.shortDescription || !editFormData.location) {
+    // Validate form
+    const validationError = validateCreatorEdit()
+    if (validationError) {
+      alert(validationError)
       return
     }
-    
+
+    if (!creatorProfile) return
+
     setIsSavingProfile(true)
-    // Simulate API call
-    setTimeout(() => {
-      if (creatorProfile) {
-        setCreatorProfile({
-          ...creatorProfile,
-          name: editFormData.name,
-          profilePicture: editFormData.profilePicture || undefined,
-          shortDescription: editFormData.shortDescription,
-          location: editFormData.location,
-          portfolioLink: editFormData.portfolioLink || undefined,
-          platforms: editFormData.platforms,
-        })
+    try {
+      // Transform platforms to API format
+      // IMPORTANT: API uses REPLACE strategy - must include ALL platforms
+      // Use snake_case for nested fields as backend expects it
+      const platforms = editFormData.platforms.map(platform => ({
+        name: platform.name as 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook',
+        handle: platform.handle.trim(),
+        followers: platform.followers,
+        engagement_rate: platform.engagementRate, // Use snake_case
+        ...(platform.topCountries && platform.topCountries.length > 0 && {
+          top_countries: platform.topCountries.map(tc => ({
+            country: tc.country,
+            percentage: tc.percentage,
+          })),
+        }),
+        ...(platform.topAgeGroups && platform.topAgeGroups.length > 0 && {
+          top_age_groups: platform.topAgeGroups.map(tag => ({
+            age_range: tag.ageRange, // Use snake_case
+            percentage: tag.percentage,
+          })),
+        }),
+        ...(platform.genderSplit && (platform.genderSplit.male > 0 || platform.genderSplit.female > 0) && {
+          gender_split: JSON.stringify({
+            male: platform.genderSplit.male,
+            female: platform.genderSplit.female,
+          }),
+        }),
+      }))
+
+      // Calculate audience size (sum of all platform followers)
+      const audienceSize = platforms.reduce((sum, p) => sum + p.followers, 0)
+
+      // Build update payload - all fields required except optional ones
+      // Use snake_case field names as backend expects them
+      const updatePayload = {
+        name: editFormData.name.trim(),
+        location: editFormData.location.trim(),
+        short_description: editFormData.shortDescription.trim(), // Use snake_case
+        platforms: platforms,
+        audience_size: audienceSize, // Use snake_case
+        ...(editFormData.portfolioLink && editFormData.portfolioLink.trim() && {
+          portfolio_link: editFormData.portfolioLink.trim(), // Use snake_case
+        }),
+        ...(phone && phone.trim() && {
+          phone: phone.trim(),
+        }),
       }
+
+      // Update creator profile (replaces all platforms)
+      await creatorService.updateMyProfile(updatePayload as any)
+      
+      // Re-fetch full profile to get updated data
+      await loadProfile()
+      
       setIsEditingProfile(false)
+    } catch (error: unknown) {
+      const detail =
+        error instanceof ApiErrorResponse
+          ? error.data.detail
+          : null
+      const message =
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail) && detail[0]?.msg
+            ? detail[0].msg
+            : 'Failed to save profile'
+      alert(`Failed to save profile: ${formatErrorDetail(detail || message)}`)
+    } finally {
       setIsSavingProfile(false)
-      // In production, make API call to save profile
-    }, 500)
+    }
   }
 
   const handleCancelEdit = () => {
@@ -1395,8 +1545,8 @@ export default function ProfilePage() {
                               {creatorProfile.rating && (
                                 <div className="mb-4">
                                   <StarRating
-                                    rating={creatorProfile.rating.averageRating}
-                                    totalReviews={creatorProfile.rating.totalReviews}
+                                    rating={creatorProfile.rating.averageRating ?? 0}
+                                    totalReviews={creatorProfile.rating.totalReviews ?? 0}
                                     size="md"
                                   />
                                 </div>
@@ -1408,7 +1558,7 @@ export default function ProfilePage() {
                                   Description
                                 </h4>
                                 <p className="text-gray-700 leading-relaxed text-lg">
-                                  {creatorProfile.shortDescription}
+                                  {creatorProfile.shortDescription || 'No description provided'}
                                 </p>
                               </div>
 
@@ -1615,7 +1765,8 @@ export default function ProfilePage() {
 
                         {!isEditingProfile ? (
                           <div className="space-y-4">
-                            {creatorProfile.platforms.map((platform, index) => (
+                            {creatorProfile.platforms && creatorProfile.platforms.length > 0 ? (
+                              creatorProfile.platforms.map((platform, index) => (
                               <div
                                 key={index}
                                 className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm"
@@ -1690,7 +1841,12 @@ export default function ProfilePage() {
                                   </div>
                                 )}
                               </div>
-                            ))}
+                            ))
+                            ) : (
+                              <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+                                <p className="text-gray-500">No platforms added yet. Edit your profile to add social media platforms.</p>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="space-y-4">
@@ -1884,14 +2040,14 @@ export default function ProfilePage() {
                                 <div>
                                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Overall Rating</h3>
                                   <StarRating
-                                    rating={creatorProfile.rating.averageRating}
-                                    totalReviews={creatorProfile.rating.totalReviews}
+                                    rating={creatorProfile.rating.averageRating ?? 0}
+                                    totalReviews={creatorProfile.rating.totalReviews ?? 0}
                                     size="lg"
                                   />
                                 </div>
                                 <div className="text-right">
                                   <div className="text-4xl font-bold text-gray-900">
-                                    {creatorProfile.rating.averageRating.toFixed(1)}
+                                    {(creatorProfile.rating?.averageRating ?? 0).toFixed(1)}
                                   </div>
                                   <div className="text-sm text-gray-600">out of 5.0</div>
                                 </div>
