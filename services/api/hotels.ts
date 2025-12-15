@@ -7,15 +7,16 @@ import type { Hotel, PaginatedResponse, HotelProfile, HotelListing, Collaboratio
 import { transformHotelListingToHotel } from '@/lib/utils'
 
 // Request/Response types for hotel profile endpoints
+// Partial update for hotel profile (PUT /hotels/me)
+// Send only changed fields; omitted fields stay untouched.
 export interface UpdateHotelProfileRequest {
   name?: string
-  category?: string
   location?: string
-  picture?: string
-  website?: string
-  about?: string
   email?: string
+  about?: string
+  website?: string
   phone?: string
+  picture?: string | null // allow clearing or replacing
 }
 
 export interface CreateListingRequest {

@@ -109,7 +109,16 @@ const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherla
 export default function ProfilePage() {
   const router = useRouter()
   const { isCollapsed } = useSidebar()
-  const [userType, setUserType] = useState<UserType>('creator')
+  // Initialize userType from localStorage if available, otherwise default to 'creator'
+  const [userType, setUserType] = useState<UserType>(() => {
+    if (typeof window !== 'undefined') {
+      const storedUserType = localStorage.getItem('userType') as UserType | null
+      if (storedUserType && (storedUserType === 'creator' || storedUserType === 'hotel')) {
+        return storedUserType
+      }
+    }
+    return 'creator'
+  })
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null)
   const [hotelProfile, setHotelProfile] = useState<HotelProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -409,6 +418,12 @@ export default function ProfilePage() {
   }
 
   const loadProfile = async () => {
+    // Don't load profile if userType is not set or invalid
+    if (!userType || (userType !== 'creator' && userType !== 'hotel')) {
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     try {
       // Check profile status first
@@ -684,81 +699,125 @@ export default function ProfilePage() {
     setIsEditingProfile(false)
   }
 
+  /**
+   * Validate hotel profile edit form
+   * Matches backend validation rules
+   */
+  const validateHotelEdit = (): string | null => {
+    if (hotelEditFormData.name && !hotelEditFormData.name.trim()) {
+      return 'Name cannot be empty'
+    }
+    if (hotelEditFormData.location && !hotelEditFormData.location.trim()) {
+      return 'Location cannot be empty'
+    }
+    if (hotelEditFormData.location && hotelEditFormData.location.trim().toLowerCase() === 'not specified') {
+      return 'Location cannot be "Not specified"'
+    }
+    if (hotelEditFormData.about && hotelEditFormData.about.trim().length > 0 && hotelEditFormData.about.trim().length < 50) {
+      return 'About must be at least 50 characters when provided'
+    }
+    if (hotelEditFormData.website && hotelEditFormData.website.trim() && !/^https?:\/\//i.test(hotelEditFormData.website.trim())) {
+      return 'Website must start with http or https'
+    }
+    if (phone !== undefined && phone !== null && phone.trim() === '') {
+      return 'Phone cannot be empty if provided'
+    }
+    return null
+  }
+
   const handleSaveHotelProfile = async () => {
-    // Profile endpoints have been removed from backend
-    alert('Profile management is not available. Backend only supports authentication endpoints.')
-    return
-    
-    if (!hotelEditFormData.name || !hotelEditFormData.location) {
+    // Validate form
+    const validationError = validateHotelEdit()
+    if (validationError) {
+      alert(validationError)
       return
     }
 
+    if (!hotelProfile) return
+
     setIsSavingHotelProfile(true)
     try {
-      // Upload picture if a new file was selected
-      let pictureUrl = hotelEditFormData.picture
-      const fileInput = hotelFileInputRef.current
-      const file = fileInput?.files?.item(0)
-      if (file) {
-        const uploadResponse = await hotelService.uploadPicture(file as File)
-        pictureUrl = uploadResponse.url
-      }
-
-      // Update hotel profile
-      const updateData: {
+      // Build partial update payload - only include changed fields
+      const payload: {
         name?: string
         location?: string
-        picture?: string
+        picture?: string | null
         website?: string
         about?: string
         email?: string
         phone?: string
-      } = {
-        name: hotelEditFormData.name,
-        location: hotelEditFormData.location,
-        website: hotelEditFormData.website || undefined,
-        about: hotelEditFormData.about || undefined,
-        email: email,
-        phone: phone || undefined,
-      }
+      } = {}
 
-      if (pictureUrl && !pictureUrl.startsWith('data:')) {
-        // Only include picture URL if it's not a base64 preview
-        updateData.picture = pictureUrl
+      // Only include fields that have changed
+      if (hotelEditFormData.name.trim() !== hotelProfile.name) {
+        payload.name = hotelEditFormData.name.trim()
       }
-
-      const updatedProfile = await hotelService.updateMyProfile(updateData)
-      const transformedProfile = transformHotelProfile(updatedProfile)
-      setHotelProfile(transformedProfile)
+      if (hotelEditFormData.location.trim() !== hotelProfile.location) {
+        payload.location = hotelEditFormData.location.trim()
+      }
+      if ((hotelEditFormData.website || '') !== (hotelProfile.website || '')) {
+        payload.website = hotelEditFormData.website.trim() || undefined
+      }
+      if ((hotelEditFormData.about || '') !== (hotelProfile.about || '')) {
+        payload.about = hotelEditFormData.about.trim() || undefined
+      }
+      if ((phone || '') !== (hotelProfile.phone || '')) {
+        payload.phone = phone || undefined
+      }
       
-      // Update local state
-      setEmail(updatedProfile.email)
-      setPhone(updatedProfile.phone || '')
+      // Handle picture - can be URL, base64, or null to clear
+      const currentPicture = hotelProfile.picture || ''
+      const newPicture = hotelEditFormData.picture || ''
+      if (newPicture !== currentPicture) {
+        if (newPicture.trim() === '') {
+          payload.picture = null // Clear picture
+        } else if (!newPicture.startsWith('data:')) {
+          // Only include if it's a URL (not base64 preview)
+          payload.picture = newPicture.trim()
+        }
+        // If it's base64, we'd need to upload it first - for now skip it
+      }
+
+      // Include email if it changed (get from localStorage)
+      const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
+      if (userEmail && userEmail !== hotelProfile.email) {
+        payload.email = userEmail
+      }
+
+      // Only make API call if there are changes
+      if (Object.keys(payload).length === 0) {
+        setIsEditingHotelProfile(false)
+        setIsSavingHotelProfile(false)
+        return
+      }
+
+      // Update hotel profile with partial data
+      await hotelService.updateMyProfile(payload)
+      
+      // Re-fetch full profile to get updated data
+      await loadProfile()
       
       setIsEditingHotelProfile(false)
-      setIsSavingHotelProfile(false)
       
       // Clear file input and preview
       const hotelInput = hotelFileInputRef.current
-      if (!hotelInput) {
-        // no-op
-      } else {
-        hotelInput!.value = ''
+      if (hotelInput) {
+        hotelInput.value = ''
       }
       setHotelPicturePreview(null)
     } catch (error: unknown) {
-      const err = error as any
       const detail =
-        err && typeof err === 'object' && 'data' in err && err.data?.detail
-          ? err.data.detail
+        error instanceof ApiErrorResponse
+          ? error.data.detail
           : null
-      const logError = error instanceof Error ? error : new Error(String(error))
-      console.error('Failed to save hotel profile:', logError)
-      if (detail) {
-        alert(`Failed to save profile: ${formatErrorDetail(detail)}`)
-      } else {
-        alert('Failed to save profile. Please try again.')
-      }
+      const message =
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail) && detail[0]?.msg
+            ? detail[0].msg
+            : 'Failed to save profile'
+      alert(`Failed to save profile: ${formatErrorDetail(detail || message)}`)
+    } finally {
       setIsSavingHotelProfile(false)
     }
   }
@@ -795,37 +854,55 @@ export default function ProfilePage() {
   }
 
   const handleSaveHotelContact = async () => {
-    // Profile endpoints have been removed from backend
-    alert('Profile management is not available. Backend only supports authentication endpoints.')
-    return
-    
     if (!email || !email.includes('@')) {
+      alert('Please enter a valid email address')
       return
     }
     
+    if (!hotelProfile) return
+
     setIsSavingContact(true)
     try {
-      const updatedProfile = await hotelService.updateMyProfile({
-        email: email,
-        phone: phone || undefined,
-      })
-      const transformedProfile = transformHotelProfile(updatedProfile)
-      setHotelProfile(transformedProfile)
-      setIsEditingContact(false)
-      setIsSavingContact(false)
-    } catch (error: unknown) {
-      const err = error as any
-      const detail =
-        err && typeof err === 'object' && 'data' in err && err.data?.detail
-          ? err.data.detail
-          : null
-      const logError = error instanceof Error ? error : new Error(String(error))
-      console.error('Failed to save contact information:', logError)
-      if (detail) {
-        alert(`Failed to save contact information: ${formatErrorDetail(detail)}`)
-      } else {
-        alert('Failed to save contact information. Please try again.')
+      // Build partial update - only include changed fields
+      const payload: {
+        email?: string
+        phone?: string
+      } = {}
+
+      if (email !== hotelProfile.email) {
+        payload.email = email
       }
+      if ((phone || '') !== (hotelProfile.phone || '')) {
+        payload.phone = phone || undefined
+      }
+
+      // Only make API call if there are changes
+      if (Object.keys(payload).length === 0) {
+        setIsEditingContact(false)
+        setIsSavingContact(false)
+        return
+      }
+
+      // Update hotel profile with partial data
+      await hotelService.updateMyProfile(payload)
+      
+      // Re-fetch full profile to get updated data
+      await loadProfile()
+      
+      setIsEditingContact(false)
+    } catch (error: unknown) {
+      const detail =
+        error instanceof ApiErrorResponse
+          ? error.data.detail
+          : null
+      const message =
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail) && detail[0]?.msg
+            ? detail[0].msg
+            : 'Failed to save contact information'
+      alert(`Failed to save contact information: ${formatErrorDetail(detail || message)}`)
+    } finally {
       setIsSavingContact(false)
     }
   }
@@ -882,6 +959,7 @@ export default function ProfilePage() {
 
   const handleSaveListing = async () => {
     if (!listingFormData.name || !listingFormData.location || !listingFormData.description) {
+      alert('Please fill in all required fields: name, location, and description.')
       return
     }
 
@@ -895,10 +973,6 @@ export default function ProfilePage() {
       return
     }
 
-    // Profile endpoints have been removed from backend
-    alert('Listing management is not available. Backend only supports authentication endpoints.')
-    return
-    
     setIsSavingListing(true)
     try {
       // For new listings, upload base64 images first if any
@@ -916,8 +990,8 @@ export default function ProfilePage() {
       
       if (editingListingId) {
         const listingId = editingListingId as string
-        // Update existing listing
-        const updatedListing = await hotelService.updateListing(listingId, apiListingData)
+        // Update existing listing (partial update - only changed fields)
+        await hotelService.updateListing(listingId, apiListingData)
         
         // Upload any new base64 images if present
         if (base64Images.length > 0) {
@@ -934,10 +1008,8 @@ export default function ProfilePage() {
           }
         }
         
-        // Reload full profile to get updated data
-        const updatedProfile = await hotelService.getMyProfile()
-        const transformedProfile = transformHotelProfile(updatedProfile)
-        setHotelProfile(transformedProfile)
+        // Re-fetch full profile to get updated data
+        await loadProfile()
       } else {
         // Create new listing
         const newListing = await hotelService.createListing(apiListingData)
@@ -956,10 +1028,8 @@ export default function ProfilePage() {
           }
         }
         
-        // Reload full profile to get updated data
-        const updatedProfile = await hotelService.getMyProfile()
-        const transformedProfile = transformHotelProfile(updatedProfile)
-        setHotelProfile(transformedProfile)
+        // Re-fetch full profile to get updated data
+        await loadProfile()
       }
       
       setShowListingModal(false)
@@ -993,34 +1063,33 @@ export default function ProfilePage() {
   }
 
   const handleDeleteListing = async (listingId: string) => {
-    // Profile endpoints have been removed from backend
-    alert('Listing management is not available. Backend only supports authentication endpoints.')
-    return
-    
-    if (!confirm('Are you sure you want to delete this listing?')) {
+    // Check if this is the only listing - hotels must have at least one listing
+    if (!hotelProfile || hotelProfile.listings.length <= 1) {
+      alert('You must have at least one listing. Please add another listing before deleting this one.')
+      return
+    }
+
+    if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
       return
     }
 
     try {
       await hotelService.deleteListing(listingId)
       
-      // Reload full profile to get updated data
-      const updatedProfile = await hotelService.getMyProfile()
-      const transformedProfile = transformHotelProfile(updatedProfile)
-      setHotelProfile(transformedProfile)
+      // Re-fetch full profile to get updated data
+      await loadProfile()
     } catch (error: unknown) {
-      const err = error as any
       const detail =
-        err && typeof err === 'object' && 'data' in err && err.data?.detail
-          ? err.data.detail
+        error instanceof ApiErrorResponse
+          ? error.data.detail
           : null
-      const logError = error instanceof Error ? error : new Error(String(error))
-      console.error('Failed to delete listing:', logError)
-      if (detail) {
-        alert(`Failed to delete listing: ${formatErrorDetail(detail)}`)
-      } else {
-        alert('Failed to delete listing. Please try again.')
-      }
+      const message =
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail) && detail[0]?.msg
+            ? detail[0].msg
+            : 'Failed to delete listing'
+      alert(`Failed to delete listing: ${formatErrorDetail(detail || message)}`)
     }
   }
 

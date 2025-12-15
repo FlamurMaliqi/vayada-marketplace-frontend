@@ -107,7 +107,29 @@ export class ApiClient {
     try {
       const response = await fetch(url, config)
       
-      const data = await response.json()
+      // Handle 204 No Content responses (no body to parse)
+      if (response.status === 204) {
+        if (!response.ok) {
+          // Shouldn't happen, but handle it just in case
+          throw new ApiErrorResponse(response.status, { detail: 'No Content' })
+        }
+        return undefined as T
+      }
+      
+      // Check if response has content to parse
+      const contentType = response.headers.get('content-type')
+      const hasJsonContent = contentType && contentType.includes('application/json')
+      
+      let data: any
+      if (hasJsonContent) {
+        const text = await response.text()
+        // Only parse JSON if there's actual content
+        data = text ? JSON.parse(text) : null
+      } else {
+        // For non-JSON responses, try to get text or return null
+        const text = await response.text()
+        data = text || null
+      }
       
       if (!response.ok) {
         const error = new ApiErrorResponse(response.status, data as ApiError)
@@ -125,6 +147,12 @@ export class ApiClient {
     } catch (error) {
       if (error instanceof ApiErrorResponse) {
         throw error
+      }
+      // Handle JSON parse errors (e.g., empty response)
+      if (error instanceof SyntaxError && error.message.includes('JSON')) {
+        // If it's a successful response but JSON parse failed, return undefined
+        // This handles edge cases where response is empty but status is OK
+        return undefined as T
       }
       console.error('API request failed:', error)
       throw error
