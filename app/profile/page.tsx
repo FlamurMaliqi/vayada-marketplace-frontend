@@ -318,67 +318,70 @@ export default function ProfilePage() {
    * Converts snake_case to camelCase and transforms nested structures
    */
   const transformHotelProfile = (apiProfile: ApiHotelProfile): HotelProfile => {
+    const listings = apiProfile.listings || []
+
     return {
       id: apiProfile.id,
       name: apiProfile.name,
       picture: apiProfile.picture || undefined,
       location: apiProfile.location,
-      status: apiProfile.status as 'verified' | 'pending' | 'rejected',
+      status:
+        apiProfile.status === 'verified' || apiProfile.status === 'pending' || apiProfile.status === 'rejected'
+          ? apiProfile.status
+          : 'pending',
       website: apiProfile.website || undefined,
       about: apiProfile.about || undefined,
       email: apiProfile.email,
-      phone: apiProfile.phone || undefined,
-      listings: apiProfile.listings.map((apiListing) => {
-        // Extract collaboration types from offerings
-        const collaborationTypes = apiListing.collaboration_offerings.map(
-          (offering) => offering.collaboration_type
-        ) as ('Free Stay' | 'Paid' | 'Discount')[]
+      phone: apiProfile.phone || '',
+      listings: listings.map((apiListing) => {
+        const offerings = apiListing.collaboration_offerings || []
+        const collaborationTypes = offerings.map((offering) => offering.collaboration_type) as (
+          | 'Free Stay'
+          | 'Paid'
+          | 'Discount'
+        )[]
 
-        // Get availability months (union of all offerings)
         const availabilityMonths = Array.from(
-          new Set(
-            apiListing.collaboration_offerings.flatMap((offering) => offering.availability_months)
-          )
+          new Set(offerings.flatMap((offering) => offering.availability_months || []))
         )
 
-        // Get platforms (union of all offerings)
-        const platforms = Array.from(
-          new Set(
-            apiListing.collaboration_offerings.flatMap((offering) => offering.platforms)
-          )
-        )
+        const platforms = Array.from(new Set(offerings.flatMap((offering) => offering.platforms || [])))
 
-        // Extract collaboration-specific fields from the first offering of each type
-        const freeStayOffering = apiListing.collaboration_offerings.find(
-          (o) => o.collaboration_type === 'Free Stay'
-        )
-        const paidOffering = apiListing.collaboration_offerings.find(
-          (o) => o.collaboration_type === 'Paid'
-        )
-        const discountOffering = apiListing.collaboration_offerings.find(
-          (o) => o.collaboration_type === 'Discount'
-        )
+        const freeStayOffering = offerings.find((o) => o.collaboration_type === 'Free Stay')
+        const paidOffering = offerings.find((o) => o.collaboration_type === 'Paid')
+        const discountOffering = offerings.find((o) => o.collaboration_type === 'Discount')
+
+        const creatorReqs = apiListing.creator_requirements || {
+          platforms: [],
+          min_followers: undefined,
+          target_countries: [],
+          target_age_min: undefined,
+          target_age_max: undefined,
+        }
 
         return {
           id: apiListing.id,
           name: apiListing.name,
           location: apiListing.location,
           description: apiListing.description,
-          images: apiListing.images,
+          images: apiListing.images || [],
           accommodationType: apiListing.accommodation_type || undefined,
           collaborationTypes,
           availability: availabilityMonths,
           platforms,
-          freeStayMinNights: freeStayOffering?.free_stay_min_nights || undefined,
-          freeStayMaxNights: freeStayOffering?.free_stay_max_nights || undefined,
-          paidMaxAmount: paidOffering?.paid_max_amount || undefined,
-          discountPercentage: discountOffering?.discount_percentage || undefined,
-          lookingForPlatforms: apiListing.creator_requirements.platforms,
-          lookingForMinFollowers: apiListing.creator_requirements.min_followers || undefined,
-          targetGroupCountries: apiListing.creator_requirements.target_countries,
-          targetGroupAgeMin: apiListing.creator_requirements.target_age_min || undefined,
-          targetGroupAgeMax: apiListing.creator_requirements.target_age_max || undefined,
-          status: apiListing.status as 'verified' | 'pending' | 'rejected',
+          freeStayMinNights: freeStayOffering?.free_stay_min_nights ?? undefined,
+          freeStayMaxNights: freeStayOffering?.free_stay_max_nights ?? undefined,
+          paidMaxAmount: paidOffering?.paid_max_amount ?? undefined,
+          discountPercentage: discountOffering?.discount_percentage ?? undefined,
+          lookingForPlatforms: creatorReqs.platforms || [],
+          lookingForMinFollowers: creatorReqs.min_followers ?? undefined,
+          targetGroupCountries: creatorReqs.target_countries || [],
+          targetGroupAgeMin: creatorReqs.target_age_min ?? undefined,
+          targetGroupAgeMax: creatorReqs.target_age_max ?? undefined,
+          status:
+            apiListing.status === 'verified' || apiListing.status === 'pending' || apiListing.status === 'rejected'
+              ? apiListing.status
+              : 'pending',
         }
       }),
     }
