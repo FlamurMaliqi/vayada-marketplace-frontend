@@ -33,6 +33,7 @@ import {
   ArrowLeftIcon,
   ClockIcon,
   BuildingOffice2Icon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/outline'
 
 const HOTEL_CATEGORIES = [
@@ -1675,11 +1676,9 @@ export default function ProfileCompletePage() {
                   )}
 
                   {/* Info Box */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-start gap-3 mt-6">
-                    <div className="w-7 h-7 rounded-full bg-white border border-primary-200 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-primary-600 font-bold text-sm leading-none">i</span>
-                    </div>
-                    <p className="text-sm text-gray-600">
+                  <div className="mt-6 flex items-center gap-3 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-700">
+                    <InformationCircleIcon className="w-5 h-5 text-primary-600" />
+                    <p className="leading-snug">
                       All data should be verifiable via platform insights (e.g., Instagram Insights, YouTube Analytics).
                     </p>
                   </div>
@@ -2450,6 +2449,13 @@ export default function ProfileCompletePage() {
                   <PlusIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   Add Another Property Listing
                 </button>
+
+                <div className="mt-3 flex items-center gap-3 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-700">
+                  <InformationCircleIcon className="w-5 h-5 text-primary-600" />
+                  <p className="leading-snug">
+                    All property information will be verified by our team before your listings go live.
+                  </p>
+                </div>
               </div>
             )}
 
