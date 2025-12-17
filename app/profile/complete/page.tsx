@@ -49,6 +49,7 @@ const HOTEL_CATEGORIES = [
 const PLATFORM_OPTIONS = ['Instagram', 'TikTok', 'YouTube', 'Facebook']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const COLLABORATION_TYPES = ['Free Stay', 'Paid', 'Discount'] as const
+const AGE_GROUP_OPTIONS = ['18-24', '25-34', '35-44', '45-54', '55+']
 const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherlands', 'Switzerland', 'Austria', 'Belgium', 'Canada', 'Australia', 'Japan', 'South Korea', 'Singapore', 'Thailand', 'Indonesia', 'Malaysia', 'Philippines', 'India', 'Brazil', 'Mexico', 'Argentina', 'Chile', 'South Africa', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Egypt']
 
 // Group countries by continent
@@ -173,6 +174,8 @@ export default function ProfileCompletePage() {
     profile_image: '',
   })
   const [creatorPlatforms, setCreatorPlatforms] = useState<PlatformFormData[]>([])
+  const [platformCountryInputs, setPlatformCountryInputs] = useState<Record<number, string>>({})
+  const [platformSaveStatus, setPlatformSaveStatus] = useState<Record<number, string>>({})
   const [expandedPlatforms, setExpandedPlatforms] = useState<Set<number>>(new Set())
   const [collapsedPlatformCards, setCollapsedPlatformCards] = useState<Set<number>>(new Set())
 
@@ -274,6 +277,17 @@ export default function ProfileCompletePage() {
 
   const removePlatform = (index: number) => {
     setCreatorPlatforms(creatorPlatforms.filter((_, i) => i !== index))
+    setPlatformSaveStatus((prev) => {
+      const next = { ...prev }
+      delete next[index]
+      // shift keys above removed index down by 1 to keep alignment
+      const shifted: Record<number, string> = {}
+      Object.entries(next).forEach(([k, v]) => {
+        const num = Number(k)
+        shifted[num > index ? num - 1 : num] = v
+      })
+      return shifted
+    })
 
     // Clean up collapsedPlatformCards: remove the deleted index and adjust all indices greater than it
     const newCollapsed = new Set<number>()
@@ -401,6 +415,52 @@ export default function ProfileCompletePage() {
       updated[platformIndex].gender_split![field] = clampedValue
     }
     setCreatorPlatforms(updated)
+  }
+
+  // Country input helpers for inline picker
+  const handleCountryInputChange = (platformIndex: number, value: string) => {
+    setPlatformCountryInputs((prev) => ({ ...prev, [platformIndex]: value }))
+  }
+
+  const addCountryFromInput = (platformIndex: number, overrideValue?: string) => {
+    const value = (overrideValue ?? platformCountryInputs[platformIndex])?.trim()
+    if (!value) return
+    const updated = [...creatorPlatforms]
+    if (!updated[platformIndex].top_countries) {
+      updated[platformIndex].top_countries = []
+    }
+    // Limit to 3 countries
+    if (updated[platformIndex].top_countries!.length >= 3) return
+    updated[platformIndex].top_countries!.push({ country: value, percentage: 0 })
+    setCreatorPlatforms(updated)
+    setPlatformCountryInputs((prev) => ({ ...prev, [platformIndex]: '' }))
+  }
+
+  const removeCountryTag = (platformIndex: number, countryIndex: number) => {
+    removeTopCountry(platformIndex, countryIndex)
+  }
+
+  const toggleAgeGroupTag = (platformIndex: number, ageRange: string) => {
+    const updated = [...creatorPlatforms]
+    if (!updated[platformIndex].top_age_groups) {
+      updated[platformIndex].top_age_groups = []
+    }
+    const existingIndex = updated[platformIndex].top_age_groups!.findIndex((a) => a.ageRange === ageRange)
+    if (existingIndex >= 0) {
+      updated[platformIndex].top_age_groups = updated[platformIndex].top_age_groups!.filter((_, i) => i !== existingIndex)
+    } else {
+      if (updated[platformIndex].top_age_groups!.length >= 3) return
+      updated[platformIndex].top_age_groups!.push({ ageRange, percentage: 0 })
+    }
+    setCreatorPlatforms(updated)
+  }
+
+  const getAvailableCountries = (platformIndex: number) => {
+    const selected = creatorPlatforms[platformIndex].top_countries?.map((c) => c.country) || []
+    const query = (platformCountryInputs[platformIndex] || '').toLowerCase()
+    return COUNTRIES.filter(
+      (c) => !selected.includes(c) && c.toLowerCase().includes(query)
+    ).slice(0, 8) // keep dropdown compact
   }
 
   const validateCreatorForm = (): boolean => {
@@ -1267,335 +1327,338 @@ export default function ProfileCompletePage() {
 
             {/* Step 2: Platforms Section */}
             {currentStep === 2 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center shadow-sm">
-                    <LinkIcon className="w-5 h-5 text-primary-600" />
+              <div className="space-y-6">
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-11 h-11 bg-primary-50 rounded-xl flex items-center justify-center shadow-sm">
+                      <LinkIcon className="w-5 h-5 text-primary-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900">Connect Your Platforms</h3>
+                      <p className="text-sm text-gray-600">
+                        Link your accounts and define your audience per platform
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900">Connect Your Platforms</h3>
-                    <p className="text-sm text-gray-600">Link your accounts and define your audience per platform</p>
-                  </div>
-                </div>
 
-                <p className="text-sm text-gray-700">Add at least one platform with audience demographics to help match you with the right properties.</p>
-
-                {/* Platform Cards Grid */}
-                <div className="space-y-3 mt-4">
-                  {PLATFORM_OPTIONS.map((platformName) => {
-                    const isAdded = creatorPlatforms.some(p => p.name === platformName)
-                    const platformIndex = creatorPlatforms.findIndex(p => p.name === platformName)
-                    
-                    return (
-                      <div
-                        key={platformName}
-                        className="flex items-center justify-between gap-4 p-4 border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          {/* Platform Icon */}
-                          {platformName === 'Instagram' && (
-                            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z"/>
-                              </svg>
-                            </div>
-                          )}
-                          {platformName === 'TikTok' && (
-                            <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.1 1.75 2.9 2.9 0 0 1 2.31-4.64 2.88 2.88 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-.96-.1z"/>
-                              </svg>
-                            </div>
-                          )}
-                          {platformName === 'YouTube' && (
-                            <div className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                              </svg>
-                            </div>
-                          )}
-                          {platformName === 'Facebook' && (
-                            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                              </svg>
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-bold text-gray-900">{platformName}</p>
-                          </div>
-                        </div>
-                        
-                        {isAdded && platformIndex !== -1 && (
-                          <button
-                            type="button"
-                            onClick={() => togglePlatformCardCollapse(platformIndex)}
-                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-                          >
-                            Edit
-                          </button>
-                        )}
-                        
-                        {!isAdded && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCreatorPlatforms([
-                                ...creatorPlatforms,
-                                {
-                                  name: platformName,
-                                  handle: '',
-                                  followers: '',
-                                  engagement_rate: '',
-                                },
-                              ])
-                            }}
-                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-                          >
-                            Add Manually
-                          </button>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Error Message */}
-                {creatorPlatforms.length === 0 && (
-                  <p className="text-center text-orange-700 font-medium text-sm mt-4">
-                    Connect at least one platform to complete your profile
+                  <p className="text-sm text-gray-700">
+                    Add at least one platform with audience demographics to help match you with the right properties.
                   </p>
-                )}
 
-                {/* Info Box */}
-                <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 flex items-start gap-3 mt-6">
-                  <div className="w-6 h-6 rounded-full bg-white border border-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-blue-500 font-bold text-sm leading-none">i</span>
+                  {/* Platform Cards Grid */}
+                  <div className="space-y-3 mt-4">
+                    {PLATFORM_OPTIONS.map((platformName) => {
+                      const isAdded = creatorPlatforms.some((p) => p.name === platformName)
+                      const platformIndex = creatorPlatforms.findIndex((p) => p.name === platformName)
+
+                      const platformColors: Record<string, string> = {
+                        Instagram: 'from-yellow-400 via-pink-500 to-purple-600',
+                        TikTok: 'from-gray-900 to-gray-800',
+                        YouTube: 'from-red-600 to-red-500',
+                        Facebook: 'from-blue-600 to-blue-500',
+                      }
+
+                      const renderIcon = () => {
+                        if (platformName === 'Instagram') {
+                          return (
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+                            </svg>
+                          )
+                        }
+                        if (platformName === 'TikTok') {
+                          return (
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.1 1.75 2.9 2.9 0 0 1 2.31-4.64 2.88 2.88 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-.96-.1z" />
+                            </svg>
+                          )
+                        }
+                        if (platformName === 'YouTube') {
+                          return (
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                            </svg>
+                          )
+                        }
+                        return (
+                          <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                          </svg>
+                        )
+                      }
+
+                      return (
+                        <div key={platformName} className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
+                          <div className="flex items-center justify-between gap-4 p-4">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-white bg-gradient-to-br ${platformColors[platformName] || 'from-gray-500 to-gray-400'}`}>
+                                {renderIcon()}
+                              </div>
+                              <div>
+                                <p className="font-bold text-gray-900 text-lg">{platformName}</p>
+                              </div>
+                            </div>
+
+                            {isAdded && platformIndex !== -1 ? (
+                              <button
+                                type="button"
+                                onClick={() => removePlatform(platformIndex)}
+                                className="px-4 py-2 border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors text-sm font-medium"
+                              >
+                                Cancel
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCreatorPlatforms([
+                                    ...creatorPlatforms,
+                                    {
+                                      name: platformName,
+                                      handle: '',
+                                      followers: '',
+                                      engagement_rate: '',
+                                    },
+                                  ])
+                                }}
+                                className="px-4 py-2 border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors text-sm font-medium"
+                              >
+                                Add Manually
+                              </button>
+                            )}
+                          </div>
+
+                          {isAdded && platformIndex !== -1 && (
+                            <div className="border-t border-gray-100 bg-white px-4 md:px-6 pb-5 pt-4 rounded-b-2xl">
+                              <div className="space-y-3 mb-4">
+                                <Input
+                                  label="Username"
+                                  type="text"
+                                  value={platformIndex >= 0 ? creatorPlatforms[platformIndex].handle : ''}
+                                  onChange={(e) => updatePlatform(platformIndex, 'handle', e.target.value)}
+                                  placeholder="@ username"
+                                  required
+                                  className="bg-gray-50"
+                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  <Input
+                                    label="Followers"
+                                    type="number"
+                                    value={platformIndex >= 0 ? creatorPlatforms[platformIndex].followers : ''}
+                                    onChange={(e) => updatePlatform(platformIndex, 'followers', e.target.value === '' ? '' : parseInt(e.target.value))}
+                                    required
+                                    placeholder="0"
+                                    min={1}
+                                    className="bg-gray-50"
+                                  />
+                                  <Input
+                                    label="Engagement Rate (%)"
+                                    type="number"
+                                    value={platformIndex >= 0 ? creatorPlatforms[platformIndex].engagement_rate : ''}
+                                    onChange={(e) => updatePlatform(platformIndex, 'engagement_rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                    required
+                                    placeholder="0.00"
+                                    min={0.01}
+                                    max={100}
+                                    step="0.01"
+                                    className="bg-gray-50"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Save button always visible */}
+                              <div className="pt-2">
+                                <Button
+                                  type="button"
+                                  variant="primary"
+                                  className="w-full justify-center text-base font-semibold"
+                                  onClick={() => {
+                                    setPlatformSaveStatus((prev) => ({ ...prev, [platformIndex]: 'Saved!' }))
+                                    togglePlatformCardCollapse(platformIndex)
+                                    setTimeout(() => {
+                                      setPlatformSaveStatus((prev) => {
+                                        const next = { ...prev }
+                                        delete next[platformIndex]
+                                        return next
+                                      })
+                                    }, 2000)
+                                  }}
+                                >
+                                  Save {platformName} Profile
+                                </Button>
+                                {platformSaveStatus[platformIndex] && (
+                                  <p className="text-sm text-green-600 text-center mt-2 font-medium">
+                                    {platformSaveStatus[platformIndex]}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="bg-white border border-gray-200 rounded-xl p-3">
+                                <button
+                                  type="button"
+                                  onClick={() => togglePlatformExpanded(platformIndex)}
+                                  className="flex items-center justify-between w-full text-left"
+                                >
+                                  <span className="text-sm font-semibold text-gray-800">Audience Demographics (Optional)</span>
+                                  {expandedPlatforms.has(platformIndex) ? (
+                                    <ChevronUpIcon className="w-5 h-5 text-gray-500" />
+                                  ) : (
+                                    <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+                                  )}
+                                </button>
+
+                                {expandedPlatforms.has(platformIndex) && (
+                                  <div className="mt-4 space-y-4">
+                                    {/* Top Countries */}
+                                    <div className="space-y-2">
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <p className="text-sm font-semibold text-gray-800">Top Countries</p>
+                                          <p className="text-xs text-gray-500">Select up to 3 countries with their audience percentage</p>
+                                        </div>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <input
+                                          type="text"
+                                          value={platformCountryInputs[platformIndex] || ''}
+                                          onChange={(e) => handleCountryInputChange(platformIndex, e.target.value)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              e.preventDefault()
+                                              addCountryFromInput(platformIndex)
+                                            }
+                                          }}
+                                          placeholder="Search countries..."
+                                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
+                                        />
+                                        {/* Dropdown suggestions */}
+                                        {getAvailableCountries(platformIndex).length > 0 && (
+                                          <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                                            {getAvailableCountries(platformIndex).map((country) => (
+                                              <button
+                                                key={country}
+                                                type="button"
+                                                onClick={() => addCountryFromInput(platformIndex, country)}
+                                                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
+                                              >
+                                                {country}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        )}
+                                        {creatorPlatforms[platformIndex].top_countries && creatorPlatforms[platformIndex].top_countries!.length > 0 && (
+                                          <div className="flex flex-wrap gap-2">
+                                            {creatorPlatforms[platformIndex].top_countries!.map((country, countryIndex) => (
+                                              <span key={countryIndex} className="inline-flex items-center gap-1 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold px-3 py-1 border border-primary-100">
+                                                {country.country}
+                                                <button
+                                                  type="button"
+                                                  onClick={() => removeCountryTag(platformIndex, countryIndex)}
+                                                  className="text-primary-500 hover:text-primary-700"
+                                                >
+                                                  <XMarkIcon className="w-3 h-3" />
+                                                </button>
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Top Age Groups */}
+                                    <div className="space-y-2">
+                                      <div>
+                                        <p className="text-sm font-semibold text-gray-800">Age Groups</p>
+                                        <p className="text-xs text-gray-500">Select up to 3 age groups with their audience percentage</p>
+                                      </div>
+                                      <div className="flex flex-wrap gap-2">
+                                        {AGE_GROUP_OPTIONS.map((range) => {
+                                          const isSelected = creatorPlatforms[platformIndex].top_age_groups?.some((a) => a.ageRange === range)
+                                          return (
+                                            <button
+                                              key={range}
+                                              type="button"
+                                              onClick={() => toggleAgeGroupTag(platformIndex, range)}
+                                              className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
+                                                isSelected
+                                                  ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                                  : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700'
+                                              }`}
+                                            >
+                                              {range}
+                                            </button>
+                                          )
+                                        })}
+                                      </div>
+                                    </div>
+
+                                    {/* Gender Split */}
+                                    <div className="space-y-2">
+                                      <p className="text-sm font-semibold text-gray-800">Gender Split</p>
+                                      <div className="grid grid-cols-2 gap-3">
+                                        <Input
+                                          label="Male %"
+                                          type="number"
+                                          value={creatorPlatforms[platformIndex].gender_split?.male && creatorPlatforms[platformIndex].gender_split!.male > 0 ? creatorPlatforms[platformIndex].gender_split!.male : ''}
+                                          onChange={(e) => {
+                                            const val = e.target.value
+                                            const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
+                                            updateGenderSplit(platformIndex, 'male', cleanVal)
+                                          }}
+                                          placeholder="45"
+                                          min={0}
+                                          max={100}
+                                          step="0.1"
+                                          className="bg-gray-50"
+                                        />
+                                        <Input
+                                          label="Female %"
+                                          type="number"
+                                          value={creatorPlatforms[platformIndex].gender_split?.female && creatorPlatforms[platformIndex].gender_split!.female > 0 ? creatorPlatforms[platformIndex].gender_split!.female : ''}
+                                          onChange={(e) => {
+                                            const val = e.target.value
+                                            const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
+                                            updateGenderSplit(platformIndex, 'female', cleanVal)
+                                          }}
+                                          placeholder="55"
+                                          min={0}
+                                          max={100}
+                                          step="0.1"
+                                          className="bg-gray-50"
+                                        />
+                                      </div>
+                                      {creatorPlatforms[platformIndex].gender_split && (creatorPlatforms[platformIndex].gender_split!.male + creatorPlatforms[platformIndex].gender_split!.female) > 100 && (
+                                        <p className="text-xs text-red-600 mt-1">⚠️ Total &gt; 100%</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
-                  <p className="text-sm text-gray-600 blur-[0.5px]">All data should be verifiable via platform insights (e.g., Instagram Insights, YouTube Analytics).</p>
+
+                  {/* Error Message */}
+                  {creatorPlatforms.length === 0 && (
+                    <p className="text-center text-orange-700 font-medium text-sm mt-4">
+                      Connect at least one platform to complete your profile
+                    </p>
+                  )}
+
+                  {/* Info Box */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-start gap-3 mt-6">
+                    <div className="w-7 h-7 rounded-full bg-white border border-primary-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-primary-600 font-bold text-sm leading-none">i</span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      All data should be verifiable via platform insights (e.g., Instagram Insights, YouTube Analytics).
+                    </p>
+                  </div>
                 </div>
 
-                {/* Added Platforms Detail Forms */}
-                {creatorPlatforms.map((platform, index) => (
-                  <div key={index} className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                        {platform.name}
-                        {platform.name && platform.handle && platform.followers && platform.engagement_rate && (
-                          <span className="text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">
-                            Complete
-                          </span>
-                        )}
-                      </h4>
-                      <button
-                        type="button"
-                        onClick={() => removePlatform(index)}
-                        className="p-1 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
-                        title="Remove platform"
-                      >
-                        <XMarkIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <Input
-                        label="Handle/Username *"
-                        type="text"
-                        value={platform.handle}
-                        onChange={(e) => updatePlatform(index, 'handle', e.target.value)}
-                        required
-                        placeholder="@username"
-                      />
-                      <Input
-                        label="Followers *"
-                        type="number"
-                        value={platform.followers}
-                        onChange={(e) => updatePlatform(index, 'followers', e.target.value === '' ? '' : parseInt(e.target.value))}
-                        required
-                        placeholder="0"
-                        min={1}
-                      />
-                      <Input
-                        label="Engagement Rate (%) *"
-                        type="number"
-                        value={platform.engagement_rate}
-                        onChange={(e) => updatePlatform(index, 'engagement_rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                        required
-                        placeholder="0.00"
-                        min={0.01}
-                        max={100}
-                        step="0.01"
-                      />
-                    </div>
-
-                    {/* Optional Analytics Section */}
-                    <div className="pt-4 border-t border-gray-100 mt-4">
-                      <button
-                        type="button"
-                        onClick={() => togglePlatformExpanded(index)}
-                        className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors w-full"
-                      >
-                        <div className="flex items-center gap-2">
-                          <ChartBarIcon className="w-4 h-4 text-gray-600" />
-                          <span className="text-sm font-semibold text-gray-700">Audience Demographics (Optional)</span>
-                        </div>
-                        {expandedPlatforms.has(index) ? (
-                          <ChevronUpIcon className="w-4 h-4 text-gray-600" />
-                        ) : (
-                          <ChevronDownIcon className="w-4 h-4 text-gray-600" />
-                        )}
-                      </button>
-
-                      {expandedPlatforms.has(index) && (
-                        <div className="mt-3 space-y-3">
-                          {/* Top Countries */}
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <label className="block text-xs font-semibold text-gray-700">Top Countries</label>
-                              <button
-                                type="button"
-                                onClick={() => addTopCountry(index)}
-                                className="px-2 py-1 text-[10px] font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-md transition-colors flex items-center gap-1"
-                              >
-                                <PlusIcon className="w-3 h-3" />
-                                Add
-                              </button>
-                            </div>
-                            {platform.top_countries && platform.top_countries.length > 0 ? (
-                              <div className="space-y-2">
-                                {platform.top_countries.map((country, countryIndex) => (
-                                  <div key={countryIndex} className="flex gap-2 items-end">
-                                    <div className="flex-1">
-                                      <Input
-                                        label="Country"
-                                        type="text"
-                                        value={country.country}
-                                        onChange={(e) => updateTopCountry(index, countryIndex, 'country', e.target.value)}
-                                        placeholder="e.g., USA"
-                                      />
-                                    </div>
-                                    <div className="w-24">
-                                      <Input
-                                        label="%"
-                                        type="number"
-                                        value={country.percentage}
-                                        onChange={(e) => updateTopCountry(index, countryIndex, 'percentage', parseFloat(e.target.value) || 0)}
-                                        placeholder="0"
-                                        min={0}
-                                        max={100}
-                                        step="0.1"
-                                      />
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => removeTopCountry(index, countryIndex)}
-                                      className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors mb-0.5"
-                                    >
-                                      <XMarkIcon className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-gray-400">No countries added</p>
-                            )}
-                          </div>
-
-                          {/* Top Age Groups */}
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <label className="block text-xs font-semibold text-gray-700">Top Age Groups</label>
-                              <button
-                                type="button"
-                                onClick={() => addTopAgeGroup(index)}
-                                className="px-2 py-1 text-[10px] font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-md transition-colors flex items-center gap-1"
-                              >
-                                <PlusIcon className="w-3 h-3" />
-                                Add
-                              </button>
-                            </div>
-                            {platform.top_age_groups && platform.top_age_groups.length > 0 ? (
-                              <div className="space-y-2">
-                                {platform.top_age_groups.map((ageGroup, ageGroupIndex) => (
-                                  <div key={ageGroupIndex} className="flex gap-2 items-end">
-                                    <div className="flex-1">
-                                      <Input
-                                        label="Age Range"
-                                        type="text"
-                                        value={ageGroup.ageRange}
-                                        onChange={(e) => updateTopAgeGroup(index, ageGroupIndex, 'ageRange', e.target.value)}
-                                        placeholder="e.g., 18-24"
-                                      />
-                                    </div>
-                                    <div className="w-24">
-                                      <Input
-                                        label="%"
-                                        type="number"
-                                        value={ageGroup.percentage}
-                                        onChange={(e) => updateTopAgeGroup(index, ageGroupIndex, 'percentage', parseFloat(e.target.value) || 0)}
-                                        placeholder="0"
-                                        min={0}
-                                        max={100}
-                                        step="0.1"
-                                      />
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => removeTopAgeGroup(index, ageGroupIndex)}
-                                      className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors mb-0.5"
-                                    >
-                                      <XMarkIcon className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-gray-400">No age groups added</p>
-                            )}
-                          </div>
-
-                          {/* Gender Split */}
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-2">Gender Split (%)</label>
-                            <div className="grid grid-cols-2 gap-2">
-                              <Input
-                                label="Male"
-                                type="number"
-                                value={platform.gender_split?.male && platform.gender_split.male > 0 ? platform.gender_split.male : ''}
-                                onChange={(e) => {
-                                  const val = e.target.value
-                                  const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
-                                  updateGenderSplit(index, 'male', cleanVal)
-                                }}
-                                placeholder="0"
-                                min={0}
-                                max={100}
-                                step="0.1"
-                              />
-                              <Input
-                                label="Female"
-                                type="number"
-                                value={platform.gender_split?.female && platform.gender_split.female > 0 ? platform.gender_split.female : ''}
-                                onChange={(e) => {
-                                  const val = e.target.value
-                                  const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
-                                  updateGenderSplit(index, 'female', cleanVal)
-                                }}
-                                placeholder="0"
-                                min={0}
-                                max={100}
-                                step="0.1"
-                              />
-                            </div>
-                            {platform.gender_split && (platform.gender_split.male + platform.gender_split.female) > 100 && (
-                              <p className="text-xs text-red-600 mt-1">⚠️ Total &gt; 100%</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
               </div>
             )}
 
@@ -1633,7 +1696,7 @@ export default function ProfileCompletePage() {
                 ) : currentStep === totalSteps ? (
                   <span className="flex items-center justify-center gap-2">
                     <CheckCircleIcon className="w-5 h-5" />
-                    Complete Profile
+                    Review & Complete Profile
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
