@@ -31,6 +31,7 @@ import {
   TagIcon,
   CalendarDaysIcon,
   ArrowLeftIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline'
 
 const HOTEL_CATEGORIES = [
@@ -1015,52 +1016,62 @@ export default function ProfileCompletePage() {
   // Show completion screen if profile is completed
   if (profileCompleted || profileStatus.profile_complete) {
     return (
-      <div className="min-h-screen bg-white relative">
-        {/* Header */}
-        <div className="absolute top-0 left-0 right-0 bg-white border-b border-gray-200 px-6 py-4 z-20">
-          <div className="max-w-4xl mx-auto flex items-center justify-center relative">
-            <a
-              href="/"
-              className="absolute left-0 p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
-              title="Back to Home"
-            >
-              <ArrowLeftIcon className="w-5 h-5" />
-            </a>
-            <div className="flex items-center gap-2">
-              <Image
-                src="/vayada-logo.svg"
-                alt="vayada logo"
-                width={32}
-                height={32}
-                className="w-8 h-8"
-              />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+              <CheckCircleIcon className="w-9 h-9" />
             </div>
-          </div>
-        </div>
+            <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+              Congratulations, your profile is complete!
+            </h1>
+            <p className="text-gray-600 mt-3 text-sm leading-relaxed">
+              Thank you for completing your vayada hotel profile. We're excited to review your submission and connect you with talented creators.
+            </p>
 
-        {/* Completion Message - Overlapping with header */}
-        <div className="relative pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-200 p-8 md:p-12 -mt-8">
-            {/* Success Icon */}
-            <div className="mb-6 flex justify-center">
-              <div className="relative">
-                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
-                  <CheckCircleIcon className="w-12 h-12 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center">
-                  <SparklesIcon className="w-4 h-4 text-white" />
-                </div>
+            <div className="mt-6 text-left bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <CheckCircleIcon className="w-5 h-5 text-primary-600" />
+                <p className="font-semibold text-gray-900 text-sm">Profile Review Status</p>
+              </div>
+              <p className="text-sm text-gray-600">
+                Your profile is now in review by the vayada team. This process ensures the quality and authenticity of our hotel partner network.
+              </p>
+              <div className="flex items-start gap-2 text-sm text-gray-700">
+                <ClockIcon className="w-5 h-5 text-primary-600 mt-0.5" />
+                <p><span className="font-semibold">Review Timeframe:</span> Up to 24 hours</p>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-gray-700">
+                <EnvelopeIcon className="w-5 h-5 text-primary-600 mt-0.5" />
+                <p>You will receive an email notification once your profile has been accepted and your listings are live for creator matching.</p>
               </div>
             </div>
 
-            {/* Title */}
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
-              Profile Complete!
-            </h2>
+            <div className="mt-6 space-y-3">
+              <Button
+                type="button"
+                variant="primary"
+                className="w-full justify-center font-semibold"
+                onClick={() => router.push(ROUTES.HOME)}
+              >
+                Go to homepage <span className="ml-1">→</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-center font-semibold"
+                onClick={() => router.push(ROUTES.PROFILE)}
+              >
+                Edit Profile Details
+              </Button>
+            </div>
 
-            {/* Message */}
-            <p className="text-gray-600 mb-6 text-center leading-relaxed text-lg">
-              Thank you for completing your profile! We're currently in closed beta preparing for launch, and we'll notify you as soon as the platform goes live.
+            <p className="text-xs text-gray-500 mt-6">
+              Questions? Contact us at{' '}
+              <a href="mailto:support@vayada.com" className="text-primary-600 hover:underline">
+                support@vayada.com
+              </a>
+              .
             </p>
           </div>
         </div>
@@ -1455,7 +1466,10 @@ export default function ProfileCompletePage() {
                                     label="Engagement Rate (%)"
                                     type="number"
                                     value={platformIndex >= 0 ? creatorPlatforms[platformIndex].engagement_rate : ''}
-                                    onChange={(e) => updatePlatform(platformIndex, 'engagement_rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(',', '.')
+                                      updatePlatform(platformIndex, 'engagement_rate', raw === '' ? '' : parseFloat(raw))
+                                    }}
                                     required
                                     placeholder="0.00"
                                     min={0.01}
