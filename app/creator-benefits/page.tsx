@@ -64,7 +64,7 @@ export default function CreatorBenefitsPage() {
               <div className="relative flex justify-center">
                 <div className="rounded-2xl overflow-hidden shadow-xl bg-white max-w-md w-full">
                   <img
-                    src="/creator-hero.png"
+                    src="/creator-hero.jpg"
                     alt="Creator with camera"
                     className="w-full h-full object-cover"
                   />

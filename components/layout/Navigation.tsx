@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { NAVIGATION_LINKS } from '@/lib/constants'
 import { ROUTES } from '@/lib/constants/routes'
 import { Button } from '@/components/ui'
+import Image from 'next/image'
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  // Filter to only show "For Hotels" and "For Creators" in center
+  // Filter to only show "For Properties" and "For Creators" in center
   const centerLinks = NAVIGATION_LINKS.filter(link => 
-    link.label === 'For Hotels' || link.label === 'For Creators'
+    link.label === 'For Properties' || link.label === 'For Creators'
   )
 
   return (
@@ -18,8 +19,15 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <a href={ROUTES.HOME} className="text-2xl font-bold text-primary-600">
-              vayada
+            <a href={ROUTES.HOME} className="flex items-center gap-2">
+              <Image
+                src="/vayada-logo.svg"
+                alt="vayada logo"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+              <span className="text-xl font-normal text-black lowercase">vayada</span>
             </a>
           </div>
           
@@ -36,17 +44,11 @@ export default function Navigation() {
             ))}
           </div>
           
-          {/* Right Side - Sign In and Sign Up */}
-          <div className="hidden md:flex items-center space-x-4">
-            <a
-              href={ROUTES.LOGIN}
-              className="text-gray-700 hover:text-primary-600 transition-colors"
-            >
-              Sign In
-            </a>
-            <a href={ROUTES.SIGNUP}>
-              <Button variant="primary" size="md">
-                Sign Up
+          {/* Right Side - Contact us */}
+          <div className="hidden md:flex items-center">
+            <a href={ROUTES.CONTACT}>
+              <Button variant="primary" size="md" className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg">
+                Contact us
               </Button>
             </a>
           </div>
@@ -77,19 +79,12 @@ export default function Navigation() {
               </a>
             ))}
             <a
-              href={ROUTES.LOGIN}
-              className="block text-gray-700 hover:text-primary-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sign In
-            </a>
-            <a
-              href={ROUTES.SIGNUP}
+              href={ROUTES.CONTACT}
               className="block"
               onClick={() => setIsMenuOpen(false)}
             >
               <Button variant="primary" size="md" className="w-full">
-                Sign Up
+                Contact us
               </Button>
             </a>
           </div>
