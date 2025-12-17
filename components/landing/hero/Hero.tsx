@@ -14,7 +14,7 @@ export default function Hero() {
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Properties Section */}
         <section 
-          className="relative min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-16 md:pt-24 lg:pt-32 transition-all duration-500 ease-in-out"
+          className="relative min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-24 md:pt-32 lg:pt-40 transition-all duration-500 ease-in-out"
           style={{
             flex: hoveredSection === 'properties' ? '0.8' : hoveredSection === 'creators' ? '0.2' : '1'
           }}
@@ -39,7 +39,7 @@ export default function Hero() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                 <span className="text-white">Less OTAs.</span>
                 <br />
-                <span className="text-primary-400">More Direct Bookings.</span>
+                <span style={{ color: '#2e51f4' }}>More Direct Bookings.</span>
               </h1>
               <p className="text-lg md:text-xl text-white leading-relaxed">
                 Streamline your workflow. Convert influencer reach to direct bookings.
@@ -99,7 +99,7 @@ export default function Hero() {
 
         {/* Creators Section */}
         <section 
-          className="relative min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-16 md:pt-24 lg:pt-32 transition-all duration-500 ease-in-out"
+          className="relative min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-24 md:pt-32 lg:pt-40 transition-all duration-500 ease-in-out"
           style={{
             flex: hoveredSection === 'creators' ? '0.8' : hoveredSection === 'properties' ? '0.2' : '1'
           }}
@@ -124,7 +124,7 @@ export default function Hero() {
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                 <span className="text-white">Your Reach.</span>
                 <br />
-                <span className="text-primary-400">Turned into partnerships.</span>
+                <span style={{ color: '#2e51f4' }}>Turned into partnerships.</span>
               </h2>
               <p className="text-lg md:text-xl text-white leading-relaxed">
                 Trade your travel influence for partnerships with curated & high-quality hotels worldwide.
