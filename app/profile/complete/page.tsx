@@ -221,12 +221,14 @@ export default function ProfileCompletePage() {
     targetGroupCountries: string[]
     targetGroupAgeMin?: number
     targetGroupAgeMax?: number
+    targetGroupAgeGroups?: string[]
   }
   const [hotelListings, setHotelListings] = useState<ListingFormData[]>([])
   const listingImageInputRefs = useRef<(HTMLInputElement | null)[]>([])
   const creatorImageInputRef = useRef<HTMLInputElement>(null)
   const [collapsedListingCards, setCollapsedListingCards] = useState<Set<number>>(new Set())
   const [expandedContinents, setExpandedContinents] = useState<Record<number, Set<string>>>({})
+  const [listingCountryInputs, setListingCountryInputs] = useState<Record<number, string>>({})
 
   useEffect(() => {
     // Get user type from localStorage
@@ -649,6 +651,7 @@ export default function ProfileCompletePage() {
         platforms: [],
         lookingForPlatforms: [],
         targetGroupCountries: [],
+        targetGroupAgeGroups: [],
       },
     ])
     listingImageInputRefs.current.push(null)
@@ -1866,35 +1869,24 @@ export default function ProfileCompletePage() {
                   return (
                     <div
                       key={index}
-                      className="border border-primary-100 rounded-xl p-4 space-y-3 bg-white shadow-sm hover:shadow-md transition-all"
+                      className="border border-gray-200 rounded-2xl p-5 space-y-4 bg-white shadow-sm"
                     >
-                      <div className="flex items-center justify-between mb-2 pb-2 border-b border-primary-100/70">
+                      <div className="flex items-center justify-between">
                         <button
                           type="button"
                           onClick={() => toggleListingCardCollapse(index)}
-                          className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
+                          className="flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity"
                         >
-                          <div className={`w-7 h-7 rounded-md flex items-center justify-center font-semibold text-xs ${isComplete
-                            ? 'bg-green-50 text-green-700'
-                            : 'bg-primary-50 text-primary-700'
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-sm ${isComplete
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-[#EEF2FF] text-[#2F54EB]'
                             }`}>
-                            {isComplete ? (
-                              <CheckCircleIcon className="w-4 h-4" />
-                            ) : (
-                              index + 1
-                            )}
+                            {index + 1}
                           </div>
                           <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-bold text-gray-900 text-sm">
-                                {listing.name || `Property Listing ${index + 1}`}
-                              </h4>
-                              {isComplete && (
-                                <span className="text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">
-                                  Complete
-                                </span>
-                              )}
-                            </div>
+                            <h4 className="font-semibold text-gray-900 text-base">
+                              {listing.name || `Property Listing ${index + 1}`}
+                            </h4>
                             {collapsedListingCards.has(index) && listing.name && (
                               <p className="text-xs text-gray-500 mt-0">
                                 {listing.location && `${listing.location}`} {listing.accommodation_type && `• ${listing.accommodation_type}`}
@@ -1902,9 +1894,9 @@ export default function ProfileCompletePage() {
                             )}
                           </div>
                           {collapsedListingCards.has(index) ? (
-                            <ChevronDownIcon className="w-4 h-4 text-gray-600" />
+                            <ChevronDownIcon className="w-4 h-4 text-gray-500" />
                           ) : (
-                            <ChevronUpIcon className="w-4 h-4 text-gray-600" />
+                            <ChevronUpIcon className="w-4 h-4 text-gray-500" />
                           )}
                         </button>
                         <div className="flex items-center gap-2">
@@ -1925,7 +1917,7 @@ export default function ProfileCompletePage() {
                         <>
                           {/* Basic Information */}
                           <div className="space-y-4">
-                            <h5 className="text-sm font-semibold text-gray-900 border-b border-gray-200 pb-2">Basic Information</h5>
+                            <h5 className="text-base font-semibold text-gray-900">Basic Information</h5>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               <Input
@@ -1935,6 +1927,7 @@ export default function ProfileCompletePage() {
                                 onChange={(e) => updateListing(index, 'name', e.target.value)}
                                 required
                                 placeholder="Luxury Beach Villa"
+                                className="bg-gray-50 border-gray-200"
                               />
 
                               <Input
@@ -1944,6 +1937,7 @@ export default function ProfileCompletePage() {
                                 onChange={(e) => updateListing(index, 'location', e.target.value)}
                                 required
                                 placeholder="Bali, Indonesia"
+                                className="bg-gray-50 border-gray-200"
                               />
                             </div>
 
@@ -1955,7 +1949,7 @@ export default function ProfileCompletePage() {
                                 value={listing.accommodation_type}
                                 onChange={(e) => updateListing(index, 'accommodation_type', e.target.value)}
                                 required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white text-sm text-gray-900"
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-gray-50 text-sm text-gray-900"
                               >
                                 <option value="">Select type</option>
                                 {HOTEL_CATEGORIES.map((cat) => (
@@ -1973,6 +1967,7 @@ export default function ProfileCompletePage() {
                               required
                               rows={3}
                               placeholder="A stunning beachfront villa with private pool and ocean views."
+                              className="bg-gray-50 border-gray-200"
                             />
 
                             {/* Images */}
@@ -2011,31 +2006,30 @@ export default function ProfileCompletePage() {
                                   className="hidden"
                                   onChange={(e) => handleListingImageChange(index, e)}
                                 />
-                                <Button
-                                  variant="outline"
+                                <button
                                   type="button"
                                   onClick={() => listingImageInputRefs.current[index]?.click()}
+                                  className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center text-gray-400 hover:border-primary-400 hover:text-primary-500 transition-all"
                                 >
-                                  <PlusIcon className="w-5 h-5 mr-2" />
-                                  Add Image
-                                </Button>
+                                  <PlusIcon className="w-6 h-6" />
+                                </button>
                               </div>
                             </div>
                           </div>
 
                           {/* Offerings Section */}
                           <div className="pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="w-1 h-5 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                              <h5 className="text-sm font-semibold text-gray-900">Offerings</h5>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-1.5 h-5 bg-primary-600 rounded-full"></div>
+                              <h5 className="text-lg font-semibold text-gray-900">Offerings</h5>
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-5 bg-gray-50 border border-gray-200 rounded-2xl p-4">
                               {/* Collaboration Types */}
                               <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-2">
+                                <label className="block text-base font-semibold text-gray-900 mb-3">
                                   Collaboration Types <span className="text-red-500">*</span>
                                 </label>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                   {COLLABORATION_TYPES.map((type) => {
                                     const isSelected = listing.collaborationTypes.includes(type)
                                     const icons = {
@@ -2048,10 +2042,11 @@ export default function ProfileCompletePage() {
                                     return (
                                       <label
                                         key={type}
-                                        className={`relative flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${isSelected
-                                          ? 'bg-primary-50 border-primary-300 shadow-sm'
-                                          : 'bg-white border-gray-200 hover:border-primary-200 hover:shadow-sm'
-                                          }`}
+                                        className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${
+                                          isSelected
+                                            ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
+                                            : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
+                                        }`}
                                       >
                                         <input
                                           type="checkbox"
@@ -2065,21 +2060,20 @@ export default function ProfileCompletePage() {
                                           }}
                                           className="sr-only"
                                         />
-                                        <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${isSelected
-                                          ? 'bg-gradient-to-br from-primary-500 to-primary-600'
-                                          : 'bg-gray-100'
-                                          }`}>
-                                          <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-600'}`} />
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                          isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
+                                        }`}>
+                                          <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-700'}`} />
                                         </div>
-                                        <div className="flex-1">
-                                          <div className={`text-sm font-semibold ${isSelected ? 'text-primary-900' : 'text-gray-900'}`}>{type}</div>
-                                          {isSelected && (
-                                            <div className="mt-0.5 flex items-center gap-1">
-                                              <CheckCircleIcon className="w-3 h-3 text-primary-600" />
-                                              <span className="text-[10px] text-primary-600">Selected</span>
-                                            </div>
-                                          )}
+                                        <div className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
+                                          {type}
                                         </div>
+                                        {isSelected && (
+                                          <div className="flex items-center gap-1 text-xs font-medium text-[#2F54EB]">
+                                            <CheckCircleIcon className="w-3.5 h-3.5" />
+                                            <span>Selected</span>
+                                          </div>
+                                        )}
                                       </label>
                                     )
                                   })}
@@ -2088,14 +2082,14 @@ export default function ProfileCompletePage() {
 
                               {/* Free Stay Details */}
                               {listing.collaborationTypes.includes('Free Stay') && (
-                                <div className="p-4 bg-primary-50/50 rounded-xl border border-primary-200 shadow-sm transition-all">
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                                      <GiftIcon className="w-4 h-4 text-white" />
+                                <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
+                                      <GiftIcon className="w-5 h-5" />
                                     </div>
                                     <div>
-                                      <h6 className="font-semibold text-gray-900 text-sm">Free Stay Details</h6>
-                                      <p className="text-[10px] text-gray-600">Specify the night range for free stays</p>
+                                      <h6 className="font-semibold text-gray-900 text-base">Free Stay Details</h6>
+                                      <p className="text-sm text-gray-600">Specify the night range for free stays</p>
                                     </div>
                                   </div>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -2115,6 +2109,7 @@ export default function ProfileCompletePage() {
                                       }}
                                       placeholder="1"
                                       required
+                                      className="bg-gray-50 border-gray-200"
                                     />
                                     <Input
                                       label="Max. Nights"
@@ -2123,6 +2118,7 @@ export default function ProfileCompletePage() {
                                       onChange={(e) => updateListing(index, 'freeStayMaxNights', parseInt(e.target.value) || undefined)}
                                       placeholder="5"
                                       required
+                                      className="bg-gray-50 border-gray-200"
                                     />
                                   </div>
                                 </div>
@@ -2130,14 +2126,14 @@ export default function ProfileCompletePage() {
 
                               {/* Paid Details */}
                               {listing.collaborationTypes.includes('Paid') && (
-                                <div className="p-4 bg-primary-50/50 rounded-xl border border-primary-200 shadow-sm transition-all">
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                                      <CurrencyDollarIcon className="w-4 h-4 text-white" />
+                                <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
+                                      <CurrencyDollarIcon className="w-5 h-5" />
                                     </div>
                                     <div>
-                                      <h6 className="font-semibold text-gray-900 text-sm">Paid Details</h6>
-                                      <p className="text-[10px] text-gray-600">Set the maximum payment amount</p>
+                                      <h6 className="font-semibold text-gray-900 text-base">Paid Details</h6>
+                                      <p className="text-sm text-gray-600">Set the maximum payment amount</p>
                                     </div>
                                   </div>
                                   <Input
@@ -2147,20 +2143,21 @@ export default function ProfileCompletePage() {
                                     onChange={(e) => updateListing(index, 'paidMaxAmount', parseInt(e.target.value) || undefined)}
                                     placeholder="5000"
                                     required
+                                    className="bg-gray-50 border-gray-200"
                                   />
                                 </div>
                               )}
 
                               {/* Discount Details */}
                               {listing.collaborationTypes.includes('Discount') && (
-                                <div className="p-4 bg-primary-50/50 rounded-xl border border-primary-200 shadow-sm transition-all">
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                                      <TagIcon className="w-4 h-4 text-white" />
+                                <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
+                                      <TagIcon className="w-5 h-5" />
                                     </div>
                                     <div>
-                                      <h6 className="font-semibold text-gray-900 text-sm">Discount Details</h6>
-                                      <p className="text-[10px] text-gray-600">Set the discount percentage</p>
+                                      <h6 className="font-semibold text-gray-900 text-base">Discount Details</h6>
+                                      <p className="text-sm text-gray-600">Set the discount percentage</p>
                                     </div>
                                   </div>
                                   <Input
@@ -2172,20 +2169,21 @@ export default function ProfileCompletePage() {
                                     min={1}
                                     max={100}
                                     required
+                                    className="bg-gray-50 border-gray-200"
                                   />
                                 </div>
                               )}
 
                               {/* Availability */}
                               <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <CalendarDaysIcon className="w-4 h-4 text-primary-600" />
-                                  <label className="block text-xs font-semibold text-gray-700">
-                                    Availability (Months) <span className="text-red-500">*</span>
+                                <div className="flex items-center gap-2 mb-3">
+                                  <CalendarDaysIcon className="w-5 h-5 text-primary-600" />
+                                  <label className="block text-base font-semibold text-gray-900">
+                                    Availability <span className="text-red-500">*</span>
                                   </label>
                                 </div>
-                                <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
-                                  <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                                <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
+                                  <div className="grid grid-cols-6 gap-2">
                                     {MONTHS.map((month) => {
                                       const isSelected = listing.availability.includes(month)
                                       const monthAbbr = month.substring(0, 3)
@@ -2193,10 +2191,11 @@ export default function ProfileCompletePage() {
                                       return (
                                         <label
                                           key={month}
-                                          className={`relative flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected
-                                            ? 'bg-primary-50 border-primary-400 shadow-sm'
-                                            : 'bg-white border-gray-200 hover:border-primary-200 hover:bg-primary-50/30'
-                                            }`}
+                                          className={`relative flex flex-col items-center justify-center py-3 rounded-xl border cursor-pointer transition-all ${
+                                            isSelected
+                                              ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
+                                              : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                                          }`}
                                         >
                                           <input
                                             type="checkbox"
@@ -2210,53 +2209,59 @@ export default function ProfileCompletePage() {
                                             }}
                                             className="sr-only"
                                           />
-                                          <div className={`text-xs font-medium mb-1 ${isSelected ? 'text-primary-700' : 'text-gray-500'}`}>
-                                            {monthAbbr}
-                                          </div>
-                                          <div className={`text-[10px] font-normal ${isSelected ? 'text-primary-600' : 'text-gray-400'}`}>
-                                            {month.length > 6 ? month.substring(6) : ''}
-                                          </div>
-                                          {isSelected && (
-                                            <div className="absolute top-1 right-1">
-                                              <CheckCircleIcon className="w-4 h-4 text-primary-600" />
-                                            </div>
-                                          )}
+                                          <div className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-700'}`}>{monthAbbr}</div>
                                         </label>
                                       )
                                     })}
                                   </div>
-                                  {listing.availability.length > 0 && (
-                                    <div className="mt-4 pt-3 border-t border-gray-200">
-                                      <p className="text-xs text-gray-600">
-                                        <span className="font-medium text-primary-700">{listing.availability.length}</span> month{listing.availability.length !== 1 ? 's' : ''} selected: {listing.availability.join(', ')}
-                                      </p>
-                                    </div>
-                                  )}
                                 </div>
                               </div>
 
                               {/* Platforms */}
                               <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">Posting platforms for this collaboration</label>
-                                <p className="text-[10px] text-gray-500 mb-2">Where the creator will post for this listing (choose at least one).</p>
+                                <label className="block text-base font-semibold text-gray-900 mb-1">Posting platforms</label>
+                                <p className="text-sm text-gray-600 mb-3">Where should the creator post content?</p>
                                 <div className="flex flex-wrap gap-2">
-                                  {PLATFORM_OPTIONS.map((platform) => (
-                                    <label key={platform} className="flex items-center cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        checked={listing.platforms.includes(platform)}
-                                        onChange={(e) => {
-                                          if (e.target.checked) {
-                                            updateListing(index, 'platforms', [...listing.platforms, platform])
-                                          } else {
-                                            updateListing(index, 'platforms', listing.platforms.filter((p) => p !== platform))
-                                          }
-                                        }}
-                                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                                      />
-                                      <span className="ml-2 text-gray-700">{platform}</span>
-                                    </label>
-                                  ))}
+                                  {PLATFORM_OPTIONS.map((platform) => {
+                                    const isSelected = listing.platforms.includes(platform)
+                                    return (
+                                      <label
+                                        key={platform}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
+                                          isSelected
+                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                        }`}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={isSelected}
+                                          onChange={(e) => {
+                                            if (e.target.checked) {
+                                              updateListing(index, 'platforms', [...listing.platforms, platform])
+                                            } else {
+                                              updateListing(index, 'platforms', listing.platforms.filter((p) => p !== platform))
+                                            }
+                                          }}
+                                          className="sr-only"
+                                        />
+                                        <span
+                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                            isSelected
+                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                              : 'border-gray-400 bg-white'
+                                          }`}
+                                        >
+                                          {isSelected && (
+                                            <span className="w-2 h-2 rounded-full bg-white"></span>
+                                          )}
+                                        </span>
+                                        <span className={isSelected ? 'text-[#2F54EB]' : 'text-gray-700'}>
+                                          {platform}
+                                        </span>
+                                      </label>
+                                    )
+                                  })}
                                 </div>
                               </div>
                             </div>
@@ -2264,173 +2269,174 @@ export default function ProfileCompletePage() {
 
                           {/* Looking For Section */}
                           <div className="pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="w-1 h-5 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                              <h5 className="text-sm font-semibold text-gray-900">Looking For</h5>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-1.5 h-5 bg-orange-500 rounded-full"></div>
+                              <h5 className="text-lg font-semibold text-gray-900">Looking For</h5>
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-5 bg-gray-50 border border-gray-200 rounded-2xl p-4">
                               {/* Platforms */}
                               <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">Creator's existing platforms</label>
-                                <p className="text-[10px] text-gray-500 mb-2">Platforms the creator should already have. Pick at least one.</p>
+                                <label className="block text-base font-semibold text-gray-900 mb-1">Creator's platforms</label>
+                                <p className="text-sm text-gray-600 mb-3">Which platforms should the creator have?</p>
                                 <div className="flex flex-wrap gap-2">
-                                  {PLATFORM_OPTIONS.map((platform) => (
-                                    <label key={platform} className="flex items-center cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        checked={listing.lookingForPlatforms.includes(platform)}
-                                        onChange={(e) => {
-                                          if (e.target.checked) {
-                                            updateListing(index, 'lookingForPlatforms', [...listing.lookingForPlatforms, platform])
-                                          } else {
-                                            updateListing(index, 'lookingForPlatforms', listing.lookingForPlatforms.filter((p) => p !== platform))
-                                          }
-                                        }}
-                                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                                      />
-                                      <span className="ml-2 text-gray-700">{platform}</span>
-                                    </label>
-                                  ))}
+                                  {PLATFORM_OPTIONS.map((platform) => {
+                                    const isSelected = listing.lookingForPlatforms.includes(platform)
+                                    return (
+                                      <label
+                                        key={platform}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
+                                          isSelected
+                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                        }`}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={isSelected}
+                                          onChange={(e) => {
+                                            if (e.target.checked) {
+                                              updateListing(index, 'lookingForPlatforms', [...listing.lookingForPlatforms, platform])
+                                            } else {
+                                              updateListing(index, 'lookingForPlatforms', listing.lookingForPlatforms.filter((p) => p !== platform))
+                                            }
+                                          }}
+                                          className="sr-only"
+                                        />
+                                        <span
+                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                            isSelected
+                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                              : 'border-gray-400 bg-white'
+                                          }`}
+                                        >
+                                          {isSelected && (
+                                            <span className="w-2 h-2 rounded-full bg-white"></span>
+                                          )}
+                                        </span>
+                                        <span className={isSelected ? 'text-[#2F54EB]' : 'text-gray-700'}>
+                                          {platform}
+                                        </span>
+                                      </label>
+                                    )
+                                  })}
                                 </div>
                               </div>
 
                               {/* Min Followers */}
-                              <Input
-                                label="Min. Follower Amount (optional)"
-                                type="number"
-                                value={listing.lookingForMinFollowers || ''}
-                                onChange={(e) => updateListing(index, 'lookingForMinFollowers', parseInt(e.target.value) || undefined)}
-                                placeholder="50000"
-                              />
-
-                              {/* Target Group Countries */}
                               <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                                    <GlobeAltIcon className="w-4 h-4 text-white" />
-                                  </div>
-                                  <label className="block text-xs font-semibold text-gray-700">
-                                    Target Group - Countries <span className="text-red-500">*</span>
-                                  </label>
-                                </div>
-                                <div className="space-y-2 max-h-80 overflow-y-auto p-2">
-                                  {CONTINENT_ORDER.map((continent) => {
-                                    const countries = COUNTRIES_BY_CONTINENT[continent]
-                                    // Default to collapsed - only expand if explicitly in the expanded Set
-                                    const isCollapsed = !expandedContinents[index]?.has(continent)
-                                    const selectedInContinent = countries.filter((c) => listing.targetGroupCountries.includes(c))
-                                    const allSelected = selectedInContinent.length === countries.length
-                                    const someSelected = selectedInContinent.length > 0 && selectedInContinent.length < countries.length
-
-                                    return (
-                                      <div key={continent} className="border-2 rounded-xl overflow-hidden shadow-sm transition-all hover:shadow-md">
-                                        <button
-                                          type="button"
-                                          onClick={() => toggleContinent(index, continent)}
-                                          className={`w-full flex items-center justify-between p-3 transition-all ${allSelected
-                                            ? 'bg-gradient-to-r from-primary-50 to-primary-100/50 border-primary-300'
-                                            : someSelected
-                                              ? 'bg-gradient-to-r from-primary-50/70 to-primary-50/30 border-primary-200'
-                                              : 'bg-white hover:bg-gray-50 border-gray-200'
-                                            }`}
-                                        >
-                                          <div className="flex items-center gap-2">
-                                            <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${allSelected
-                                              ? 'bg-gradient-to-br from-primary-500 to-primary-600'
-                                              : someSelected
-                                                ? 'bg-primary-200'
-                                                : 'bg-gray-100'
-                                              }`}>
-                                              {isCollapsed ? (
-                                                <ChevronDownIcon className={`w-4 h-4 ${allSelected ? 'text-white' : 'text-gray-600'}`} />
-                                              ) : (
-                                                <ChevronUpIcon className={`w-4 h-4 ${allSelected ? 'text-white' : 'text-gray-600'}`} />
-                                              )}
-                                            </div>
-                                            <span className={`font-semibold ${allSelected ? 'text-primary-900' : 'text-gray-900'}`}>
-                                              {continent}
-                                            </span>
-                                            {allSelected && (
-                                              <div className="flex items-center gap-1 px-2 py-1 bg-primary-600 text-white rounded-full">
-                                                <CheckCircleIcon className="w-3.5 h-3.5" />
-                                                <span className="text-xs font-medium">All</span>
-                                              </div>
-                                            )}
-                                            {someSelected && (
-                                              <div className="flex items-center gap-1 px-2 py-1 bg-primary-200 text-primary-700 rounded-full">
-                                                <span className="text-xs font-medium">{selectedInContinent.length} selected</span>
-                                              </div>
-                                            )}
-                                          </div>
-                                        </button>
-                                        {!isCollapsed && (
-                                          <div className="p-4 bg-white border-t-2 border-gray-100">
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
-                                              {countries.map((country) => {
-                                                const isSelected = listing.targetGroupCountries.includes(country)
-                                                return (
-                                                  <label
-                                                    key={country}
-                                                    className={`flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer transition-all border-2 ${isSelected
-                                                      ? 'bg-primary-50 border-primary-300 shadow-sm'
-                                                      : 'bg-white border-gray-200 hover:border-primary-200 hover:bg-primary-50/30'
-                                                      }`}
-                                                  >
-                                                    <input
-                                                      type="checkbox"
-                                                      checked={isSelected}
-                                                      onChange={(e) => {
-                                                        if (e.target.checked) {
-                                                          updateListing(index, 'targetGroupCountries', [...listing.targetGroupCountries, country])
-                                                        } else {
-                                                          updateListing(index, 'targetGroupCountries', listing.targetGroupCountries.filter((c) => c !== country))
-                                                        }
-                                                      }}
-                                                      className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
-                                                    />
-                                                    <span className={`text-sm font-medium ${isSelected ? 'text-primary-900' : 'text-gray-700'}`}>
-                                                      {country}
-                                                    </span>
-                                                  </label>
-                                                )
-                                              })}
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                                {listing.targetGroupCountries.length > 0 && (
-                                  <div className="mt-4 p-4 bg-gradient-to-r from-primary-50 to-primary-100/50 rounded-xl border-2 border-primary-200 shadow-sm">
-                                    <div className="flex items-center gap-2">
-                                      <CheckCircleIcon className="w-5 h-5 text-primary-600" />
-                                      <p className="text-sm text-gray-700">
-                                        <span className="font-bold text-primary-700">{listing.targetGroupCountries.length}</span> countr{listing.targetGroupCountries.length !== 1 ? 'ies' : 'y'} selected
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
+                                <label className="block text-base font-semibold text-gray-900 mb-2">Min. Followers (optional)</label>
+                                <Input
+                                  type="number"
+                                  value={listing.lookingForMinFollowers || ''}
+                                  onChange={(e) => updateListing(index, 'lookingForMinFollowers', parseInt(e.target.value) || undefined)}
+                                  placeholder="e.g., 50000"
+                                  className="bg-gray-50"
+                                />
                               </div>
 
-                              {/* Target Group Age */}
+                              {/* Top Countries */}
                               <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-2">Target Group - Age Group</label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                  <Input
-                                    label="Min. Age (optional)"
-                                    type="number"
-                                    value={listing.targetGroupAgeMin || ''}
-                                    onChange={(e) => updateListing(index, 'targetGroupAgeMin', parseInt(e.target.value) || undefined)}
-                                    placeholder="25"
+                                <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries</label>
+                                <p className="text-sm text-gray-600 mb-3">Select up to 3 countries your target audience is from</p>
+                                <div className="space-y-2">
+                                  <input
+                                    type="text"
+                                    value={listingCountryInputs[index] || ''}
+                                    onChange={(e) => {
+                                      setListingCountryInputs((prev) => ({ ...prev, [index]: e.target.value }))
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault()
+                                        const country = listingCountryInputs[index]?.trim()
+                                        if (country && COUNTRIES.includes(country) && !listing.targetGroupCountries.includes(country) && listing.targetGroupCountries.length < 3) {
+                                          updateListing(index, 'targetGroupCountries', [...listing.targetGroupCountries, country])
+                                          setListingCountryInputs((prev) => ({ ...prev, [index]: '' }))
+                                        }
+                                      }
+                                    }}
+                                    placeholder="Search countries..."
+                                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
                                   />
-                                  <Input
-                                    label="Max. Age (optional)"
-                                    type="number"
-                                    value={listing.targetGroupAgeMax || ''}
-                                    onChange={(e) => updateListing(index, 'targetGroupAgeMax', parseInt(e.target.value) || undefined)}
-                                    placeholder="45"
-                                  />
+                                  {/* Dropdown suggestions */}
+                                  {listingCountryInputs[index] && COUNTRIES.filter(c => 
+                                    c.toLowerCase().includes((listingCountryInputs[index] || '').toLowerCase()) &&
+                                    !listing.targetGroupCountries.includes(c)
+                                  ).length > 0 && (
+                                    <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                                      {COUNTRIES.filter(c => 
+                                        c.toLowerCase().includes((listingCountryInputs[index] || '').toLowerCase()) &&
+                                        !listing.targetGroupCountries.includes(c)
+                                      ).map((country) => (
+                                        <button
+                                          key={country}
+                                          type="button"
+                                          onClick={() => {
+                                            if (listing.targetGroupCountries.length < 3 && !listing.targetGroupCountries.includes(country)) {
+                                              updateListing(index, 'targetGroupCountries', [...listing.targetGroupCountries, country])
+                                              setListingCountryInputs((prev) => ({ ...prev, [index]: '' }))
+                                            }
+                                          }}
+                                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
+                                        >
+                                          {country}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {listing.targetGroupCountries.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                      {listing.targetGroupCountries.map((country, countryIndex) => (
+                                        <span key={countryIndex} className="inline-flex items-center gap-1 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold px-3 py-1 border border-primary-100">
+                                          {country}
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              updateListing(index, 'targetGroupCountries', listing.targetGroupCountries.filter((c) => c !== country))
+                                            }}
+                                            className="text-primary-500 hover:text-primary-700"
+                                          >
+                                            <XMarkIcon className="w-3 h-3" />
+                                          </button>
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Age Groups */}
+                              <div>
+                                <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups</label>
+                                <p className="text-sm text-gray-600 mb-3">Select up to 3 age groups you want to target</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {AGE_GROUP_OPTIONS.map((range) => {
+                                    const isSelected = listing.targetGroupAgeGroups?.includes(range) || false
+                                    return (
+                                      <button
+                                        key={range}
+                                        type="button"
+                                        onClick={() => {
+                                          const currentGroups = listing.targetGroupAgeGroups || []
+                                          if (isSelected) {
+                                            updateListing(index, 'targetGroupAgeGroups', currentGroups.filter((g) => g !== range))
+                                          } else {
+                                            if (currentGroups.length < 3) {
+                                              updateListing(index, 'targetGroupAgeGroups', [...currentGroups, range])
+                                            }
+                                          }
+                                        }}
+                                        disabled={!isSelected && (listing.targetGroupAgeGroups?.length || 0) >= 3}
+                                        className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
+                                          isSelected
+                                            ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                            : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                                        }`}
+                                      >
+                                        {range}
+                                      </button>
+                                    )
+                                  })}
                                 </div>
                               </div>
                             </div>
