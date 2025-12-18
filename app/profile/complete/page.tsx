@@ -525,6 +525,14 @@ export default function ProfileCompletePage() {
         setError(`Platform ${i + 1}: Engagement rate must be greater than 0 and less than or equal to 100`)
         return false
       }
+      // Validate age groups - if any exist, they must have valid age ranges
+      if (platform.top_age_groups && platform.top_age_groups.length > 0) {
+        const invalidAgeGroups = platform.top_age_groups.filter(tag => !tag.ageRange || !tag.ageRange.trim())
+        if (invalidAgeGroups.length > 0) {
+          setError(`Platform ${i + 1}: All age groups must have a valid age range selected`)
+          return false
+        }
+      }
     }
 
     return true
@@ -787,10 +795,12 @@ export default function ProfileCompletePage() {
           })),
         }),
         ...(p.top_age_groups && p.top_age_groups.length > 0 && {
-          topAgeGroups: p.top_age_groups.map(tag => ({
-            ageRange: tag.ageRange,
-            percentage: tag.percentage,
-          })),
+          topAgeGroups: p.top_age_groups
+            .filter(tag => tag.ageRange && tag.ageRange.trim() !== '') // Filter out empty age ranges
+            .map(tag => ({
+              ageRange: tag.ageRange.trim(),
+              percentage: tag.percentage,
+            })),
         }),
         ...(p.gender_split && (p.gender_split.male > 0 || p.gender_split.female > 0) && {
           genderSplit: {

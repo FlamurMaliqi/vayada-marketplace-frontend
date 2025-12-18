@@ -13,3 +13,5 @@ export type { TextareaProps } from './Textarea'
 
 export { StarRating, default as StarRatingDefault } from './StarRating'
 
+export { ErrorModal } from './ErrorModal'
+

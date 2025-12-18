@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { AuthenticatedNavigation, ProfileWarningBanner } from '@/components/layout'
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
 import { ROUTES } from '@/lib/constants/routes'
-import { Button, Input, Textarea, StarRating } from '@/components/ui'
+import { Button, Input, Textarea, StarRating, ErrorModal } from '@/components/ui'
 import { MapPinIcon, CheckBadgeIcon, StarIcon, PencilIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { TrashIcon, ChevronDownIcon, ChevronUpIcon, InformationCircleIcon, EnvelopeIcon, PhoneIcon, LinkIcon, UserIcon } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline'
@@ -147,6 +147,18 @@ export default function ProfilePage() {
   const hotelFileInputRef = useRef<HTMLInputElement | null>(null)
   const listingImageInputRef = useRef<HTMLInputElement | null>(null)
   const creatorImageInputRef = useRef<HTMLInputElement | null>(null)
+  
+  // Error modal state
+  const [errorModal, setErrorModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string | string[]
+    details?: string
+  }>({
+    isOpen: false,
+    title: 'Error',
+    message: '',
+  })
   
   // Platform management state
   const [expandedPlatforms, setExpandedPlatforms] = useState<Set<number>>(new Set())
@@ -475,6 +487,46 @@ export default function ProfilePage() {
     return 'An error occurred'
   }
 
+  /**
+   * Format error detail for modal display (returns array of messages)
+   * Handles string, array of validation errors, or object
+   */
+  const formatErrorForModal = (detail: unknown): string[] => {
+    if (typeof detail === 'string') {
+      return [detail]
+    }
+    if (Array.isArray(detail)) {
+      // Pydantic validation errors: [{type, loc, msg, input, url}, ...]
+      return detail.map((err: any) => {
+        const field = Array.isArray(err.loc) ? err.loc.slice(1).join('.') : 'field'
+        return `${field}: ${err.msg || 'Validation error'}`
+      })
+    }
+    if (detail && typeof detail === 'object') {
+      return [JSON.stringify(detail)]
+    }
+    return ['An error occurred']
+  }
+
+  /**
+   * Show error modal
+   */
+  const showError = (title: string, message: string | string[], details?: string) => {
+    setErrorModal({
+      isOpen: true,
+      title,
+      message,
+      details,
+    })
+  }
+
+  /**
+   * Close error modal
+   */
+  const closeError = () => {
+    setErrorModal(prev => ({ ...prev, isOpen: false }))
+  }
+
   const loadProfile = async () => {
     // Don't load profile if userType is not set or invalid
     if (!userType || (userType !== 'creator' && userType !== 'hotel')) {
@@ -749,6 +801,13 @@ export default function ProfilePage() {
       if (!platform.engagementRate || platform.engagementRate <= 0) {
         return `Platform ${i + 1}: Engagement rate must be greater than 0`
       }
+      // Validate age groups - if any exist, they must have valid age ranges
+      if (platform.topAgeGroups && platform.topAgeGroups.length > 0) {
+        const invalidAgeGroups = platform.topAgeGroups.filter(tag => !tag.ageRange || !tag.ageRange.trim())
+        if (invalidAgeGroups.length > 0) {
+          return `Platform ${i + 1}: All age groups must have a valid age range selected`
+        }
+      }
     }
     return null
   }
@@ -757,7 +816,7 @@ export default function ProfilePage() {
     // Validate form
     const validationError = validateCreatorEdit()
     if (validationError) {
-      alert(validationError)
+      showError('Validation Error', validationError)
       return
     }
 
@@ -780,16 +839,18 @@ export default function ProfilePage() {
           })),
         }),
         ...(platform.topAgeGroups && platform.topAgeGroups.length > 0 && {
-          top_age_groups: platform.topAgeGroups.map(tag => ({
-            age_range: tag.ageRange, // Use snake_case
-            percentage: tag.percentage,
-          })),
+          top_age_groups: platform.topAgeGroups
+            .filter(tag => tag.ageRange && tag.ageRange.trim() !== '') // Filter out empty age ranges
+            .map(tag => ({
+              age_range: tag.ageRange.trim(), // Use snake_case
+              percentage: tag.percentage,
+            })),
         }),
         ...(platform.genderSplit && (platform.genderSplit.male > 0 || platform.genderSplit.female > 0) && {
-          gender_split: JSON.stringify({
+          gender_split: {
             male: platform.genderSplit.male,
             female: platform.genderSplit.female,
-          }),
+          },
         }),
       }))
 
@@ -830,7 +891,7 @@ export default function ProfilePage() {
           : Array.isArray(detail) && detail[0]?.msg
             ? detail[0].msg
             : 'Failed to save profile'
-      alert(`Failed to save profile: ${formatErrorDetail(detail || message)}`)
+      showError('Failed to Save Profile', formatErrorForModal(detail || message))
     } finally {
       setIsSavingProfile(false)
     }
@@ -889,7 +950,7 @@ export default function ProfilePage() {
     // Validate form
     const validationError = validateHotelEdit()
     if (validationError) {
-      alert(validationError)
+      showError('Validation Error', validationError)
       return
     }
 
@@ -976,7 +1037,7 @@ export default function ProfilePage() {
           : Array.isArray(detail) && detail[0]?.msg
             ? detail[0].msg
             : 'Failed to save profile'
-      alert(`Failed to save profile: ${formatErrorDetail(detail || message)}`)
+      showError('Failed to Save Profile', formatErrorForModal(detail || message))
     } finally {
       setIsSavingHotelProfile(false)
     }
@@ -1015,7 +1076,7 @@ export default function ProfilePage() {
 
   const handleSaveHotelContact = async () => {
     if (!email || !email.includes('@')) {
-      alert('Please enter a valid email address')
+      showError('Validation Error', 'Please enter a valid email address')
       return
     }
     
@@ -1061,7 +1122,7 @@ export default function ProfilePage() {
           : Array.isArray(detail) && detail[0]?.msg
             ? detail[0].msg
             : 'Failed to save contact information'
-      alert(`Failed to save contact information: ${formatErrorDetail(detail || message)}`)
+      showError('Failed to Save Contact Information', formatErrorForModal(detail || message))
     } finally {
       setIsSavingContact(false)
     }
@@ -1119,17 +1180,17 @@ export default function ProfilePage() {
 
   const handleSaveListing = async () => {
     if (!listingFormData.name || !listingFormData.location || !listingFormData.description) {
-      alert('Please fill in all required fields: name, location, and description.')
+      showError('Validation Error', 'Please fill in all required fields: name, location, and description.')
       return
     }
 
     if (!listingFormData.collaborationTypes.length || !listingFormData.availability.length) {
-      alert('Please add at least one collaboration offering with availability months.')
+      showError('Validation Error', 'Please add at least one collaboration offering with availability months.')
       return
     }
 
     if (!listingFormData.lookingForPlatforms.length || !listingFormData.targetGroupCountries.length) {
-      alert('Please specify platforms and target countries for creator requirements.')
+      showError('Validation Error', 'Please specify platforms and target countries for creator requirements.')
       return
     }
 
@@ -1205,9 +1266,9 @@ export default function ProfilePage() {
       const logError = error instanceof Error ? error : new Error(String(error))
       console.error('Failed to save listing:', logError)
       if (detail) {
-        alert(`Failed to save listing: ${formatErrorDetail(detail)}`)
+        showError('Failed to Save Listing', formatErrorForModal(detail))
       } else {
-        alert('Failed to save listing. Please try again.')
+        showError('Failed to Save Listing', 'Failed to save listing. Please try again.')
       }
       setIsSavingListing(false)
     }
@@ -1225,7 +1286,7 @@ export default function ProfilePage() {
   const handleDeleteListing = async (listingId: string) => {
     // Check if this is the only listing - hotels must have at least one listing
     if (!hotelProfile || hotelProfile.listings.length <= 1) {
-      alert('You must have at least one listing. Please add another listing before deleting this one.')
+      showError('Cannot Delete Listing', 'You must have at least one listing. Please add another listing before deleting this one.')
       return
     }
 
@@ -1249,7 +1310,7 @@ export default function ProfilePage() {
           : Array.isArray(detail) && detail[0]?.msg
             ? detail[0].msg
             : 'Failed to delete listing'
-      alert(`Failed to delete listing: ${formatErrorDetail(detail || message)}`)
+      showError('Failed to Delete Listing', formatErrorForModal(detail || message))
     }
   }
 
@@ -1263,7 +1324,7 @@ export default function ProfilePage() {
     const fileList = Array.from(files)
 
     // Profile endpoints have been removed from backend
-    alert('Image upload is not available. Backend only supports authentication endpoints.')
+    showError('Feature Unavailable', 'Image upload is not available. Backend only supports authentication endpoints.')
     return
     
     // If we're editing an existing listing, upload images immediately
@@ -1286,9 +1347,9 @@ export default function ProfilePage() {
         const logError = error instanceof Error ? error : new Error(String(error))
         console.error('Failed to upload listing images:', logError)
         if (detail) {
-          alert(`Failed to upload images: ${formatErrorDetail(detail)}`)
+          showError('Failed to Upload Images', formatErrorForModal(detail))
         } else {
-          alert('Failed to upload images. Please try again.')
+          showError('Failed to Upload Images', 'Failed to upload images. Please try again.')
         }
       }
     } else {
@@ -1462,7 +1523,7 @@ export default function ProfilePage() {
 
     const file = files[0]
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file')
+      showError('Invalid File Type', 'Please select an image file')
       return
     }
 
@@ -2911,7 +2972,7 @@ export default function ProfilePage() {
                       reader.readAsDataURL(file)
                       
                       // Profile endpoints have been removed from backend
-                      alert('Image upload is not available. Backend only supports authentication endpoints.')
+                      showError('Feature Unavailable', 'Image upload is not available. Backend only supports authentication endpoints.')
                       // Reset preview
                       setHotelPicturePreview(null)
                       setHotelEditFormData({ ...hotelEditFormData, picture: hotelProfile?.picture || '' })
@@ -3492,6 +3553,15 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={closeError}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
     </main>
   )
 }
