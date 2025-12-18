@@ -102,7 +102,7 @@ type CreatorTab = 'overview' | 'platforms' | 'reviews'
 type HotelTab = 'overview' | 'listings'
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-const HOTEL_CATEGORIES = ['Hotel', 'Resort', 'Boutique Hotel', 'Luxury Hotel', 'City Hotel', 'Apartment', 'Villa']
+const HOTEL_CATEGORIES = ['Hotel', 'Boutiques Hotel', 'City Hotel', 'Luxury Hotel', 'Apartment', 'Villa', 'Lodge']
 const PLATFORM_OPTIONS = ['Instagram', 'TikTok', 'YouTube', 'Facebook']
 const COLLABORATION_TYPES = ['Free Stay', 'Paid', 'Discount'] as const
 const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherlands', 'Switzerland', 'Austria', 'Belgium', 'Canada', 'Australia', 'Japan', 'South Korea', 'Singapore', 'Thailand', 'Indonesia', 'Malaysia', 'Philippines', 'India', 'Brazil', 'Mexico', 'Argentina', 'Chile', 'South Africa', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Egypt']

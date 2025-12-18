@@ -38,12 +38,12 @@ import {
 
 const HOTEL_CATEGORIES = [
   'Hotel',
-  'Resort',
-  'Boutique Hotel',
-  'Luxury Hotel',
+  'Boutiques Hotel',
   'City Hotel',
+  'Luxury Hotel',
   'Apartment',
   'Villa',
+  'Lodge',
 ]
 
 const PLATFORM_OPTIONS = ['Instagram', 'TikTok', 'YouTube', 'Facebook']

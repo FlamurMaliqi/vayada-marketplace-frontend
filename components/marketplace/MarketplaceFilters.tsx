@@ -27,12 +27,12 @@ interface MarketplaceFiltersProps {
 // Filter options
 const HOTEL_TYPES = [
   'Hotel',
-  'Resort',
-  'Boutique Hotel',
-  'Luxury Hotel',
+  'Boutiques Hotel',
   'City Hotel',
+  'Luxury Hotel',
   'Apartment',
   'Villa',
+  'Lodge',
 ]
 
 const OFFERINGS = [
