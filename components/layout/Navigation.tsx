@@ -44,11 +44,17 @@ export default function Navigation() {
           ))}
         </div>
         
-        {/* Right Side - Contact us */}
-        <div className="absolute right-[10vw] hidden md:flex items-center">
-          <a href={ROUTES.CONTACT}>
+        {/* Right Side - Contact us and Sign up */}
+        <div className="absolute right-[10vw] hidden md:flex items-center gap-4">
+          <a 
+            href={ROUTES.CONTACT}
+            className="text-gray-500 hover:text-primary-600 transition-colors font-medium border-[0.2px] border-black-300 rounded-2xl px-4 py-2"
+          >
+            Contact us
+          </a>
+          <a href={ROUTES.SIGNUP}>
             <Button variant="primary" size="md" className="bg-primary-600 hover:bg-primary-700 text-white rounded-2xl px-4 py-2">
-              Contact us
+              Sign In
             </Button>
           </a>
         </div>
@@ -80,11 +86,18 @@ export default function Navigation() {
             ))}
             <a
               href={ROUTES.CONTACT}
+              className="block text-gray-700 hover:text-primary-600 font-medium border-[0.5px] border-black rounded-xl px-4 py-2 text-center"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Contact us
+            </a>
+            <a
+              href={ROUTES.SIGNUP}
               className="block"
               onClick={() => setIsMenuOpen(false)}
             >
               <Button variant="primary" size="md" className="w-full">
-                Contact us
+                Sign up
               </Button>
             </a>
           </div>
