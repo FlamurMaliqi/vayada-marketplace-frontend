@@ -243,5 +243,54 @@ export const authService = {
       throw new Error(error.message || 'Failed to reset password. Please try again.')
     }
   },
+
+  /**
+   * Send email verification code
+   * Sends a verification code to the provided email address
+   * Code expires in 15 minutes
+   */
+  sendVerificationCode: async (email: string): Promise<{ message: string; code: string | null }> => {
+    try {
+      const response = await apiClient.post<{ message: string; code: string | null }>('/auth/send-verification-code', { email })
+      return response
+    } catch (error: any) {
+      if (error instanceof ApiErrorResponse) {
+        const detail = error.data.detail
+        if (typeof detail === 'string') {
+          throw new Error(detail)
+        }
+        throw new Error('Failed to send verification code. Please try again.')
+      }
+      throw new Error('Failed to send verification code. Please try again.')
+    }
+  },
+
+  /**
+   * Verify email verification code
+   * Verifies the code sent to the email address
+   * Code can only be used once
+   */
+  verifyEmailCode: async (email: string, code: string): Promise<{ message: string; verified: boolean }> => {
+    try {
+      const response = await apiClient.post<{ message: string; verified: boolean }>('/auth/verify-email-code', {
+        email,
+        code,
+      })
+      return response
+    } catch (error: any) {
+      if (error instanceof ApiErrorResponse) {
+        const detail = error.data.detail
+        if (typeof detail === 'string') {
+          throw new Error(detail)
+        }
+        // Check if it's a verification error
+        if (error.status === 400 || error.status === 422) {
+          throw new Error('Invalid or expired verification code. Please request a new code.')
+        }
+        throw new Error('Failed to verify code. Please try again.')
+      }
+      throw new Error('Failed to verify code. Please try again.')
+    }
+  },
 }
 
