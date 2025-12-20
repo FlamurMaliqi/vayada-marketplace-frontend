@@ -1813,7 +1813,12 @@ export default function ProfileCompletePage() {
                       required
                       helperText={`${hotelForm.about.length}/5000 characters`}
                       className="resize-none"
-                      error={error && error.includes('About') ? error : undefined}
+                      error={
+                        (error && error.includes('About') ? error : undefined) ||
+                        (currentStep === 1 && hotelForm.about.trim().length > 0 && hotelForm.about.trim().length < 50
+                          ? `About section must be at least 50 characters (${hotelForm.about.length}/5000)`
+                          : undefined)
+                      }
                     />
                   </div>
 
