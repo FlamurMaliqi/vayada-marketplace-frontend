@@ -103,12 +103,28 @@ export const hotelService = {
   /**
    * Upload hotel profile picture (recommended flow)
    * POST /upload/image/hotel-profile
-   * Returns URL to include in profile update
+   * Returns URL and metadata to include in profile update
    */
-  uploadProfileImage: async (file: File): Promise<{ url: string }> => {
+  uploadProfileImage: async (file: File): Promise<{
+    url: string
+    thumbnail_url?: string
+    key?: string
+    width?: number
+    height?: number
+    size_bytes?: number
+    format?: string
+  }> => {
     const formData = new FormData()
     formData.append('file', file)
-    return apiClient.upload<{ url: string }>('/upload/image/hotel-profile', formData)
+    return apiClient.upload<{
+      url: string
+      thumbnail_url?: string
+      key?: string
+      width?: number
+      height?: number
+      size_bytes?: number
+      format?: string
+    }>('/upload/image/hotel-profile', formData)
   },
 
   /**

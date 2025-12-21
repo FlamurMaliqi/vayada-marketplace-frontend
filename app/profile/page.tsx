@@ -573,6 +573,8 @@ export default function ProfilePage() {
       } else if (userType === 'hotel') {
         try {
           const apiProfile = await hotelService.getMyProfile()
+          console.log('Loaded hotel profile from API:', apiProfile)
+          console.log('Picture field:', apiProfile.picture)
           // Transform API response to local HotelProfile format
           const profile: HotelProfile = {
             id: apiProfile.id,
@@ -582,7 +584,7 @@ export default function ProfilePage() {
             location: apiProfile.location,
             website: apiProfile.website || undefined,
             about: apiProfile.about || undefined,
-            picture: apiProfile.picture ?? undefined,
+            picture: (apiProfile.picture && apiProfile.picture.trim() !== '') ? apiProfile.picture : undefined,
             status: (apiProfile.status === 'verified' || apiProfile.status === 'pending' || apiProfile.status === 'rejected') 
               ? apiProfile.status 
               : 'pending',
@@ -2552,7 +2554,7 @@ export default function ProfilePage() {
                             <div className="flex items-start gap-6">
                               {/* Hotel Picture */}
                               <div className="flex-shrink-0">
-                                {hotelProfile.picture ? (
+                                {hotelProfile.picture && hotelProfile.picture.trim() !== '' ? (
                                   <button
                                     onClick={() => setShowHotelPictureModal(true)}
                                     className="cursor-pointer hover:opacity-90 transition-opacity"

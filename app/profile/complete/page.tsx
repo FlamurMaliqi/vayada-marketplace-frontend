@@ -198,6 +198,7 @@ export default function ProfileCompletePage() {
     about: '',
     website: '',
     phone: '',
+    picture: '',
   })
 
   // Hotel listing form state
@@ -224,6 +225,8 @@ export default function ProfileCompletePage() {
   const [hotelListings, setHotelListings] = useState<ListingFormData[]>([])
   const listingImageInputRefs = useRef<(HTMLInputElement | null)[]>([])
   const creatorImageInputRef = useRef<HTMLInputElement>(null)
+  const hotelImageInputRef = useRef<HTMLInputElement>(null)
+  const [hotelProfilePictureFile, setHotelProfilePictureFile] = useState<File | null>(null)
   const [collapsedListingCards, setCollapsedListingCards] = useState<Set<number>>(new Set())
   const [expandedContinents, setExpandedContinents] = useState<Record<number, Set<string>>>({})
   const [listingCountryInputs, setListingCountryInputs] = useState<Record<number, string>>({})
@@ -778,6 +781,37 @@ export default function ProfileCompletePage() {
     reader.readAsDataURL(file)
   }
 
+  const handleHotelImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    const file = files[0]
+    // Validate file type (image only)
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file (JPG, PNG, WebP)')
+      return
+    }
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be less than 5MB')
+      return
+    }
+
+    // Store the File object for upload
+    setHotelProfilePictureFile(file)
+
+    // Create preview for display
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setHotelForm(prev => ({
+        ...prev,
+        picture: reader.result as string
+      }))
+      setError('') // Clear any previous errors
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleCreatorSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -940,6 +974,35 @@ export default function ProfileCompletePage() {
         return
       }
 
+      // Upload profile picture first if there's a file (recommended flow)
+      let profilePictureUrl: string | undefined = undefined
+      console.log('Checking for hotel profile picture file:', hotelProfilePictureFile)
+      if (hotelProfilePictureFile) {
+        try {
+          console.log('Uploading hotel profile picture...', {
+            fileName: hotelProfilePictureFile.name,
+            fileSize: hotelProfilePictureFile.size,
+            fileType: hotelProfilePictureFile.type
+          })
+          const uploadResponse = await hotelService.uploadProfileImage(hotelProfilePictureFile)
+          console.log('Full upload response:', uploadResponse)
+          profilePictureUrl = uploadResponse.url
+          console.log('Profile picture uploaded successfully, URL:', profilePictureUrl)
+          console.log('Extracted URL type:', typeof profilePictureUrl, 'Value:', profilePictureUrl)
+        } catch (error) {
+          console.error('Failed to upload profile picture:', error)
+          if (error instanceof ApiErrorResponse) {
+            setError(formatErrorDetail(error.data.detail) || 'Failed to upload profile picture')
+          } else {
+            setError('Failed to upload profile picture. Please try again.')
+          }
+          setSubmitting(false)
+          return
+        }
+      } else {
+        console.log('No hotel profile picture file to upload')
+      }
+
       // Update hotel profile
       // Trim all values and ensure required fields are sent (validation ensures they're not empty)
       const updatePayload = {
@@ -949,19 +1012,32 @@ export default function ProfileCompletePage() {
         website: hotelForm.website.trim(),
         phone: hotelForm.phone.trim(),
         email: userEmail, // Backend requires email
+        ...(profilePictureUrl && { picture: profilePictureUrl }),
       }
       
       console.log('Sending hotel profile update to backend:', updatePayload)
+      console.log('Profile picture URL to include:', profilePictureUrl)
+      console.log('Update payload includes picture:', 'picture' in updatePayload)
       console.log('Raw form values before trimming:', {
         name: hotelForm.name,
         location: hotelForm.location,
         about: hotelForm.about,
         website: hotelForm.website,
         phone: hotelForm.phone,
+        picture: hotelForm.picture,
       })
       
       const updatedProfile = await hotelService.updateMyProfile(updatePayload)
       console.log('Backend response after update:', updatedProfile)
+      console.log('Picture field in response:', updatedProfile?.picture)
+
+      // Update profile picture in form state if available
+      if (updatedProfile && updatedProfile.picture) {
+        setHotelForm(prev => ({
+          ...prev,
+          picture: updatedProfile.picture || ''
+        }))
+      }
 
       // Create listings
       for (const listing of hotelListings) {
@@ -1880,28 +1956,72 @@ export default function ProfileCompletePage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input
-                      label="Hotel Name"
-                      type="text"
-                      value={hotelForm.name}
-                      onChange={(e) => setHotelForm(prev => ({ ...prev, name: e.target.value }))}
-                      required
-                      placeholder="Your hotel name"
-                      leadingIcon={<BuildingOfficeIcon className="w-5 h-5" />}
-                    />
+                  <div className="flex flex-col-reverse md:flex-row gap-5">
+                    {/* Left Column: Name & Location */}
+                    <div className="flex-1 space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          label="Hotel Name"
+                          type="text"
+                          value={hotelForm.name}
+                          onChange={(e) => setHotelForm(prev => ({ ...prev, name: e.target.value }))}
+                          required
+                          placeholder="Your hotel name"
+                          leadingIcon={<BuildingOfficeIcon className="w-5 h-5" />}
+                        />
 
-                    <Input
-                      label="Location"
-                      type="text"
-                      value={hotelForm.location}
-                      onChange={(e) => setHotelForm(prev => ({ ...prev, location: e.target.value }))}
-                      required
-                      placeholder="City, Country"
-                      error={error && error.includes('Location') ? error : undefined}
-                      helperText="Country or island, e.g., Bali, Indonesia."
-                      leadingIcon={<MapPinIcon className="w-5 h-5 text-gray-400" />}
-                    />
+                        <Input
+                          label="Location"
+                          type="text"
+                          value={hotelForm.location}
+                          onChange={(e) => setHotelForm(prev => ({ ...prev, location: e.target.value }))}
+                          required
+                          placeholder="City, Country"
+                          error={error && error.includes('Location') ? error : undefined}
+                          helperText="Country or island, e.g., Bali, Indonesia."
+                          leadingIcon={<MapPinIcon className="w-5 h-5 text-gray-400" />}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Right Column: Profile Picture */}
+                    <div className="w-full md:w-auto flex flex-col items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-700">Profile Picture</span>
+                      <div
+                        className="relative w-40 h-40 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-gray-50 transition-all overflow-hidden bg-gray-50 group"
+                        onClick={() => hotelImageInputRef.current?.click()}
+                      >
+                        {hotelForm.picture ? (
+                          <>
+                            <img
+                              src={hotelForm.picture}
+                              alt="Hotel Profile"
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-white text-[10px] font-medium">Change</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-6 h-6 text-gray-400 mb-1 group-hover:text-primary-500 transition-colors">
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                              </svg>
+                            </div>
+                            <span className="text-[10px] text-gray-500 font-medium group-hover:text-primary-600">Upload</span>
+                          </>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        ref={hotelImageInputRef}
+                        onChange={handleHotelImageChange}
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-3">
