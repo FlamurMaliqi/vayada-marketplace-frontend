@@ -185,6 +185,7 @@ export class ApiClient {
 
   /**
    * Upload file(s) using multipart/form-data
+   * Supports POST, PUT, and PATCH methods
    */
   async upload<T>(
     endpoint: string,
@@ -208,7 +209,7 @@ export class ApiClient {
     
     const config: RequestInit = {
       ...options,
-      method: 'POST',
+      method: options?.method || 'POST',
       headers,
       body: formData,
     }

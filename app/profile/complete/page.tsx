@@ -176,6 +176,7 @@ export default function ProfileCompletePage() {
   const [creatorPlatforms, setCreatorPlatforms] = useState<PlatformFormData[]>([])
   const [platformCountryInputs, setPlatformCountryInputs] = useState<Record<number, string>>({})
   const [platformSaveStatus, setPlatformSaveStatus] = useState<Record<number, string>>({})
+  const [creatorProfilePictureFile, setCreatorProfilePictureFile] = useState<File | null>(null)
   const HotelBadgeIcon = ({ active }: { active?: boolean }) => (
     <div
       className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
@@ -257,7 +258,7 @@ export default function ProfileCompletePage() {
     }
   }, [router])
 
-  const loadProfileStatus = async (type: UserType, skipRedirect = false) => {
+  const loadProfileStatus = async (type: UserType, skipRedirect = false): Promise<CreatorProfileStatus | HotelProfileStatus | null> => {
     setLoading(true)
     try {
       const status = await checkProfileStatus(type)
@@ -267,10 +268,12 @@ export default function ProfileCompletePage() {
         // Profile already complete, but only redirect if not in completion flow
         // In closed beta, we show completion message instead of redirecting
         setProfileCompleted(true)
-        return
+        return status
       }
+      return status
     } catch (error) {
       console.error('Failed to load profile status:', error)
+      return null
     } finally {
       setLoading(false)
     }
@@ -760,6 +763,10 @@ export default function ProfileCompletePage() {
       return
     }
 
+    // Store the File object for upload
+    setCreatorProfilePictureFile(file)
+
+    // Create preview for display
     const reader = new FileReader()
     reader.onloadend = () => {
       setCreatorForm(prev => ({
@@ -813,6 +820,24 @@ export default function ProfileCompletePage() {
       // Calculate total audience size from platforms
       const audienceSize = platforms.reduce((sum, p) => sum + p.followers, 0)
 
+      // If there's a profile picture file, upload it first
+      let profilePictureUrl: string | undefined = undefined
+      if (creatorProfilePictureFile) {
+        try {
+          const uploadResponse = await creatorService.uploadProfilePicture(creatorProfilePictureFile)
+          profilePictureUrl = uploadResponse.url
+        } catch (error) {
+          console.error('Failed to upload profile picture:', error)
+          if (error instanceof ApiErrorResponse) {
+            setError(formatErrorDetail(error.data.detail) || 'Failed to upload profile picture')
+          } else {
+            setError('Failed to upload profile picture. Please try again.')
+          }
+          setSubmitting(false)
+          return
+        }
+      }
+
       // Update creator profile
       // Profile completion endpoint expects camelCase for platforms (genderSplit, engagementRate, etc.)
       const updatePayload = {
@@ -829,12 +854,24 @@ export default function ProfileCompletePage() {
         ...(creatorForm.phone && creatorForm.phone.trim() && {
           phone: creatorForm.phone.trim(),
         }),
-        ...(creatorForm.profile_image && {
-          profilePicture: creatorForm.profile_image,
+        // Include profile picture URL if uploaded (may not be in schema yet)
+        ...(profilePictureUrl && {
+          profilePicture: profilePictureUrl,
         }),
       }
 
-      await creatorService.updateMyProfile(updatePayload as any)
+      const updatedProfile = await creatorService.updateMyProfile(updatePayload as any)
+
+      // Update profile picture immediately from response if available
+      if (updatedProfile && (updatedProfile.profilePicture || (updatedProfile as any).profile_picture)) {
+        const pictureUrl = updatedProfile.profilePicture || (updatedProfile as any).profile_picture
+        if (pictureUrl && pictureUrl.trim() !== '') {
+          setCreatorForm(prev => ({
+            ...prev,
+            profile_image: pictureUrl
+          }))
+        }
+      }
 
       // Check if profile is now complete after successful update
       const isComplete = await isProfileComplete('creator')
@@ -847,8 +884,30 @@ export default function ProfileCompletePage() {
         await loadProfileStatus('creator', true) // Skip redirect, show completion message
       } else {
         // Reload status to show updated completion steps
-        await loadProfileStatus('creator', true)
-        setError('Profile updated, but some fields may still be missing. Please check the requirements.')
+        const updatedStatus = await loadProfileStatus('creator', true)
+        if (updatedStatus && !updatedStatus.profile_complete) {
+          // Generate specific error message based on missing fields and completion steps
+          const creatorStatus = updatedStatus as CreatorProfileStatus
+          const missingFields = creatorStatus.missing_fields || []
+          const completionSteps = creatorStatus.completion_steps || []
+          
+          let errorMessage = 'Profile updated successfully, but some required information is still missing:\n\n'
+          
+          if (completionSteps.length > 0) {
+            errorMessage += completionSteps.slice(0, 5).map((step, idx) => `${idx + 1}. ${step}`).join('\n')
+            if (completionSteps.length > 5) {
+              errorMessage += `\n...and ${completionSteps.length - 5} more requirement${completionSteps.length - 5 > 1 ? 's' : ''}`
+            }
+          } else if (missingFields.length > 0) {
+            errorMessage += 'Missing fields: ' + missingFields.join(', ')
+          } else {
+            errorMessage += 'Please review all sections and ensure all required fields are completed.'
+          }
+          
+          setError(errorMessage)
+        } else {
+          setError('Profile updated, but some fields may still be missing. Please check the requirements.')
+        }
       }
     } catch (error) {
       console.error('Failed to update profile:', error)
@@ -882,14 +941,27 @@ export default function ProfileCompletePage() {
       }
 
       // Update hotel profile
-      await hotelService.updateMyProfile({
+      // Trim all values and ensure required fields are sent (validation ensures they're not empty)
+      const updatePayload = {
+        name: hotelForm.name.trim(),
+        location: hotelForm.location.trim(),
+        about: hotelForm.about.trim(),
+        website: hotelForm.website.trim(),
+        phone: hotelForm.phone.trim(),
+        email: userEmail, // Backend requires email
+      }
+      
+      console.log('Sending hotel profile update to backend:', updatePayload)
+      console.log('Raw form values before trimming:', {
         name: hotelForm.name,
         location: hotelForm.location,
-        about: hotelForm.about || undefined,
-        website: hotelForm.website || undefined,
-        phone: hotelForm.phone || undefined,
-        email: userEmail, // Backend requires email
+        about: hotelForm.about,
+        website: hotelForm.website,
+        phone: hotelForm.phone,
       })
+      
+      const updatedProfile = await hotelService.updateMyProfile(updatePayload)
+      console.log('Backend response after update:', updatedProfile)
 
       // Create listings
       for (const listing of hotelListings) {
@@ -954,6 +1026,8 @@ export default function ProfileCompletePage() {
 
       // Check if profile is now complete after successful update
       const isComplete = await isProfileComplete('hotel')
+      console.log('Profile complete check result:', isComplete)
+      
       if (isComplete) {
         setProfileCompleted(true)
         // Update localStorage so warning banner disappears
@@ -963,8 +1037,36 @@ export default function ProfileCompletePage() {
         await loadProfileStatus('hotel', true) // Skip redirect, show completion message
       } else {
         // Reload status to show updated completion steps
-        await loadProfileStatus('hotel', true)
-        setError('Profile updated, but some fields may still be missing. Please check the requirements.')
+        const updatedStatus = await loadProfileStatus('hotel', true)
+        console.log('Profile status after update:', updatedStatus)
+        
+        if (updatedStatus && !updatedStatus.profile_complete) {
+          // Generate specific error message based on missing fields and completion steps
+          const hotelStatus = updatedStatus as HotelProfileStatus
+          const missingFields = hotelStatus.missing_fields || []
+          const completionSteps = hotelStatus.completion_steps || []
+          
+          console.log('Missing fields:', missingFields)
+          console.log('Completion steps:', completionSteps)
+          console.log('Has defaults:', (hotelStatus as any).has_defaults)
+          
+          let errorMessage = 'Profile updated successfully, but some required information is still missing:\n\n'
+          
+          if (completionSteps.length > 0) {
+            errorMessage += completionSteps.slice(0, 5).map((step, idx) => `${idx + 1}. ${step}`).join('\n')
+            if (completionSteps.length > 5) {
+              errorMessage += `\n...and ${completionSteps.length - 5} more requirement${completionSteps.length - 5 > 1 ? 's' : ''}`
+            }
+          } else if (missingFields.length > 0) {
+            errorMessage += 'Missing fields: ' + missingFields.join(', ')
+          } else {
+            errorMessage += 'Please review all sections and ensure all required fields are completed.'
+          }
+          
+          setError(errorMessage)
+        } else {
+          setError('Profile updated, but some fields may still be missing. Please check the requirements.')
+        }
       }
     } catch (error) {
       console.error('Failed to update profile:', error)
@@ -1713,7 +1815,7 @@ export default function ProfileCompletePage() {
             {error && (
               <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
                 <XMarkIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800 font-medium">{error}</p>
+                <p className="text-sm text-red-800 font-medium whitespace-pre-line">{error}</p>
               </div>
             )}
 
@@ -1783,7 +1885,7 @@ export default function ProfileCompletePage() {
                       label="Hotel Name"
                       type="text"
                       value={hotelForm.name}
-                      onChange={(e) => setHotelForm({ ...hotelForm, name: e.target.value })}
+                      onChange={(e) => setHotelForm(prev => ({ ...prev, name: e.target.value }))}
                       required
                       placeholder="Your hotel name"
                       leadingIcon={<BuildingOfficeIcon className="w-5 h-5" />}
@@ -1793,7 +1895,7 @@ export default function ProfileCompletePage() {
                       label="Location"
                       type="text"
                       value={hotelForm.location}
-                      onChange={(e) => setHotelForm({ ...hotelForm, location: e.target.value })}
+                      onChange={(e) => setHotelForm(prev => ({ ...prev, location: e.target.value }))}
                       required
                       placeholder="City, Country"
                       error={error && error.includes('Location') ? error : undefined}
@@ -1806,7 +1908,7 @@ export default function ProfileCompletePage() {
                     <Textarea
                       label="About"
                       value={hotelForm.about}
-                      onChange={(e) => setHotelForm({ ...hotelForm, about: e.target.value })}
+                      onChange={(e) => setHotelForm(prev => ({ ...prev, about: e.target.value }))}
                       placeholder="Tell potential creators aobut your properties"
                       rows={4}
                       maxLength={5000}
@@ -1830,7 +1932,7 @@ export default function ProfileCompletePage() {
                         label="Website"
                         type="url"
                         value={hotelForm.website}
-                        onChange={(e) => setHotelForm({ ...hotelForm, website: e.target.value })}
+                        onChange={(e) => setHotelForm(prev => ({ ...prev, website: e.target.value }))}
                         placeholder="https://your-hotel.com"
                         required
                         error={error && error.includes('Website') ? error : undefined}
@@ -1841,7 +1943,7 @@ export default function ProfileCompletePage() {
                         label="Phone"
                         type="tel"
                         value={hotelForm.phone}
-                        onChange={(e) => setHotelForm({ ...hotelForm, phone: e.target.value })}
+                        onChange={(e) => setHotelForm(prev => ({ ...prev, phone: e.target.value }))}
                         placeholder="+1-555-123-4567"
                         required
                         leadingIcon={<PhoneIcon className="w-5 h-5 text-gray-400" />}
@@ -2502,7 +2604,7 @@ export default function ProfileCompletePage() {
             {error && (
               <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
                 <XMarkIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800 font-medium">{error}</p>
+                <p className="text-sm text-red-800 font-medium whitespace-pre-line">{error}</p>
               </div>
             )}
 

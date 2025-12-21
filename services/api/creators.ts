@@ -41,9 +41,20 @@ export const creatorService = {
   /**
    * Update creator profile
    * PUT /creators/me
+   * Accepts JSON only (no FormData support)
    */
   updateMyProfile: async (data: Partial<Creator>): Promise<Creator> => {
     return apiClient.put<Creator>('/creators/me', data)
+  },
+
+  /**
+   * Upload creator profile picture
+   * POST /upload/image/creator-profile
+   */
+  uploadProfilePicture: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return apiClient.upload<{ url: string }>('/upload/image/creator-profile', formData)
   },
 
   /**

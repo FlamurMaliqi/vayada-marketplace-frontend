@@ -92,13 +92,29 @@ export const hotelService = {
    * Update hotel profile
    * PUT /hotels/me
    */
-  updateMyProfile: async (data: UpdateHotelProfileRequest): Promise<HotelProfile> => {
+  updateMyProfile: async (data: UpdateHotelProfileRequest | FormData): Promise<HotelProfile> => {
+    // If FormData, use upload method; otherwise use regular put
+    if (data instanceof FormData) {
+      return apiClient.upload<HotelProfile>('/hotels/me', data, { method: 'PUT' })
+    }
     return apiClient.put<HotelProfile>('/hotels/me', data)
   },
 
   /**
-   * Upload hotel profile picture
+   * Upload hotel profile picture (recommended flow)
+   * POST /upload/image/hotel-profile
+   * Returns URL to include in profile update
+   */
+  uploadProfileImage: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return apiClient.upload<{ url: string }>('/upload/image/hotel-profile', formData)
+  },
+
+  /**
+   * Upload hotel profile picture (legacy method)
    * POST /hotels/me/upload-picture
+   * @deprecated Use uploadProfileImage() instead (recommended flow)
    */
   uploadPicture: async (file: File): Promise<UploadPictureResponse> => {
     const formData = new FormData()
@@ -131,10 +147,24 @@ export const hotelService = {
   },
 
   /**
-   * Upload listing images
-   * POST /hotels/me/listings/:id/upload-images
+   * Upload listing images (standalone - before creating/updating listing)
+   * POST /upload/images/listing
+   * Returns array of image URLs to include in listing creation/update
    */
-  uploadListingImages: async (id: string, files: File[]): Promise<UploadImagesResponse> => {
+  uploadListingImages: async (files: File[]): Promise<{ images: Array<{ url: string }> }> => {
+    const formData = new FormData()
+    files.forEach((file) => {
+      formData.append('files', file)
+    })
+    return apiClient.upload<{ images: Array<{ url: string }> }>('/upload/images/listing', formData)
+  },
+
+  /**
+   * Upload listing images to existing listing (legacy method)
+   * POST /hotels/me/listings/:id/upload-images
+   * @deprecated Use uploadListingImages() and include URLs in listing update instead
+   */
+  uploadListingImagesToExisting: async (id: string, files: File[]): Promise<UploadImagesResponse> => {
     const formData = new FormData()
     files.forEach((file) => {
       formData.append('images', file)

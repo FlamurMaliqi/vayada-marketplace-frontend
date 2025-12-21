@@ -143,6 +143,8 @@ export default function ProfilePage() {
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null)
   const [hotelPicturePreview, setHotelPicturePreview] = useState<string | null>(null)
   const [listingImagePreview, setListingImagePreview] = useState<string | null>(null)
+  const [creatorProfilePictureFile, setCreatorProfilePictureFile] = useState<File | null>(null)
+  const [hotelProfilePictureFile, setHotelProfilePictureFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const hotelFileInputRef = useRef<HTMLInputElement | null>(null)
   const listingImageInputRef = useRef<HTMLInputElement | null>(null)
@@ -324,7 +326,7 @@ export default function ProfilePage() {
    */
   const transformCreatorProfile = (apiCreator: any): CreatorProfile => {
     // Handle both snake_case and camelCase field names
-    const profilePicture = apiCreator.profilePicture || apiCreator.profile_picture || undefined
+    const profilePicture = (apiCreator.profilePicture || apiCreator.profile_picture || '').trim() || undefined
     const shortDescription = apiCreator.shortDescription || apiCreator.short_description || ''
     const portfolioLink = apiCreator.portfolioLink || apiCreator.portfolio_link || undefined
     const email = apiCreator.email || ''
@@ -857,30 +859,75 @@ export default function ProfilePage() {
       // Calculate audience size (sum of all platform followers)
       const audienceSize = platforms.reduce((sum, p) => sum + p.followers, 0)
 
-      // Build update payload - all fields required except optional ones
-      // Use snake_case field names as backend expects them
+      // If there's a profile picture file, upload it first
+      let profilePictureUrl: string | undefined = undefined
+      if (creatorProfilePictureFile) {
+        try {
+          const uploadResponse = await creatorService.uploadProfilePicture(creatorProfilePictureFile)
+          profilePictureUrl = uploadResponse.url
+          // Note: profilePicture field may not be in schema yet, but we'll include it for future support
+        } catch (error: unknown) {
+          const detail =
+            error instanceof ApiErrorResponse
+              ? error.data.detail
+              : null
+          const message =
+            typeof detail === 'string'
+              ? detail
+              : Array.isArray(detail) && detail[0]?.msg
+                ? detail[0].msg
+                : 'Failed to upload profile picture'
+          showError('Failed to Upload Image', formatErrorForModal(detail || message))
+          setIsSavingProfile(false)
+          return
+        }
+      }
+
+      // Build update payload - always use JSON for creator profiles
       const updatePayload = {
         name: editFormData.name.trim(),
         location: editFormData.location.trim(),
-        short_description: editFormData.shortDescription.trim(), // Use snake_case
+        short_description: editFormData.shortDescription.trim(),
         platforms: platforms,
-        audience_size: audienceSize, // Use snake_case
+        audience_size: audienceSize,
         ...(editFormData.portfolioLink && editFormData.portfolioLink.trim() && {
-          portfolio_link: editFormData.portfolioLink.trim(), // Use snake_case
+          portfolio_link: editFormData.portfolioLink.trim(),
         }),
         ...(phone && phone.trim() && {
           phone: phone.trim(),
         }),
-        ...(editFormData.profilePicture && {
-          profilePicture: editFormData.profilePicture, // Use camelCase
+        // Include profile picture URL if uploaded (may not be in schema yet)
+        ...(profilePictureUrl && {
+          profilePicture: profilePictureUrl,
         }),
       }
-
+      
       // Update creator profile (replaces all platforms)
-      await creatorService.updateMyProfile(updatePayload as any)
+      const updatedProfile = await creatorService.updateMyProfile(updatePayload as any)
+      
+      // Update profile picture immediately from response if available
+      if (updatedProfile && (updatedProfile.profilePicture || (updatedProfile as any).profile_picture)) {
+        const pictureUrl = updatedProfile.profilePicture || (updatedProfile as any).profile_picture
+        if (pictureUrl && pictureUrl.trim() !== '') {
+          setEditFormData(prev => ({
+            ...prev,
+            profilePicture: pictureUrl
+          }))
+          if (creatorProfile) {
+            setCreatorProfile(prev => prev ? {
+              ...prev,
+              profilePicture: pictureUrl
+            } : null)
+          }
+        }
+      }
       
       // Re-fetch full profile to get updated data
       await loadProfile()
+      
+      // Clear file state after successful save
+      setCreatorProfilePictureFile(null)
+      setProfilePicturePreview(null)
       
       setIsEditingProfile(false)
     } catch (error: unknown) {
@@ -916,6 +963,7 @@ export default function ProfilePage() {
         })),
       })
       setProfilePicturePreview(null)
+      setCreatorProfilePictureFile(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -989,34 +1037,96 @@ export default function ProfilePage() {
         payload.phone = phone || undefined
       }
       
-      // Handle picture - can be URL, base64, or null to clear
-      const currentPicture = hotelProfile.picture || ''
-      const newPicture = hotelEditFormData.picture || ''
-      if (newPicture !== currentPicture) {
-        if (newPicture.trim() === '') {
-          payload.picture = null // Clear picture
-        } else if (!newPicture.startsWith('data:')) {
-          // Only include if it's a URL (not base64 preview)
-          payload.picture = newPicture.trim()
+      // If there's a profile picture file, use FormData; otherwise use JSON
+      if (hotelProfilePictureFile) {
+        // Use FormData for file upload
+        const formData = new FormData()
+        
+        // Add all fields that have changed
+        if (hotelEditFormData.name.trim() !== hotelProfile.name) {
+          formData.append('name', hotelEditFormData.name.trim())
         }
-        // If it's base64, we'd need to upload it first - for now skip it
-      }
+        if (hotelEditFormData.location.trim() !== hotelProfile.location) {
+          formData.append('location', hotelEditFormData.location.trim())
+        }
+        if ((hotelEditFormData.website || '') !== (hotelProfile.website || '')) {
+          formData.append('website', hotelEditFormData.website.trim() || '')
+        }
+        if ((hotelEditFormData.about || '') !== (hotelProfile.about || '')) {
+          formData.append('about', hotelEditFormData.about.trim() || '')
+        }
+        if ((phone || '') !== (hotelProfile.phone || '')) {
+          formData.append('phone', phone || '')
+        }
+        
+        // Include email if it changed
+        const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
+        if (userEmail && userEmail !== hotelProfile.email) {
+          formData.append('email', userEmail)
+        }
+        
+        // Add image file with the correct field name
+        formData.append('picture', hotelProfilePictureFile)
+        
+        // Update hotel profile with FormData
+        const updatedProfile = await hotelService.updateMyProfile(formData)
+        
+        // Update picture immediately from response if available
+        if (updatedProfile && updatedProfile.picture) {
+          setHotelEditFormData(prev => ({
+            ...prev,
+            picture: updatedProfile.picture || ''
+          }))
+          if (hotelProfile) {
+            setHotelProfile(prev => prev ? {
+              ...prev,
+              picture: updatedProfile.picture || undefined
+            } : null)
+          }
+        }
+      } else {
+        // Handle picture - can be URL or null to clear (no file upload)
+        const currentPicture = hotelProfile.picture || ''
+        const newPicture = hotelEditFormData.picture || ''
+        if (newPicture !== currentPicture) {
+          if (newPicture.trim() === '') {
+            payload.picture = null // Clear picture
+          } else if (!newPicture.startsWith('data:')) {
+            // Only include if it's a URL (not base64 preview)
+            payload.picture = newPicture.trim()
+          }
+        }
 
-      // Include email if it changed (get from localStorage)
-      const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
-      if (userEmail && userEmail !== hotelProfile.email) {
-        payload.email = userEmail
-      }
+        // Include email if it changed (get from localStorage)
+        const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
+        if (userEmail && userEmail !== hotelProfile.email) {
+          payload.email = userEmail
+        }
 
-      // Only make API call if there are changes
-      if (Object.keys(payload).length === 0) {
-        setIsEditingHotelProfile(false)
-        setIsSavingHotelProfile(false)
-        return
-      }
+        // Only make API call if there are changes
+        if (Object.keys(payload).length === 0) {
+          setIsEditingHotelProfile(false)
+          setIsSavingHotelProfile(false)
+          return
+        }
 
-      // Update hotel profile with partial data
-      await hotelService.updateMyProfile(payload)
+        // Update hotel profile with partial data
+        const updatedProfile = await hotelService.updateMyProfile(payload)
+        
+        // Update picture immediately from response if available
+        if (updatedProfile && updatedProfile.picture) {
+          setHotelEditFormData(prev => ({
+            ...prev,
+            picture: updatedProfile.picture || ''
+          }))
+          if (hotelProfile) {
+            setHotelProfile(prev => prev ? {
+              ...prev,
+              picture: updatedProfile.picture || undefined
+            } : null)
+          }
+        }
+      }
       
       // Re-fetch full profile to get updated data
       await loadProfile()
@@ -1029,6 +1139,7 @@ export default function ProfilePage() {
         hotelInput.value = ''
       }
       setHotelPicturePreview(null)
+      setHotelProfilePictureFile(null)
     } catch (error: unknown) {
       const detail =
         error instanceof ApiErrorResponse
@@ -1070,6 +1181,7 @@ export default function ProfilePage() {
       setEmail(hotelProfile.email)
       setPhone(hotelProfile.phone || '')
       setHotelPicturePreview(null)
+      setHotelProfilePictureFile(null)
       if (hotelFileInputRef.current) {
         hotelFileInputRef.current.value = ''
       }
@@ -1199,62 +1311,59 @@ export default function ProfilePage() {
 
     setIsSavingListing(true)
     try {
-      // For new listings, upload base64 images first if any
+      // Separate existing URLs from new base64 images
       let imageUrls = listingFormData.images.filter((img) => !img.startsWith('data:'))
       const base64Images = listingFormData.images.filter((img) => img.startsWith('data:'))
       
-      // If we have base64 images and it's a new listing, we'll need to create the listing first,
-      // then upload images. For now, we'll just use the non-base64 images.
-      // TODO: Handle base64 image uploads for new listings after creation
+      // Upload new base64 images first (convert to File objects)
+      if (base64Images.length > 0) {
+        try {
+          const files: File[] = []
+          for (const base64 of base64Images) {
+            const response = await fetch(base64)
+            const blob = await response.blob()
+            const file = new File([blob], 'image.jpg', { type: blob.type })
+            files.push(file)
+          }
+          
+          // Upload images using standalone endpoint
+          const uploadResponse = await hotelService.uploadListingImages(files)
+          const newImageUrls = uploadResponse.images.map((img) => img.url)
+          imageUrls = [...imageUrls, ...newImageUrls]
+        } catch (error: unknown) {
+          const detail =
+            error instanceof ApiErrorResponse
+              ? error.data.detail
+              : null
+          const message =
+            typeof detail === 'string'
+              ? detail
+              : Array.isArray(detail) && detail[0]?.msg
+                ? detail[0].msg
+                : 'Failed to upload images'
+          showError('Failed to Upload Images', formatErrorForModal(detail || message))
+          setIsSavingListing(false)
+          return
+        }
+      }
       
+      // Build listing data with all image URLs (existing + newly uploaded)
       const apiListingData = transformListingToApi({
         ...listingFormData,
-        images: imageUrls, // Only include non-base64 images for now
+        images: imageUrls,
       })
       
       if (editingListingId) {
         const listingId = editingListingId as string
-        // Update existing listing (partial update - only changed fields)
+        // Update existing listing with all image URLs
         await hotelService.updateListing(listingId, apiListingData)
-        
-        // Upload any new base64 images if present
-        if (base64Images.length > 0) {
-          // Convert base64 to File objects and upload
-          const files: File[] = []
-          for (const base64 of base64Images) {
-            const response = await fetch(base64)
-            const blob = await response.blob()
-            const file = new File([blob], 'image.jpg', { type: blob.type })
-            files.push(file)
-          }
-          if (files.length > 0) {
-            await hotelService.uploadListingImages(listingId, files)
-          }
-        }
-        
-        // Re-fetch full profile to get updated data
-        await loadProfile()
       } else {
-        // Create new listing
-        const newListing = await hotelService.createListing(apiListingData)
-        
-        // Upload base64 images if any (convert to files first)
-        if (base64Images.length > 0) {
-          const files: File[] = []
-          for (const base64 of base64Images) {
-            const response = await fetch(base64)
-            const blob = await response.blob()
-            const file = new File([blob], 'image.jpg', { type: blob.type })
-            files.push(file)
-          }
-          if (files.length > 0) {
-            await hotelService.uploadListingImages(newListing.id, files)
-          }
-        }
-        
-        // Re-fetch full profile to get updated data
-        await loadProfile()
+        // Create new listing with all image URLs
+        await hotelService.createListing(apiListingData)
       }
+      
+      // Re-fetch full profile to get updated data
+      await loadProfile()
       
       setShowListingModal(false)
       setEditingListingId(null)
@@ -1326,55 +1435,46 @@ export default function ProfilePage() {
     if (!files || files.length === 0) return
     const fileList = Array.from(files)
 
-    // Profile endpoints have been removed from backend
-    showError('Feature Unavailable', 'Image upload is not available. Backend only supports authentication endpoints.')
-    return
-    
-    // If we're editing an existing listing, upload images immediately
-    if (editingListingId) {
-      const listingId = editingListingId as string
-      try {
-        const uploadResponse = await hotelService.uploadListingImages(listingId, fileList)
-        
-        // Add uploaded URLs to form data
-        setListingFormData({
-          ...listingFormData,
-          images: [...listingFormData.images, ...uploadResponse.urls],
-        })
-      } catch (error: unknown) {
-        const err = error as any
-        const detail =
-          err && typeof err === 'object' && 'data' in err && err.data?.detail
-            ? err.data.detail
-            : null
-        const logError = error instanceof Error ? error : new Error(String(error))
-        console.error('Failed to upload listing images:', logError)
-        if (detail) {
-          showError('Failed to Upload Images', formatErrorForModal(detail))
-        } else {
-          showError('Failed to Upload Images', 'Failed to upload images. Please try again.')
-        }
+    // Validate files
+    for (const file of fileList) {
+      if (!file.type.startsWith('image/')) {
+        showError('Invalid File Type', 'Please select image files only')
+        return
       }
-    } else {
-      // For new listings, just show preview (will be uploaded when listing is saved)
-      const file = fileList[0]
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const result = reader.result as string
-        setListingFormData({
-          ...listingFormData,
-          images: [...listingFormData.images, result],
-        })
+      if (file.size > 5 * 1024 * 1024) {
+        showError('File Too Large', `${file.name} is larger than 5MB`)
+        return
       }
-      reader.readAsDataURL(file)
     }
-    
-    // Reset input so the same file can be selected again
-    const listingInput = listingImageInputRef.current
-    if (!listingInput) {
-      // no-op
-    } else {
-      listingInput!.value = ''
+
+    try {
+      // Upload images using standalone endpoint
+      const uploadResponse = await hotelService.uploadListingImages(fileList)
+      const newImageUrls = uploadResponse.images.map((img) => img.url)
+      
+      // Add uploaded URLs to form data
+      setListingFormData({
+        ...listingFormData,
+        images: [...listingFormData.images, ...newImageUrls],
+      })
+    } catch (error: unknown) {
+      const detail =
+        error instanceof ApiErrorResponse
+          ? error.data.detail
+          : null
+      const message =
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail) && detail[0]?.msg
+            ? detail[0].msg
+            : 'Failed to upload images'
+      showError('Failed to Upload Images', formatErrorForModal(detail || message))
+    } finally {
+      // Reset input so the same file can be selected again
+      const listingInput = listingImageInputRef.current
+      if (listingInput) {
+        listingInput.value = ''
+      }
     }
   }
 
@@ -1530,14 +1630,23 @@ export default function ProfilePage() {
       return
     }
 
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      showError('File Too Large', 'Image must be less than 5MB')
+      return
+    }
+
     try {
-      // Create preview
+      // Store the File object for upload
+      setCreatorProfilePictureFile(file)
+      
+      // Create preview for display
       const reader = new FileReader()
       reader.onloadend = () => {
         setProfilePicturePreview(reader.result as string)
         setEditFormData({
           ...editFormData,
-          profilePicture: reader.result as string,
+          profilePicture: reader.result as string, // Keep preview URL for display
         })
       }
       reader.readAsDataURL(file)
@@ -1706,12 +1815,20 @@ export default function ProfilePage() {
                                 }
                               }}
                             >
-                              {(isEditingProfile ? editFormData.profilePicture : creatorProfile.profilePicture) ? (
+                              {(() => {
+                                const profilePic = isEditingProfile ? editFormData.profilePicture : creatorProfile.profilePicture
+                                return profilePic && profilePic.trim() !== ''
+                              })() ? (
                                 <>
                                   <img
-                                    src={isEditingProfile ? editFormData.profilePicture : creatorProfile.profilePicture}
+                                    src={(isEditingProfile ? editFormData.profilePicture : creatorProfile.profilePicture) || ''}
                                     alt="Profile"
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      // If image fails to load, hide it and show upload placeholder
+                                      const target = e.target as HTMLImageElement
+                                      target.style.display = 'none'
+                                    }}
                                   />
                                   {isEditingProfile && (
                                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -2852,6 +2969,20 @@ export default function ProfilePage() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0]
                     if (file) {
+                      if (!file.type.startsWith('image/')) {
+                        showError('Invalid File Type', 'Please select an image file')
+                        return
+                      }
+                      
+                      // Validate file size (5MB max)
+                      if (file.size > 5 * 1024 * 1024) {
+                        showError('File Too Large', 'Image must be less than 5MB')
+                        return
+                      }
+                      
+                      // Store the File object for upload
+                      setHotelProfilePictureFile(file)
+                      
                       // Show preview immediately
                       const reader = new FileReader()
                       reader.onloadend = () => {
@@ -2860,9 +2991,6 @@ export default function ProfilePage() {
                         setHotelEditFormData({ ...hotelEditFormData, picture: result })
                       }
                       reader.readAsDataURL(file)
-                      
-                      // Profile endpoints have been removed from backend
-                      showError('Feature Unavailable', 'Image upload is not available. Backend only supports authentication endpoints.')
                       // Reset preview
                       setHotelPicturePreview(null)
                       setHotelEditFormData({ ...hotelEditFormData, picture: hotelProfile?.picture || '' })
@@ -2935,11 +3063,19 @@ export default function ProfilePage() {
             <div className="p-6 space-y-6">
               {/* Large Picture Preview */}
               <div className="flex justify-center">
-                {creatorProfile.profilePicture ? (
+                {creatorProfile.profilePicture && creatorProfile.profilePicture.trim() !== '' ? (
                   <img
                     src={creatorProfile.profilePicture}
                     alt={creatorProfile.name}
                     className="w-64 h-64 rounded-2xl object-cover border-4 border-gray-100 shadow-lg"
+                    onError={(e) => {
+                      // If image fails to load, show fallback
+                      const target = e.target as HTMLImageElement
+                      target.style.display = 'none'
+                      // Show the fallback div instead
+                      const fallback = target.nextElementSibling as HTMLElement
+                      if (fallback) fallback.style.display = 'flex'
+                    }}
                   />
                 ) : (
                   <div className="w-64 h-64 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-8xl shadow-lg border-4 border-gray-100">
