@@ -1316,8 +1316,11 @@ export default function ProfileCompletePage() {
                 <EnvelopeIcon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-blue-900 mb-1">Check your email</p>
-                  <p className="text-sm text-blue-800">
+                  <p className="text-sm text-blue-800 mb-2">
                     You should have received a confirmation email with details about your profile submission and next steps.
+                  </p>
+                  <p className="text-xs text-blue-700 mt-2 pt-2 border-t border-blue-200">
+                    <strong>Email Verification:</strong> If your email is not yet verified, please check your inbox for a verification link. Click the link to verify your email address and activate your account. The link expires in 48 hours.
                   </p>
                 </div>
               </div>
@@ -1338,6 +1341,10 @@ export default function ProfileCompletePage() {
               <div className="flex items-start gap-2 text-sm text-gray-700">
                 <EnvelopeIcon className="w-5 h-5 text-primary-600 mt-0.5" />
                 <p>You will receive an email notification once your profile has been accepted and {userType === 'creator' ? 'you can start connecting with hotels' : 'your listings are live for creator matching'}.</p>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-gray-700">
+                <CheckCircleIcon className="w-5 h-5 text-primary-600 mt-0.5" />
+                <p><span className="font-semibold">Email Verification:</span> Make sure to verify your email address first. Your account must be verified before your profile can be fully activated.</p>
               </div>
             </div>
 

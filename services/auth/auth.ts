@@ -269,6 +269,7 @@ export const authService = {
    * Verify email verification code
    * Verifies the code sent to the email address
    * Code can only be used once
+   * @deprecated Use verifyEmail with token instead (link-based verification)
    */
   verifyEmailCode: async (email: string, code: string): Promise<{ message: string; verified: boolean }> => {
     try {
@@ -290,6 +291,35 @@ export const authService = {
         throw new Error('Failed to verify code. Please try again.')
       }
       throw new Error('Failed to verify code. Please try again.')
+    }
+  },
+
+  /**
+   * Verify email using token from verification link
+   * Used after profile completion - user clicks link in email
+   * Token expires after 48 hours
+   */
+  verifyEmail: async (token: string): Promise<{ message: string; verified: boolean; email: string | null }> => {
+    try {
+      if (!token || token.trim() === '') {
+        throw new Error('Invalid verification token. Please request a new verification link.')
+      }
+
+      const response = await apiClient.get<{ message: string; verified: boolean; email: string | null }>(`/auth/verify-email?token=${encodeURIComponent(token)}`)
+      return response
+    } catch (error: any) {
+      if (error instanceof ApiErrorResponse) {
+        const detail = error.data.detail
+        if (typeof detail === 'string') {
+          throw new Error(detail)
+        }
+        // Check if it's a verification error
+        if (error.status === 400 || error.status === 404 || error.status === 422) {
+          throw new Error('Invalid or expired verification token. Please request a new verification link.')
+        }
+        throw new Error('Failed to verify email. Please try again.')
+      }
+      throw new Error('Failed to verify email. Please try again.')
     }
   },
 }
