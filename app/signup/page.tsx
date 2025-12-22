@@ -55,15 +55,6 @@ function SignUpForm() {
     }
     if (name === 'email' && emailError) {
       setEmailError('')
-      // Reset verification when email changes
-      if (isEmailVerified) {
-        setIsEmailVerified(false)
-        setIsCodeSent(false)
-        setVerificationCode('')
-      }
-    }
-    if (name === 'verificationCode' && verificationError) {
-      setVerificationError('')
     }
     if (submitError) {
       setSubmitError('')
