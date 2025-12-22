@@ -248,7 +248,7 @@ export default function ProfilePage() {
         portfolioLink: creatorProfile.portfolioLink || '',
         platforms: (creatorProfile.platforms || []).map(platform => {
           // Clean age groups - filter out any with empty or null ageRange
-          const cleanAgeGroups = (platform.topAgeGroups || [])
+          const cleanAgeGroups: PlatformAgeGroup[] = (platform.topAgeGroups || [])
             .map((ag: any) => {
               // Handle both camelCase and snake_case formats, and null values
               const ageRangeValue = ag.ageRange ?? ag.age_range ?? null
@@ -262,7 +262,7 @@ export default function ProfilePage() {
                 percentage: ag.percentage ?? 0,
               }
             })
-            .filter((ag: any) => ag !== null && ag.ageRange && ag.ageRange !== '' && ag.ageRange !== 'null') // Remove null entries and invalid age ranges
+            .filter((ag: any): ag is PlatformAgeGroup => ag !== null && ag.ageRange && ag.ageRange !== '' && ag.ageRange !== 'null') // Remove null entries and invalid age ranges
 
           return {
             ...platform,
