@@ -384,9 +384,19 @@ export default function ProfileCompletePage() {
   const updateTopCountry = (platformIndex: number, countryIndex: number, field: 'country' | 'percentage', value: string | number) => {
     const updated = [...creatorPlatforms]
     if (updated[platformIndex].top_countries) {
+      const current = updated[platformIndex].top_countries![countryIndex]
+      const nextValue =
+        field === 'percentage'
+          ? (() => {
+              const parsed = typeof value === 'number' ? value : parseFloat(String(value))
+              const safeValue = Number.isNaN(parsed) ? 0 : parsed
+              return Math.max(0, Math.min(100, safeValue))
+            })()
+          : value
+
       updated[platformIndex].top_countries![countryIndex] = {
-        ...updated[platformIndex].top_countries![countryIndex],
-        [field]: value,
+        ...current,
+        [field]: nextValue,
       }
     }
     setCreatorPlatforms(updated)
@@ -451,6 +461,14 @@ export default function ProfileCompletePage() {
     }
     // Limit to 3 countries
     if (updated[platformIndex].top_countries!.length >= 3) return
+    // Avoid duplicates
+    const exists = updated[platformIndex].top_countries!.some(
+      (c) => c.country.toLowerCase() === value.toLowerCase()
+    )
+    if (exists) {
+      setPlatformCountryInputs((prev) => ({ ...prev, [platformIndex]: '' }))
+      return
+    }
     updated[platformIndex].top_countries!.push({ country: value, percentage: 0 })
     setCreatorPlatforms(updated)
     setPlatformCountryInputs((prev) => ({ ...prev, [platformIndex]: '' }))
@@ -478,6 +496,7 @@ export default function ProfileCompletePage() {
   const getAvailableCountries = (platformIndex: number) => {
     const selected = creatorPlatforms[platformIndex].top_countries?.map((c) => c.country) || []
     const query = (platformCountryInputs[platformIndex] || '').toLowerCase()
+    if (!query.trim()) return []
     return COUNTRIES.filter(
       (c) => !selected.includes(c) && c.toLowerCase().includes(query)
     ).slice(0, 8) // keep dropdown compact
@@ -951,6 +970,12 @@ export default function ProfileCompletePage() {
           profilePicture: profilePictureUrl,
         }),
       }
+
+      // Debug: inspect payload being sent (focus on country percentages)
+      console.log('Creator update payload (complete page):', updatePayload.platforms?.map((p) => ({
+        name: p?.name,
+        topCountries: p?.topCountries,
+      })))
 
       const updatedProfile = await creatorService.updateMyProfile(updatePayload as any)
 
@@ -1813,50 +1838,79 @@ export default function ProfileCompletePage() {
                                           <p className="text-xs text-gray-500">Select up to 3 countries with their audience percentage</p>
                                         </div>
                                       </div>
-                                      <div className="space-y-2">
-                                        <input
-                                          type="text"
-                                          value={platformCountryInputs[platformIndex] || ''}
-                                          onChange={(e) => handleCountryInputChange(platformIndex, e.target.value)}
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                              e.preventDefault()
-                                              addCountryFromInput(platformIndex)
-                                            }
-                                          }}
-                                          placeholder="Search countries..."
-                                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
-                                        />
-                                        {/* Dropdown suggestions */}
-                                        {getAvailableCountries(platformIndex).length > 0 && (
-                                          <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                                            {getAvailableCountries(platformIndex).map((country) => (
-                                              <button
-                                                key={country}
-                                                type="button"
-                                                onClick={() => addCountryFromInput(platformIndex, country)}
-                                                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
-                                              >
-                                                {country}
-                                              </button>
-                                            ))}
-                                          </div>
-                                        )}
-                                        {creatorPlatforms[platformIndex].top_countries && creatorPlatforms[platformIndex].top_countries!.length > 0 && (
-                                          <div className="flex flex-wrap gap-2">
-                                            {creatorPlatforms[platformIndex].top_countries!.map((country, countryIndex) => (
-                                              <span key={countryIndex} className="inline-flex items-center gap-1 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold px-3 py-1 border border-primary-100">
-                                                {country.country}
+                                      <div className="space-y-3">
+                                        <div className="space-y-2">
+                                          <input
+                                            type="text"
+                                            value={platformCountryInputs[platformIndex] || ''}
+                                            onChange={(e) => handleCountryInputChange(platformIndex, e.target.value)}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter') {
+                                                e.preventDefault()
+                                                addCountryFromInput(platformIndex)
+                                              }
+                                            }}
+                                            placeholder="Search countries..."
+                                            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
+                                          />
+                                          {/* Dropdown suggestions */}
+                                          {getAvailableCountries(platformIndex).length > 0 && (
+                                            <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                                              {getAvailableCountries(platformIndex).map((country) => (
                                                 <button
+                                                  key={country}
                                                   type="button"
-                                                  onClick={() => removeCountryTag(platformIndex, countryIndex)}
-                                                  className="text-primary-500 hover:text-primary-700"
+                                                  onClick={() => addCountryFromInput(platformIndex, country)}
+                                                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
                                                 >
-                                                  <XMarkIcon className="w-3 h-3" />
+                                                  {country}
                                                 </button>
-                                              </span>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {creatorPlatforms[platformIndex].top_countries?.length ? (
+                                          <div className="space-y-2">
+                                            {creatorPlatforms[platformIndex].top_countries!.map((country, countryIndex) => (
+                                              <div
+                                                key={`${country.country}-${countryIndex}`}
+                                                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-primary-50/60 px-3 py-2"
+                                              >
+                                                <div className="flex-1 min-w-0">
+                                                  <p className="text-sm font-semibold text-gray-800 truncate">{country.country || 'Country'}</p>
+                                                  <p className="text-xs text-gray-500">Audience percentage</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                  <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
+                                                    <input
+                                                      type="text"
+                                                      inputMode="decimal"
+                                                      value={country.percentage && country.percentage > 0 ? country.percentage : ''}
+                                                      onChange={(e) => {
+                                                        const raw = e.target.value
+                                                        const parsed = raw === '' ? 0 : parseFloat(raw)
+                                                        updateTopCountry(platformIndex, countryIndex, 'percentage', parsed)
+                                                      }}
+                                                      placeholder="0"
+                                                      className="w-16 bg-transparent text-sm text-gray-800 outline-none"
+                                                    />
+                                                    <span className="text-sm text-gray-500">%</span>
+                                                  </div>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => removeCountryTag(platformIndex, countryIndex)}
+                                                    className="p-1 text-gray-500 hover:text-primary-700"
+                                                    aria-label={`Remove ${country.country}`}
+                                                  >
+                                                    <XMarkIcon className="w-4 h-4" />
+                                                  </button>
+                                                </div>
+                                              </div>
                                             ))}
                                           </div>
+                                        ) : (
+                                          <p className="text-xs text-gray-500">Add up to 3 countries and set the audience % for each.</p>
                                         )}
                                       </div>
                                     </div>

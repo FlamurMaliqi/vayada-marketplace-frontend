@@ -595,6 +595,11 @@ export default function ProfilePage() {
       if (userType === 'creator') {
         try {
           const apiProfile = await creatorService.getMyProfile()
+          // Debug: inspect how backend returns country percentages per platform
+          console.log('Creator profile (backend response)', apiProfile?.platforms?.map?.((p: any) => ({
+            name: p?.name,
+            topCountries: p?.topCountries || p?.top_countries,
+          })))
           const profile = transformCreatorProfile(apiProfile)
           setCreatorProfile(profile)
         } catch (error) {
@@ -968,6 +973,12 @@ export default function ProfilePage() {
         }),
       }
       
+      // Debug: inspect payload we send (check country percentages)
+      console.log('Creator update payload (profile page):', updatePayload.platforms?.map((p: any) => ({
+        name: p?.name,
+        topCountries: p?.topCountries,
+      })))
+
       // Update creator profile (replaces all platforms)
       const updatedProfile = await creatorService.updateMyProfile(updatePayload as any)
       
@@ -1596,9 +1607,18 @@ export default function ProfilePage() {
 
   const updateTopCountry = (platformIndex: number, countryIndex: number, field: 'country' | 'percentage', value: string | number) => {
     const platform = editFormData.platforms[platformIndex]
-    const newCountries = (platform.topCountries || []).map((country, i) =>
-      i === countryIndex ? { ...country, [field]: value } : country
-    )
+    const newCountries = (platform.topCountries || []).map((country, i) => {
+      if (i !== countryIndex) return country
+      const nextValue =
+        field === 'percentage'
+          ? (() => {
+              const parsed = typeof value === 'number' ? value : parseFloat(String(value))
+              const safeValue = Number.isNaN(parsed) ? 0 : parsed
+              return Math.max(0, Math.min(100, safeValue))
+            })()
+          : value
+      return { ...country, [field]: nextValue }
+    })
     updatePlatform(platformIndex, 'topCountries', newCountries)
   }
 
@@ -1652,6 +1672,14 @@ export default function ProfilePage() {
     }
     // Limit to 3 countries
     if ((platform.topCountries || []).length >= 3) return
+    // Avoid duplicates
+    const exists = (platform.topCountries || []).some(
+      (c) => c.country.toLowerCase() === value.toLowerCase()
+    )
+    if (exists) {
+      setPlatformCountryInputs((prev) => ({ ...prev, [platformIndex]: '' }))
+      return
+    }
     const newCountries = [...(platform.topCountries || []), { country: value, percentage: 0 }]
     updatePlatform(platformIndex, 'topCountries', newCountries)
     setPlatformCountryInputs((prev) => ({ ...prev, [platformIndex]: '' }))
@@ -1681,6 +1709,7 @@ export default function ProfilePage() {
     const platform = editFormData.platforms[platformIndex]
     const selected = (platform.topCountries || []).map((c) => c.country)
     const query = (platformCountryInputs[platformIndex] || '').toLowerCase()
+    if (!query.trim()) return []
     return COUNTRIES.filter(
       (c) => !selected.includes(c) && c.toLowerCase().includes(query)
     ).slice(0, 8) // keep dropdown compact
@@ -2096,7 +2125,7 @@ export default function ProfilePage() {
                                           <ul className="space-y-2">
                                             {platform.topAgeGroups.map((ageGroup, idx) => (
                                               <li key={idx} className="text-sm text-gray-700">
-                                                {ageGroup.ageRange}: <span className="font-semibold text-gray-900">{ageGroup.percentage}%</span>
+                                                {ageGroup.ageRange}
                                               </li>
                                             ))}
                                           </ul>
@@ -2330,21 +2359,47 @@ export default function ProfilePage() {
                                                     ))}
                                                   </div>
                                                 )}
-                                                {editFormData.platforms[platformIndex]?.topCountries && editFormData.platforms[platformIndex].topCountries!.length > 0 && (
-                                                  <div className="flex flex-wrap gap-2">
+                                                {editFormData.platforms[platformIndex]?.topCountries?.length ? (
+                                                  <div className="space-y-2">
                                                     {editFormData.platforms[platformIndex].topCountries!.map((country, countryIndex) => (
-                                                      <span key={countryIndex} className="inline-flex items-center gap-1 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold px-3 py-1 border border-primary-100">
-                                                        {country.country}
-                                                        <button
-                                                          type="button"
-                                                          onClick={() => removeCountryTag(platformIndex, countryIndex)}
-                                                          className="text-primary-500 hover:text-primary-700"
-                                                        >
-                                                          <XMarkIcon className="w-3 h-3" />
-                                                        </button>
-                                                      </span>
+                                                      <div
+                                                        key={`${country.country}-${countryIndex}`}
+                                                        className="flex items-center gap-3 rounded-lg border border-gray-200 bg-primary-50/60 px-3 py-2"
+                                                      >
+                                                        <div className="flex-1 min-w-0">
+                                                          <p className="text-sm font-semibold text-gray-800 truncate">{country.country || 'Country'}</p>
+                                                          <p className="text-xs text-gray-500">Audience percentage</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                          <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
+                                                            <input
+                                                              type="text"
+                                                              inputMode="decimal"
+                                                              value={country.percentage && country.percentage > 0 ? country.percentage : ''}
+                                                              onChange={(e) => {
+                                                                const raw = e.target.value
+                                                                const parsed = raw === '' ? 0 : parseFloat(raw)
+                                                                updateTopCountry(platformIndex, countryIndex, 'percentage', parsed)
+                                                              }}
+                                                              placeholder="0"
+                                                              className="w-16 bg-transparent text-sm text-gray-800 outline-none"
+                                                            />
+                                                            <span className="text-sm text-gray-500">%</span>
+                                                          </div>
+                                                          <button
+                                                            type="button"
+                                                            onClick={() => removeCountryTag(platformIndex, countryIndex)}
+                                                            className="p-1 text-gray-500 hover:text-primary-700"
+                                                            aria-label={`Remove ${country.country}`}
+                                                          >
+                                                            <XMarkIcon className="w-4 h-4" />
+                                                          </button>
+                                                        </div>
+                                                      </div>
                                                     ))}
                                                   </div>
+                                                ) : (
+                                                  <p className="text-xs text-gray-500">Add up to 3 countries and set the audience % for each.</p>
                                                 )}
                                               </div>
                                             </div>
