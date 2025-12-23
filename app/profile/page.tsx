@@ -7,7 +7,7 @@ import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
 import { ROUTES } from '@/lib/constants/routes'
 import { Button, Input, Textarea, StarRating, ErrorModal } from '@/components/ui'
 import { MapPinIcon, CheckBadgeIcon, StarIcon, PencilIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'
-import { TrashIcon, ChevronDownIcon, ChevronUpIcon, InformationCircleIcon, EnvelopeIcon, PhoneIcon, LinkIcon, UserIcon } from '@heroicons/react/24/outline'
+import { TrashIcon, ChevronDownIcon, ChevronUpIcon, InformationCircleIcon, EnvelopeIcon, PhoneIcon, LinkIcon, UserIcon, BuildingOfficeIcon, BuildingOffice2Icon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
 import type { CreatorRating, CollaborationReview, HotelProfile as ApiHotelProfile, HotelListing as ApiHotelListing, Creator as ApiCreator } from '@/lib/types'
@@ -2600,15 +2600,14 @@ export default function ProfilePage() {
               {userType === 'hotel' && hotelProfile && (
                 <>
                   {/* Tab Navigation with Edit Button */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 w-fit">
-                      <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+                    <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => setActiveHotelTab('overview')}
                         className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
                           activeHotelTab === 'overview'
-                            ? 'bg-primary-600 text-white shadow-md'
-                            : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
                         }`}
                       >
                         Overview
@@ -2617,23 +2616,23 @@ export default function ProfilePage() {
                         onClick={() => setActiveHotelTab('listings')}
                         className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
                           activeHotelTab === 'listings'
-                            ? 'bg-primary-600 text-white shadow-md'
-                            : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
                         }`}
                       >
                         Listings
                       </button>
-                      </div>
                     </div>
                     {activeHotelTab === 'overview' && (
                       <>
                         {!isEditingHotelProfile ? (
                           <Button
-                            variant="outline"
+                            className="p-2.5 rounded-lg bg-white text-primary-600 border border-primary-600 hover:bg-primary-50 transition-all duration-200 flex items-center justify-center"
                             onClick={() => setIsEditingHotelProfile(true)}
+                            title="Edit Profile"
                           >
-                            <PencilIcon className="w-5 h-5 mr-2" />
-                            Edit Profile
+                            <PencilIcon className="w-5 h-5" />
+                            
                           </Button>
                         ) : (
                           <div className="flex gap-3">
@@ -2662,207 +2661,100 @@ export default function ProfilePage() {
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     {activeHotelTab === 'overview' && (
                       <div>
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                          <h2 className="text-2xl font-bold text-gray-900">Overview</h2>
+                        <div className="flex items-start gap-3 mb-6">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#fafafa' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-primary-600">
+                              <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+                              <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
+                              <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
+                              <path d="M10 6h4"></path>
+                              <path d="M10 10h4"></path>
+                              <path d="M10 14h4"></path>
+                              <path d="M10 18h4"></path>
+                            </svg>
+                          </div>
+                          <div>
+                            <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
+                            <p className="text-sm text-gray-500">Your hotel details</p>
+                          </div>
                         </div>
 
-                        {!isEditingHotelProfile ? (
-                          <div className="space-y-6">
-                            {/* Basic Info */}
-                            <div className="flex items-start gap-6">
-                              {/* Hotel Picture */}
-                              <div className="flex-shrink-0">
-                                {hotelProfile.picture && hotelProfile.picture.trim() !== '' ? (
-                                  <button
-                                    onClick={() => setShowHotelPictureModal(true)}
-                                    className="cursor-pointer hover:opacity-90 transition-opacity"
-                                  >
-                                    <img
-                                      src={hotelProfile.picture}
-                                      alt={hotelProfile.name}
-                                      className="w-32 h-32 rounded-2xl object-cover border-4 border-gray-100 shadow-lg"
-                                    />
-                                  </button>
-                                ) : (
-                                  <button
-                                    onClick={() => setShowHotelPictureModal(true)}
-                                    className="cursor-pointer hover:opacity-90 transition-opacity"
-                                  >
-                                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-5xl shadow-lg border-4 border-gray-100">
-                                      {hotelProfile.name.charAt(0)}
-                                    </div>
-                                  </button>
-                                )}
-                              </div>
-
-                              {/* Hotel Information */}
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-3">
-                                  <h3 className="text-3xl font-bold text-gray-900">{hotelProfile.name}</h3>
-                                  {hotelProfile.status === 'verified' && (
-                                    <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700">
-                                      <CheckBadgeIcon className="w-5 h-5" />
-                                      <span className="text-sm font-semibold">Verified</span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Location */}
-                                <div className="flex items-center gap-2 text-gray-600 mb-4">
-                                  <MapPinIcon className="w-5 h-5" />
-                                  <span className="text-lg">{hotelProfile.location}</span>
-                                </div>
-
-                                {/* Website */}
-                                {hotelProfile.website && (
-                                  <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
-                                    <a
-                                      href={hotelProfile.website}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-primary-600 hover:text-primary-700 font-semibold text-base"
-                                    >
-                                      {hotelProfile.website}
-                                    </a>
-                                  </div>
-                                )}
-
-                                {/* Description */}
-                                {hotelProfile.about && (
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                    <p className="text-gray-700 leading-relaxed">{hotelProfile.about}</p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Contact Information Section in View Mode */}
-                            <div className="pt-8 border-t border-gray-200">
-                              <div className="flex items-center gap-3 mb-6">
-                                <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                                <h2 className="text-2xl font-bold text-gray-900">Contact Information</h2>
-                              </div>
-                              <div className="space-y-4">
-                                {/* Email Display */}
-                                <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <svg
-                                      className="w-5 h-5 text-gray-600"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                      />
-                                    </svg>
-                                    <label className="text-sm font-medium text-gray-700">E-Mail</label>
-                                  </div>
-                                  <p className="text-lg font-semibold text-gray-900 ml-8">{email || 'Not provided'}</p>
-                                </div>
-
-                                {/* Phone Display */}
-                                <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <svg
-                                      className="w-5 h-5 text-gray-600"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                      />
-                                    </svg>
-                                    <label className="text-sm font-medium text-gray-700">Telefon</label>
-                                  </div>
-                                  <p className="text-lg font-semibold text-gray-900 ml-8">{phone || 'Not provided'}</p>
-                                </div>
-                              </div>
-                            </div>
+                        <div className="space-y-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Input
+                              label="Hotel Name"
+                              value={hotelEditFormData.name}
+                              onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, name: e.target.value })}
+                              required
+                              placeholder="Hotel name"
+                              disabled={!isEditingHotelProfile}
+                              leadingIcon={
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-gray-400">
+                                  <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+                                  <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
+                                  <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
+                                  <path d="M10 6h4"></path>
+                                  <path d="M10 10h4"></path>
+                                  <path d="M10 14h4"></path>
+                                  <path d="M10 18h4"></path>
+                                </svg>
+                              }
+                            />
+                            <Input
+                              label="Location"
+                              value={hotelEditFormData.location}
+                              onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, location: e.target.value })}
+                              required
+                              placeholder="City, Country"
+                              disabled={!isEditingHotelProfile}
+                              leadingIcon={<MapPinIcon className="w-5 h-5 text-gray-400" />}
+                            />
                           </div>
-                        ) : (
-                          <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <div>
-                                <Input
-                                  label="Name"
-                                  value={hotelEditFormData.name}
-                                  onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, name: e.target.value })}
-                                  required
-                                  placeholder="Hotel name"
-                                />
-                              </div>
+
+                          {/* Full-width About */}
+                          <div>
+                            <Textarea
+                              label="About"
+                              value={hotelEditFormData.about}
+                              onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, about: e.target.value })}
+                              required
+                              rows={5}
+                              placeholder="Describe your hotel..."
+                              disabled={!isEditingHotelProfile}
+                            />
+                          </div>
+
+                          {/* Contact Information Section */}
+                          <div className="mt-8 pt-8 border-t border-gray-200">
+                            <div className="flex items-center gap-2 mb-4">
+                              <div className="w-1 h-6 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
+                              <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
                             </div>
-                            <div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <Input
-                                label="Location"
-                                value={hotelEditFormData.location}
-                                onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, location: e.target.value })}
+                                label="Website"
                                 required
-                                placeholder="City, Country"
-                              />
-                            </div>
-                            <div>
-                              <Input
-                                label="Website (optional)"
                                 type="url"
                                 value={hotelEditFormData.website}
                                 onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, website: e.target.value })}
                                 placeholder="https://example.com"
+                                disabled={!isEditingHotelProfile}
+                                leadingIcon={<GlobeAltIcon className="w-5 h-5 text-gray-400" />}
                               />
-                            </div>
-                            <div>
-                              <Textarea
-                                label="About (optional)"
-                                value={hotelEditFormData.about}
-                                onChange={(e) => setHotelEditFormData({ ...hotelEditFormData, about: e.target.value })}
-                                rows={6}
-                                placeholder="Describe your hotel..."
+                              <Input
+                                label="Phone"
+                                required
+                                type="tel"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                placeholder="+1 (555) 123-4567"
+                                helperText=""
+                                disabled={!isEditingHotelProfile}
+                                leadingIcon={<PhoneIcon className="w-5 h-5 text-gray-400" />}
                               />
-                            </div>
-
-                            {/* Contact Information Section */}
-                            <div className="mt-8 pt-8 border-t border-gray-200">
-                              <div className="flex items-center gap-3 mb-6">
-                                <div className="w-1 h-8 bg-gradient-to-b from-primary-600 to-primary-400 rounded-full"></div>
-                                <h2 className="text-2xl font-bold text-gray-900">Contact Information</h2>
-                              </div>
-                              <div className="space-y-4">
-                                <div>
-                                  <Input
-                                    label="E-Mail"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="your.email@example.com"
-                                    required
-                                    helperText="Your email address for contact"
-                                  />
-                                </div>
-                                <div>
-                                  <Input
-                                    label="Telefon (optional)"
-                                    type="tel"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    placeholder="+1 (555) 123-4567"
-                                    helperText="Your phone number for contact"
-                                  />
-                                </div>
-                              </div>
                             </div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     )}
                     {activeHotelTab === 'listings' && (
