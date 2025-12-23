@@ -2132,45 +2132,6 @@ export default function ProfileCompletePage() {
                         />
                       </div>
                     </div>
-
-                    {/* Right Column: Profile Picture */}
-                    <div className="w-full md:w-auto flex flex-col items-center gap-2">
-                      <span className="text-xs font-semibold text-gray-700">Profile Picture</span>
-                      <div
-                        className="relative w-40 h-40 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-gray-50 transition-all overflow-hidden bg-gray-50 group"
-                        onClick={() => hotelImageInputRef.current?.click()}
-                      >
-                        {hotelForm.picture ? (
-                          <>
-                            <img
-                              src={hotelForm.picture}
-                              alt="Hotel Profile"
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <span className="text-white text-[10px] font-medium">Change</span>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="w-6 h-6 text-gray-400 mb-1 group-hover:text-primary-500 transition-colors">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                              </svg>
-                            </div>
-                            <span className="text-[10px] text-gray-500 font-medium group-hover:text-primary-600">Upload</span>
-                          </>
-                        )}
-                      </div>
-                      <input
-                        type="file"
-                        ref={hotelImageInputRef}
-                        onChange={handleHotelImageChange}
-                        accept="image/jpeg,image/png,image/webp"
-                        className="hidden"
-                      />
-                    </div>
                   </div>
 
                   <div className="space-y-3">
