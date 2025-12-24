@@ -3989,28 +3989,32 @@ export default function ProfilePage() {
                                                 )}
                                               </div>
 
-                                              {/* Age Groups */}
-                                              <div>
-                                                <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups</label>
-                                                <p className="text-sm text-gray-600 mb-3">Select up to 3 age groups you want to target</p>
-                                                <div className="flex flex-wrap gap-2">
-                                                  {AGE_GROUP_OPTIONS.map((range) => {
-                                                    const isSelected = listing.targetGroupAgeGroups?.includes(range) || false
-                                                    return (
-                                                      <div
-                                                        key={range}
-                                                        className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
-                                                          isSelected
-                                                            ? 'bg-primary-50 text-primary-700 border-primary-200'
-                                                            : 'bg-white text-gray-700 border-gray-200 opacity-50'
-                                                        }`}
-                                                      >
-                                                        {range}
-                                                      </div>
-                                                    )
-                                                  })}
+                                              {/* Age Range */}
+                                              {(listing.targetGroupAgeMin || listing.targetGroupAgeMax) && (
+                                                <div>
+                                                  <label className="block text-base font-semibold text-gray-900 mb-1">Age Range</label>
+                                                  <p className="text-sm text-gray-600 mb-3">Target age range for creators</p>
+                                                  <div className="flex items-center gap-2">
+                                                    <Input
+                                                      type="number"
+                                                      value={listing.targetGroupAgeMin || ''}
+                                                      onChange={() => {}}
+                                                      disabled
+                                                      placeholder="Min"
+                                                      className="bg-gray-50 w-24"
+                                                    />
+                                                    <span className="text-gray-500">-</span>
+                                                    <Input
+                                                      type="number"
+                                                      value={listing.targetGroupAgeMax || ''}
+                                                      onChange={() => {}}
+                                                      disabled
+                                                      placeholder="Max"
+                                                      className="bg-gray-50 w-24"
+                                                    />
+                                                  </div>
                                                 </div>
-                                              </div>
+                                              )}
                                             </div>
                                           </div>
 
