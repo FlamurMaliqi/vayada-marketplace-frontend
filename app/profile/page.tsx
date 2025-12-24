@@ -2899,12 +2899,14 @@ export default function ProfilePage() {
                           <div className={`mt-6 space-y-3 ${isAddingNewListing ? '' : 'mt-6'}`}>
                             {hotelProfile.listings.map((listing, index) => {
                               const isCollapsed = collapsedListingCards.has(listing.id)
-                              const isComplete = listing.name.trim() &&
+                              const isComplete = !!(
+                                listing.name.trim() &&
                                 listing.location.trim() &&
                                 listing.accommodationType &&
                                 listing.description.trim() &&
                                 listing.collaborationTypes.length > 0 &&
                                 listing.availability.length > 0
+                              )
 
                               return (
                                 <div
