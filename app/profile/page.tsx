@@ -2932,6 +2932,17 @@ export default function ProfilePage() {
                                         </h4>
                                       </div>
                                       <div className="flex items-center gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            openEditListingModal(listing)
+                                          }}
+                                          className="p-1 rounded-md text-gray-600 hover:text-gray-700 hover:bg-gray-50 transition-colors"
+                                          title="Edit listing"
+                                        >
+                                          <PencilIcon className="w-3.5 h-3.5" />
+                                        </button>
                                         {hotelProfile.listings.length > 1 && (
                                           <button
                                             type="button"
@@ -4001,17 +4012,6 @@ export default function ProfilePage() {
                                             </div>
                                           </div>
 
-                                          {/* Footer Buttons */}
-                                          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              onClick={() => openEditListingModal(listing)}
-                                            >
-                                              <PencilIcon className="w-4 h-4 mr-1" />
-                                              Edit
-                                            </Button>
-                                          </div>
                                         </div>
                                       )}
                                     </div>
