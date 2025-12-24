@@ -192,6 +192,16 @@ export default function ProfilePage() {
     title: 'Error',
     message: '',
   })
+
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
+    isOpen: boolean
+    listingId: string | null
+    listingName: string
+  }>({
+    isOpen: false,
+    listingId: null,
+    listingName: '',
+  })
   
   // Platform management state
   const [expandedPlatforms, setExpandedPlatforms] = useState<Set<number>>(new Set())
@@ -1540,19 +1550,27 @@ export default function ProfilePage() {
     }
   }
 
-  const handleDeleteListing = async (listingId: string) => {
+  const openDeleteConfirmModal = (listingId: string, listingName: string) => {
     // Check if this is the only listing - hotels must have at least one listing
     if (!hotelProfile || hotelProfile.listings.length <= 1) {
       showError('Cannot Delete Listing', 'You must have at least one listing. Please add another listing before deleting this one.')
       return
     }
+    setDeleteConfirmModal({
+      isOpen: true,
+      listingId,
+      listingName,
+    })
+  }
 
-    if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
-      return
-    }
+  const handleDeleteListing = async () => {
+    if (!deleteConfirmModal.listingId) return
 
     try {
-      await hotelService.deleteListing(listingId)
+      await hotelService.deleteListing(deleteConfirmModal.listingId)
+      
+      // Close modal
+      setDeleteConfirmModal({ isOpen: false, listingId: null, listingName: '' })
       
       // Re-fetch full profile to get updated data
       await loadProfile()
@@ -1568,6 +1586,8 @@ export default function ProfilePage() {
             ? detail[0].msg
             : 'Failed to delete listing'
       showError('Failed to Delete Listing', formatErrorForModal(detail || message))
+      // Close modal on error
+      setDeleteConfirmModal({ isOpen: false, listingId: null, listingName: '' })
     }
   }
 
@@ -3585,7 +3605,7 @@ export default function ProfilePage() {
                                             type="button"
                                             onClick={(e) => {
                                               e.stopPropagation()
-                                              handleDeleteListing(listing.id)
+                                              openDeleteConfirmModal(listing.id, listing.name || `Property Listing ${index + 1}`)
                                             }}
                                             className="p-1 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
                                             title="Remove listing"
@@ -5690,6 +5710,71 @@ export default function ProfilePage() {
         message={errorModal.message}
         details={errorModal.details}
       />
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setDeleteConfirmModal({ isOpen: false, listingId: null, listingName: '' })}
+          />
+          
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8 animate-in fade-in zoom-in duration-200">
+            {/* Close Button */}
+            <button
+              onClick={() => setDeleteConfirmModal({ isOpen: false, listingId: null, listingName: '' })}
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Close"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+
+            {/* Content */}
+            <div className="text-center">
+              {/* Icon */}
+              <div className="mx-auto w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+                <TrashIcon className="w-8 h-8 text-red-600" />
+              </div>
+
+              {/* Title */}
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Delete Listing?
+              </h3>
+
+              {/* Message */}
+              <p className="text-gray-700 mb-1">
+                Are you sure you want to delete
+              </p>
+              <p className="text-gray-900 font-semibold mb-4">
+                "{deleteConfirmModal.listingName}"?
+              </p>
+              <p className="text-sm text-gray-600 mb-6">
+                This action cannot be undone. All data associated with this listing will be permanently deleted.
+              </p>
+
+              {/* Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteConfirmModal({ isOpen: false, listingId: null, listingName: '' })}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleDeleteListing}
+                  className="flex-1 bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
+                >
+                  Delete Listing
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
