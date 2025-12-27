@@ -1881,12 +1881,12 @@ export default function ProfileCompletePage() {
                                         <div className="space-y-2">
                                           <input
                                             type="text"
-                                            value={platformCountryInputs[platformIndex] || ''}
-                                            onChange={(e) => handleCountryInputChange(platformIndex, e.target.value)}
+                                            value={platformCountryInputs[actualIndex] || ''}
+                                            onChange={(e) => handleCountryInputChange(actualIndex, e.target.value)}
                                             onKeyDown={(e) => {
                                               if (e.key === 'Enter') {
                                                 e.preventDefault()
-                                                addCountryFromInput(platformIndex)
+                                                addCountryFromInput(actualIndex)
                                               }
                                             }}
                                             placeholder="Search countries..."
