@@ -2273,8 +2273,9 @@ export default function ProfilePage() {
                               {/* Platform Cards Grid */}
                               <div className="space-y-3 mt-4">
                             {PLATFORM_OPTIONS.map((platformName) => {
-                              const isAdded = editFormData.platforms.some((p) => p.name === platformName)
-                              const platformIndex = editFormData.platforms.findIndex((p) => p.name === platformName)
+                              // Get all platforms of this type
+                              const platformsOfThisType = editFormData.platforms.filter((p) => p.name === platformName)
+                              const hasPlatforms = platformsOfThisType.length > 0
 
                               const platformColors: Record<string, string> = {
                                 Instagram: 'from-yellow-400 via-pink-500 to-purple-600',
@@ -2314,6 +2315,7 @@ export default function ProfilePage() {
 
                               return (
                                 <div key={platformName} className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
+                                  {/* Platform Header */}
                                   <div className="flex items-center justify-between gap-4 p-4">
                                     <div className="flex items-center gap-3">
                                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-white bg-gradient-to-br ${platformColors[platformName] || 'from-gray-500 to-gray-400'}`}>
@@ -2321,100 +2323,138 @@ export default function ProfilePage() {
                                       </div>
                                       <div>
                                         <p className="font-bold text-gray-900 text-lg">{platformName}</p>
+                                        {hasPlatforms && (
+                                          <p className="text-xs text-gray-500 mt-0.5">
+                                            {platformsOfThisType.length} {platformsOfThisType.length === 1 ? 'account' : 'accounts'} added
+                                          </p>
+                                        )}
                                       </div>
                                     </div>
 
-                                    {isAdded && platformIndex !== -1 ? (
-                                      <button
-                                        type="button"
-                                        onClick={() => removePlatform(platformIndex)}
-                                        className="px-4 py-2 border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors text-sm font-medium"
-                                      >
-                                        Cancel
-                                      </button>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setEditFormData({
-                                            ...editFormData,
-                                            platforms: [
-                                              ...editFormData.platforms,
-                                              {
-                                                name: platformName,
-                                                handle: '',
-                                                followers: 0,
-                                                engagementRate: 0,
-                                                topCountries: [],
-                                                topAgeGroups: [],
-                                                genderSplit: { male: 0, female: 0 },
-                                              },
-                                            ],
-                                          })
-                                        }}
-                                        className="px-4 py-2 border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors text-sm font-medium"
-                                      >
-                                        Add
-                                      </button>
-                                    )}
+                                    {/* Always show Add button */}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditFormData({
+                                          ...editFormData,
+                                          platforms: [
+                                            ...editFormData.platforms,
+                                            {
+                                              name: platformName,
+                                              handle: '',
+                                              followers: 0,
+                                              engagementRate: 0,
+                                              topCountries: [],
+                                              topAgeGroups: [],
+                                              genderSplit: { male: 0, female: 0 },
+                                            },
+                                          ],
+                                        })
+                                      }}
+                                      className="px-4 py-2 border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors text-sm font-medium"
+                                    >
+                                      Add Account
+                                    </button>
                                   </div>
 
-                                  {isAdded && platformIndex !== -1 && (
-                                    <div className="border-t border-gray-100 bg-white px-4 md:px-6 pb-5 pt-4 rounded-b-2xl">
-                                      <div className="space-y-3 mb-4">
-                                        <Input
-                                          label="Username"
-                                          type="text"
-                                          value={platformIndex >= 0 ? editFormData.platforms[platformIndex].handle : ''}
-                                          onChange={(e) => updatePlatform(platformIndex, 'handle', e.target.value)}
-                                          placeholder="@ username"
-                                          required
-                                          className="bg-gray-50"
-                                        />
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                          <Input
-                                            label="Followers"
-                                            type="number"
-                                            value={platformIndex >= 0 ? editFormData.platforms[platformIndex].followers || '' : ''}
-                                            onChange={(e) => updatePlatform(platformIndex, 'followers', e.target.value === '' ? '' : parseInt(e.target.value))}
-                                            required
-                                            placeholder="0"
-                                            min={1}
-                                            className="bg-gray-50"
-                                          />
-                                          <Input
-                                            label="Engagement Rate (%)"
-                                            type="number"
-                                            value={platformIndex >= 0 ? editFormData.platforms[platformIndex].engagementRate || '' : ''}
-                                            onChange={(e) => {
-                                              const raw = e.target.value.replace(',', '.')
-                                              updatePlatform(platformIndex, 'engagementRate', raw === '' ? '' : parseFloat(raw))
-                                            }}
-                                            required
-                                            placeholder="0.00"
-                                            min={0.01}
-                                            max={100}
-                                            step="0.01"
-                                            className="bg-gray-50"
-                                          />
-                                        </div>
-                                      </div>
+                                  {/* Show all platforms of this type */}
+                                  {platformsOfThisType.length > 0 && (
+                                    <div className="border-t border-gray-100 divide-y divide-gray-100">
+                                      {platformsOfThisType.map((platform, idx) => {
+                                        // Find the actual index in editFormData.platforms
+                                        // Get all indices of platforms with this name, then use the idx-th one
+                                        const allIndices = editFormData.platforms
+                                          .map((p, i) => p.name === platformName ? i : -1)
+                                          .filter(i => i !== -1)
+                                        const actualIndex = allIndices[idx]
+                                        
+                                        return (
+                                          <div key={`${platformName}-${idx}`} className="px-4 md:px-6 pb-5 pt-4">
+                                            {/* Account Header */}
+                                            <div className="flex items-center justify-between mb-4">
+                                              <div>
+                                                <p className="text-sm font-semibold text-gray-700">
+                                                  {platform.handle || `Account ${idx + 1}`}
+                                                </p>
+                                                {platform.handle && (
+                                                  <p className="text-xs text-gray-500 mt-0.5">
+                                                    {platform.followers > 0 ? `${formatFollowersDE(platform.followers)} followers` : 'No followers set'}
+                                                  </p>
+                                                )}
+                                              </div>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  // Find all platforms of this type and get the correct index
+                                                  const allOfType = editFormData.platforms
+                                                    .map((p, i) => ({ platform: p, index: i }))
+                                                    .filter(({ platform }) => platform.name === platformName)
+                                                  const platformToRemove = allOfType[idx]
+                                                  if (platformToRemove) {
+                                                    removePlatform(platformToRemove.index)
+                                                  }
+                                                }}
+                                                className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+                                              >
+                                                Remove
+                                              </button>
+                                            </div>
 
-                                      <div className="bg-white border border-gray-200 rounded-xl p-3">
-                                        <button
-                                          type="button"
-                                          onClick={() => togglePlatformExpanded(platformIndex)}
-                                          className="flex items-center justify-between w-full text-left"
-                                        >
-                                          <span className="text-sm font-semibold text-gray-800">Audience Demographics (Optional)</span>
-                                          {expandedPlatforms.has(platformIndex) ? (
-                                            <ChevronUpIcon className="w-5 h-5 text-gray-500" />
-                                          ) : (
-                                            <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-                                          )}
-                                        </button>
+                                            {/* Account Form */}
+                                            <div className="space-y-3 mb-4">
+                                              <Input
+                                                label="Username"
+                                                type="text"
+                                                value={actualIndex >= 0 ? editFormData.platforms[actualIndex].handle : ''}
+                                                onChange={(e) => updatePlatform(actualIndex, 'handle', e.target.value)}
+                                                placeholder="@ username"
+                                                required
+                                                className="bg-gray-50"
+                                              />
+                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <Input
+                                                  label="Followers"
+                                                  type="number"
+                                                  value={actualIndex >= 0 ? editFormData.platforms[actualIndex].followers || '' : ''}
+                                                  onChange={(e) => updatePlatform(actualIndex, 'followers', e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                  required
+                                                  placeholder="0"
+                                                  min={1}
+                                                  className="bg-gray-50"
+                                                />
+                                                <Input
+                                                  label="Engagement Rate (%)"
+                                                  type="number"
+                                                  value={actualIndex >= 0 ? editFormData.platforms[actualIndex].engagementRate || '' : ''}
+                                                  onChange={(e) => {
+                                                    const raw = e.target.value.replace(',', '.')
+                                                    updatePlatform(actualIndex, 'engagementRate', raw === '' ? '' : parseFloat(raw))
+                                                  }}
+                                                  required
+                                                  placeholder="0.00"
+                                                  min={0.01}
+                                                  max={100}
+                                                  step="0.01"
+                                                  className="bg-gray-50"
+                                                />
+                                              </div>
+                                            </div>
 
-                                        {expandedPlatforms.has(platformIndex) && (
+                                            <div className="bg-white border border-gray-200 rounded-xl p-3">
+                                              <button
+                                                type="button"
+                                                onClick={() => togglePlatformExpanded(actualIndex)}
+                                                className="flex items-center justify-between w-full text-left"
+                                              >
+                                                <span className="text-sm font-semibold text-gray-800">Audience Demographics (Optional)</span>
+                                                {expandedPlatforms.has(actualIndex) ? (
+                                                  <ChevronUpIcon className="w-5 h-5 text-gray-500" />
+                                                ) : (
+                                                  <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+                                                )}
+                                              </button>
+
+                                              {expandedPlatforms.has(actualIndex) && (
                                           <div className="mt-4 space-y-4">
                                             {/* Top Countries */}
                                             <div className="space-y-2">
@@ -2427,25 +2467,25 @@ export default function ProfilePage() {
                                               <div className="space-y-2">
                                                 <input
                                                   type="text"
-                                                  value={platformCountryInputs[platformIndex] || ''}
-                                                  onChange={(e) => handleCountryInputChange(platformIndex, e.target.value)}
+                                                  value={platformCountryInputs[actualIndex] || ''}
+                                                  onChange={(e) => handleCountryInputChange(actualIndex, e.target.value)}
                                                   onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
                                                       e.preventDefault()
-                                                      addCountryFromInput(platformIndex)
+                                                      addCountryFromInput(actualIndex)
                                                     }
                                                   }}
                                                   placeholder="Search countries..."
                                                   className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
                                                 />
                                                 {/* Dropdown suggestions */}
-                                                {getAvailableCountries(platformIndex).length > 0 && (
+                                                {getAvailableCountries(actualIndex).length > 0 && (
                                                   <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                                                    {getAvailableCountries(platformIndex).map((country) => (
+                                                    {getAvailableCountries(actualIndex).map((country) => (
                                                       <button
                                                         key={country}
                                                         type="button"
-                                                        onClick={() => addCountryFromInput(platformIndex, country)}
+                                                        onClick={() => addCountryFromInput(actualIndex, country)}
                                                         className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
                                                       >
                                                         {country}
@@ -2453,9 +2493,9 @@ export default function ProfilePage() {
                                                     ))}
                                                   </div>
                                                 )}
-                                                {editFormData.platforms[platformIndex]?.topCountries?.length ? (
+                                                {editFormData.platforms[actualIndex]?.topCountries?.length ? (
                                                   <div className="space-y-2">
-                                                    {editFormData.platforms[platformIndex].topCountries!.map((country, countryIndex) => (
+                                                    {editFormData.platforms[actualIndex].topCountries!.map((country, countryIndex) => (
                                                       <div
                                                         key={`${country.country}-${countryIndex}`}
                                                         className="flex items-center gap-3 rounded-lg border border-gray-200 bg-primary-50/60 px-3 py-2"
@@ -2473,7 +2513,7 @@ export default function ProfilePage() {
                                                               onChange={(e) => {
                                                                 const raw = e.target.value
                                                                 const parsed = raw === '' ? 0 : parseFloat(raw)
-                                                                updateTopCountry(platformIndex, countryIndex, 'percentage', parsed)
+                                                                updateTopCountry(actualIndex, countryIndex, 'percentage', parsed)
                                                               }}
                                                               placeholder="0"
                                                               className="w-16 bg-transparent text-sm text-gray-800 outline-none"
@@ -2482,7 +2522,7 @@ export default function ProfilePage() {
                                                           </div>
                                                           <button
                                                             type="button"
-                                                            onClick={() => removeCountryTag(platformIndex, countryIndex)}
+                                                            onClick={() => removeCountryTag(actualIndex, countryIndex)}
                                                             className="p-1 text-gray-500 hover:text-primary-700"
                                                             aria-label={`Remove ${country.country}`}
                                                           >
@@ -2506,12 +2546,12 @@ export default function ProfilePage() {
                                               </div>
                                               <div className="flex flex-wrap gap-2">
                                                 {AGE_GROUP_OPTIONS.map((range) => {
-                                                  const isSelected = editFormData.platforms[platformIndex]?.topAgeGroups?.some((a) => a.ageRange === range)
+                                                  const isSelected = editFormData.platforms[actualIndex]?.topAgeGroups?.some((a) => a.ageRange === range)
                                                   return (
                                                     <button
                                                       key={range}
                                                       type="button"
-                                                      onClick={() => toggleAgeGroupTag(platformIndex, range)}
+                                                      onClick={() => toggleAgeGroupTag(actualIndex, range)}
                                                       className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
                                                         isSelected
                                                           ? 'bg-primary-50 text-primary-700 border-primary-200'
@@ -2532,11 +2572,11 @@ export default function ProfilePage() {
                                                 <Input
                                                   label="Male %"
                                                   type="number"
-                                                  value={editFormData.platforms[platformIndex]?.genderSplit?.male && editFormData.platforms[platformIndex].genderSplit!.male > 0 ? editFormData.platforms[platformIndex].genderSplit!.male : ''}
+                                                  value={editFormData.platforms[actualIndex]?.genderSplit?.male && editFormData.platforms[actualIndex].genderSplit!.male > 0 ? editFormData.platforms[actualIndex].genderSplit!.male : ''}
                                                   onChange={(e) => {
                                                     const val = e.target.value
                                                     const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
-                                                    updateGenderSplit(platformIndex, 'male', cleanVal === '' ? 0 : parseInt(cleanVal))
+                                                    updateGenderSplit(actualIndex, 'male', cleanVal === '' ? 0 : parseInt(cleanVal))
                                                   }}
                                                   placeholder="45"
                                                   min={0}
@@ -2547,11 +2587,11 @@ export default function ProfilePage() {
                                                 <Input
                                                   label="Female %"
                                                   type="number"
-                                                  value={editFormData.platforms[platformIndex]?.genderSplit?.female && editFormData.platforms[platformIndex].genderSplit!.female > 0 ? editFormData.platforms[platformIndex].genderSplit!.female : ''}
+                                                  value={editFormData.platforms[actualIndex]?.genderSplit?.female && editFormData.platforms[actualIndex].genderSplit!.female > 0 ? editFormData.platforms[actualIndex].genderSplit!.female : ''}
                                                   onChange={(e) => {
                                                     const val = e.target.value
                                                     const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
-                                                    updateGenderSplit(platformIndex, 'female', cleanVal === '' ? 0 : parseInt(cleanVal))
+                                                    updateGenderSplit(actualIndex, 'female', cleanVal === '' ? 0 : parseInt(cleanVal))
                                                   }}
                                                   placeholder="55"
                                                   min={0}
@@ -2560,18 +2600,21 @@ export default function ProfilePage() {
                                                   className="bg-gray-50"
                                                 />
                                               </div>
-                                              {editFormData.platforms[platformIndex]?.genderSplit && (editFormData.platforms[platformIndex].genderSplit!.male + editFormData.platforms[platformIndex].genderSplit!.female) > 100 && (
+                                              {editFormData.platforms[actualIndex]?.genderSplit && (editFormData.platforms[actualIndex].genderSplit!.male + editFormData.platforms[actualIndex].genderSplit!.female) > 100 && (
                                                 <p className="text-xs text-red-600 mt-1">⚠️ Total &gt; 100%</p>
                                               )}
                                             </div>
                                           </div>
                                         )}
                                       </div>
-                                    </div>
-                                  )}
-                                </div>
-                              )
-                            })}
+                                            </div>
+                                          )
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              })}
                           </div>
 
                           {/* Error Message */}
