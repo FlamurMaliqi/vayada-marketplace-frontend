@@ -2623,6 +2623,32 @@ export default function ProfileCompletePage() {
                                   </label>
                                 </div>
                                 <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
+                                  {/* All Year Button */}
+                                  <div className="mb-3">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const allMonthsSelected = MONTHS.every(month => listing.availability.includes(month))
+                                        if (allMonthsSelected) {
+                                          // If all selected, deselect all
+                                          updateListing(index, 'availability', [])
+                                        } else {
+                                          // Select all months
+                                          updateListing(index, 'availability', [...MONTHS])
+                                        }
+                                      }}
+                                      className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${
+                                        MONTHS.every(month => listing.availability.includes(month))
+                                          ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
+                                          : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
+                                      }`}
+                                    >
+                                      <span className="flex items-center justify-center gap-2">
+                                        <CalendarDaysIcon className="w-5 h-5" />
+                                        {MONTHS.every(month => listing.availability.includes(month)) ? 'All Year Selected' : 'Select All Year'}
+                                      </span>
+                                    </button>
+                                  </div>
                                   <div className="grid grid-cols-6 gap-2">
                                     {MONTHS.map((month) => {
                                       const isSelected = listing.availability.includes(month)

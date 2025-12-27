@@ -3303,6 +3303,38 @@ export default function ProfilePage() {
                                                   </label>
                                                 </div>
                                                 <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
+                                                  {/* All Year Button */}
+                                                  <div className="mb-3">
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => {
+                                                        const allMonthsSelected = MONTHS.every(month => listingFormData.availability.includes(month))
+                                                        if (allMonthsSelected) {
+                                                          // If all selected, deselect all
+                                                          setListingFormData({
+                                                            ...listingFormData,
+                                                            availability: [],
+                                                          })
+                                                        } else {
+                                                          // Select all months
+                                                          setListingFormData({
+                                                            ...listingFormData,
+                                                            availability: [...MONTHS],
+                                                          })
+                                                        }
+                                                      }}
+                                                      className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${
+                                                        MONTHS.every(month => listingFormData.availability.includes(month))
+                                                          ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
+                                                          : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
+                                                      }`}
+                                                    >
+                                                      <span className="flex items-center justify-center gap-2">
+                                                        <CalendarDaysIcon className="w-5 h-5" />
+                                                        {MONTHS.every(month => listingFormData.availability.includes(month)) ? 'All Year Selected' : 'Select All Year'}
+                                                      </span>
+                                                    </button>
+                                                  </div>
                                                   <div className="grid grid-cols-6 gap-2">
                                                     {MONTHS.map((month) => {
                                                       const isSelected = listingFormData.availability.includes(month)
@@ -4396,6 +4428,38 @@ export default function ProfilePage() {
                                       </label>
                                     </div>
                                     <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
+                                      {/* All Year Button */}
+                                      <div className="mb-3">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const allMonthsSelected = MONTHS.every(month => listingFormData.availability.includes(month))
+                                            if (allMonthsSelected) {
+                                              // If all selected, deselect all
+                                              setListingFormData({
+                                                ...listingFormData,
+                                                availability: [],
+                                              })
+                                            } else {
+                                              // Select all months
+                                              setListingFormData({
+                                                ...listingFormData,
+                                                availability: [...MONTHS],
+                                              })
+                                            }
+                                          }}
+                                          className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${
+                                            MONTHS.every(month => listingFormData.availability.includes(month))
+                                              ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
+                                              : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
+                                          }`}
+                                        >
+                                          <span className="flex items-center justify-center gap-2">
+                                            <CalendarDaysIcon className="w-5 h-5" />
+                                            {MONTHS.every(month => listingFormData.availability.includes(month)) ? 'All Year Selected' : 'Select All Year'}
+                                          </span>
+                                        </button>
+                                      </div>
                                       <div className="grid grid-cols-6 gap-2">
                                         {MONTHS.map((month) => {
                                           const isSelected = listingFormData.availability.includes(month)
@@ -5389,6 +5453,38 @@ export default function ProfilePage() {
                       </label>
                     </div>
                     <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
+                      {/* All Year Button */}
+                      <div className="mb-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const allMonthsSelected = MONTHS.every(month => listingFormData.availability.includes(month))
+                            if (allMonthsSelected) {
+                              // If all selected, deselect all
+                              setListingFormData({
+                                ...listingFormData,
+                                availability: [],
+                              })
+                            } else {
+                              // Select all months
+                              setListingFormData({
+                                ...listingFormData,
+                                availability: [...MONTHS],
+                              })
+                            }
+                          }}
+                          className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${
+                            MONTHS.every(month => listingFormData.availability.includes(month))
+                              ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
+                              : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
+                          }`}
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            <CalendarDaysIcon className="w-5 h-5" />
+                            {MONTHS.every(month => listingFormData.availability.includes(month)) ? 'All Year Selected' : 'Select All Year'}
+                          </span>
+                        </button>
+                      </div>
                       <div className="grid grid-cols-6 gap-2">
                         {MONTHS.map((month) => {
                           const isSelected = listingFormData.availability.includes(month)
