@@ -72,6 +72,7 @@ export interface Hotel {
   name: string
   location: string
   description: string
+  picture?: string
   images: string[]
   accommodationType?: string // Hotel, Boutiques Hotel, City Hotel, Luxury Hotel, Apartment, Villa, Lodge
   collaborationType?: 'Kostenlos' | 'Bezahlt' // Free, Paid
@@ -223,6 +224,7 @@ export interface Collaboration {
   creatorId: string
   status: CollaborationStatus
   hasRated?: boolean // Whether the hotel has rated this completed collaboration
+  whyGreatFit?: string
   createdAt: Date
   updatedAt: Date
 }

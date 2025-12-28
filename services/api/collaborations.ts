@@ -59,6 +59,7 @@ export interface CollaborationResponse {
   creator_profile_picture: string | null
   hotel_id: string
   hotel_name: string
+  hotel_picture?: string | null
   total_followers?: number
   avg_engagement_rate?: number
   listing_id: string
@@ -199,6 +200,7 @@ export function transformCollaborationResponse(
       name: response.hotel_name,
       location: response.listing_location,
       description: '',
+      picture: response.hotel_picture || undefined,
       images: [],
       accommodationType: undefined,
       collaborationType: undefined,

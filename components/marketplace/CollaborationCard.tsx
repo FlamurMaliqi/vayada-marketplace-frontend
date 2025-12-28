@@ -103,7 +103,11 @@ export function CollaborationCard({
   }
 
   const getMessage = () => {
-    // Mock message based on collaboration
+    if (collaboration.whyGreatFit) {
+      return collaboration.whyGreatFit
+    }
+
+    // Fallback messages if whyGreatFit is empty
     if (currentUserType === 'hotel' && collaboration.creator) {
       return "I absolutely love your property! I specialize in luxury travel content and would love to showcase your stunning rooms and amenities to my engaged audience. Let's create something amazing together!"
     }
@@ -127,11 +131,32 @@ export function CollaborationCard({
     >
       <div className="flex items-start gap-4">
         {/* Profile Picture */}
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-2xl">
-          {currentUserType === 'hotel'
-            ? collaboration.creator?.name.charAt(0) || ''
-            : collaboration.hotel?.name.charAt(0) || ''
-          }
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex-shrink-0 overflow-hidden">
+          {(currentUserType === 'hotel' ? collaboration.creator?.profilePicture : (collaboration.hotel as any)?.picture) ? (
+            <img
+              src={currentUserType === 'hotel' ? collaboration.creator?.profilePicture : (collaboration.hotel as any)?.picture}
+              alt={currentUserType === 'hotel' ? collaboration.creator?.name : collaboration.hotel?.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+                e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center', 'text-white', 'font-bold', 'text-2xl')
+                if (e.currentTarget.parentElement) {
+                  const fallbackContent = document.createElement('span')
+                  fallbackContent.textContent = (currentUserType === 'hotel'
+                    ? collaboration.creator?.name.charAt(0)
+                    : collaboration.hotel?.name.charAt(0)) || ''
+                  e.currentTarget.parentElement.appendChild(fallbackContent)
+                }
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white font-bold text-2xl">
+              {currentUserType === 'hotel'
+                ? collaboration.creator?.name.charAt(0) || ''
+                : collaboration.hotel?.name.charAt(0) || ''
+              }
+            </div>
+          )}
         </div>
 
         {/* Main Content */}
