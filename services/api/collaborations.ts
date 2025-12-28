@@ -57,6 +57,7 @@ export interface CollaborationResponse {
   creator_id: string
   creator_name: string
   creator_profile_picture: string | null
+  creator_portfolio_link?: string | null
   hotel_id: string
   hotel_name: string
   hotel_picture?: string | null
@@ -197,6 +198,8 @@ export function transformCollaborationResponse(
   const hotel: Hotel | undefined = response.hotel_id
     ? {
       id: response.hotel_id,
+      hotelProfileId: response.hotel_id, // Using hotel_id as fallback
+      status: 'verified', // Default status for hotels in collaborations
       name: response.hotel_name,
       location: response.listing_location,
       description: '',
@@ -207,7 +210,7 @@ export function transformCollaborationResponse(
       availability: undefined,
       platforms: undefined,
       minFollowers: undefined,
-      targetCountries: undefined,
+      targetAudience: undefined,
       targetAgeMin: undefined,
       targetAgeMax: undefined,
       createdAt: new Date(response.created_at),
@@ -229,7 +232,7 @@ export function transformCollaborationResponse(
         averageRating: 0,
         totalReviews: 0,
       },
-      portfolioLink: undefined,
+      portfolioLink: response.creator_portfolio_link || undefined,
       shortDescription: undefined,
       phone: null,
       profilePicture: response.creator_profile_picture || undefined,
