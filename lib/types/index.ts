@@ -217,6 +217,16 @@ export interface Platform {
   genderSplit?: PlatformGenderSplit
 }
 
+export interface PlatformDeliverable {
+  type: string
+  quantity: number
+}
+
+export interface PlatformDeliverablesItem {
+  platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+  deliverables: PlatformDeliverable[]
+}
+
 // Collaboration types
 export interface Collaboration {
   id: string
@@ -225,6 +235,7 @@ export interface Collaboration {
   status: CollaborationStatus
   hasRated?: boolean // Whether the hotel has rated this completed collaboration
   whyGreatFit?: string
+  platformDeliverables?: PlatformDeliverablesItem[]
   createdAt: Date
   updatedAt: Date
 }

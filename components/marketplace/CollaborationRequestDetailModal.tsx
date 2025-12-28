@@ -125,6 +125,10 @@ export function CollaborationRequestDetailModal({
   }
 
   const getMessage = () => {
+    if (collaboration.whyGreatFit) {
+      return collaboration.whyGreatFit
+    }
+
     if (currentUserType === 'hotel' && collaboration.creator) {
       return "I absolutely love your property! I specialize in luxury travel content and would love to showcase your stunning rooms and amenities to my engaged audience."
     }
@@ -137,11 +141,6 @@ export function CollaborationRequestDetailModal({
   // Mock travel dates - in production this would come from collaboration data
   const travelDateFrom = 'Jun 15, 2024'
   const travelDateTo = 'Jun 20, 2024'
-
-  // Mock platforms to post on - in production this would come from collaboration data
-  const platformsToPostOn = currentUserType === 'hotel' && collaboration.creator?.platforms
-    ? collaboration.creator.platforms.slice(0, 2).map(p => p.name)
-    : []
 
   const otherParty = currentUserType === 'hotel' ? collaboration.creator : collaboration.hotel
   const otherPartyName = otherParty?.name || ''
@@ -173,26 +172,42 @@ export function CollaborationRequestDetailModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-y-auto my-8"
+        className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-y-auto my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
-          <h3 className="text-xl font-bold text-gray-900">Review and manage creator collaboration requests</h3>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <XMarkIcon className="w-6 h-6 text-gray-600" />
-          </button>
-        </div>
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors z-10"
+        >
+          <XMarkIcon className="w-6 h-6 text-gray-400" />
+        </button>
 
         {/* Modal Content */}
         <div className="p-6 space-y-6">
           {/* Profile Section */}
           <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-2xl">
-              {otherPartyName.charAt(0)}
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex-shrink-0 overflow-hidden">
+              {(currentUserType === 'hotel' ? collaboration.creator?.profilePicture : (collaboration.hotel as any)?.picture) ? (
+                <img
+                  src={currentUserType === 'hotel' ? collaboration.creator?.profilePicture : (collaboration.hotel as any)?.picture}
+                  alt={otherPartyName}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                    e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center', 'text-white', 'font-bold', 'text-2xl')
+                    if (e.currentTarget.parentElement) {
+                      const fallbackContent = document.createElement('span')
+                      fallbackContent.textContent = otherPartyName.charAt(0)
+                      e.currentTarget.parentElement.appendChild(fallbackContent)
+                    }
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white font-bold text-2xl">
+                  {otherPartyName.charAt(0)}
+                </div>
+              )}
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -252,17 +267,26 @@ export function CollaborationRequestDetailModal({
           )}
 
           {/* Platforms I'll Post On */}
-          {currentUserType === 'hotel' && platformsToPostOn.length > 0 && (
+          {/* Platforms I'll Post On */}
+          {currentUserType === 'hotel' && collaboration.platformDeliverables && collaboration.platformDeliverables.length > 0 && (
             <div>
-              <h5 className="font-bold text-gray-900 mb-2">Platforms I'll Post On</h5>
-              <div className="flex flex-wrap gap-2">
-                {platformsToPostOn.map((platform, index) => (
-                  <div
-                    key={index}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium"
-                  >
-                    {getPlatformIcon(platform)}
-                    <span>{platform === 'YT' ? 'YouTube' : platform}</span>
+              <h5 className="font-bold text-gray-900 mb-3">Platforms I'll Post On</h5>
+              <div className="space-y-4">
+                {collaboration.platformDeliverables.map((item, index) => (
+                  <div key={index} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="text-blue-600">
+                        {getPlatformIcon(item.platform)}
+                      </div>
+                      <span className="font-semibold text-gray-900">{item.platform}</span>
+                    </div>
+                    <div className="ml-7 space-y-1">
+                      {item.deliverables.map((deliverable, dIndex) => (
+                        <div key={dIndex} className="text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg inline-block w-fit">
+                          {deliverable.quantity}x {deliverable.type}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
