@@ -9,9 +9,9 @@ export { default as Input } from './Input'
 export type { InputProps } from './Input'
 
 export { default as Textarea } from './Textarea'
+export * from './SuccessModal'
 export type { TextareaProps } from './Textarea'
 
 export { StarRating, default as StarRatingDefault } from './StarRating'
 
 export { ErrorModal } from './ErrorModal'
-

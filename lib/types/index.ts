@@ -164,6 +164,7 @@ export interface Creator {
   name: string
   platforms: Platform[]
   audienceSize: number
+  avgEngagementRate?: number
   location: string
   portfolioLink?: string
   shortDescription?: string

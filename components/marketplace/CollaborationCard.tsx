@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Collaboration, Hotel, Creator, CollaborationStatus, UserType } from '@/lib/types'
 import { Button } from '@/components/ui'
-import { 
+import {
   CheckBadgeIcon,
   ClockIcon,
   CheckCircleIcon,
@@ -30,12 +30,12 @@ const statusConfig: Record<CollaborationStatus, { label: string; color: string; 
   cancelled: { label: 'Cancelled', color: 'bg-gray-100 text-gray-800', icon: XCircleIcon },
 }
 
-export function CollaborationCard({ 
-  collaboration, 
+export function CollaborationCard({
+  collaboration,
   onStatusUpdate,
   onRatingSubmit,
   onViewDetails,
-  currentUserType 
+  currentUserType
 }: CollaborationCardProps) {
   const [showRatingModal, setShowRatingModal] = useState(false)
   const statusInfo = statusConfig[collaboration.status]
@@ -47,7 +47,7 @@ export function CollaborationCard({
     }
   }
 
-  const shouldShowRatingPrompt = 
+  const shouldShowRatingPrompt =
     currentUserType === 'hotel' &&
     collaboration.status === 'completed' &&
     !collaboration.hasRated
@@ -57,13 +57,13 @@ export function CollaborationCard({
     const diffTime = now.getTime() - new Date(date).getTime()
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
     const diffWeeks = Math.floor(diffDays / 7)
-    
+
     if (diffDays === 0) return 'Today'
     if (diffDays === 1) return '1 day ago'
     if (diffDays < 7) return `${diffDays} days ago`
     if (diffWeeks === 1) return '1 week ago'
     if (diffWeeks < 4) return `${diffWeeks} weeks ago`
-    
+
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -71,18 +71,28 @@ export function CollaborationCard({
   }
 
   const getTotalFollowers = () => {
-    if (currentUserType === 'hotel' && collaboration.creator?.platforms) {
-      return collaboration.creator.platforms.reduce((sum, p) => sum + p.followers, 0)
+    // Use pre-aggregated stats if available
+    if (currentUserType === 'hotel' && collaboration.creator?.audienceSize && collaboration.creator.audienceSize > 0) {
+      return formatNumber(collaboration.creator.audienceSize)
     }
-    return 0
+    // Fallback to platform sum
+    if (currentUserType === 'hotel' && collaboration.creator?.platforms && collaboration.creator.platforms.length > 0) {
+      return formatNumber(collaboration.creator.platforms.reduce((sum, p) => sum + p.followers, 0))
+    }
+    return '-'
   }
 
   const getAvgEngagement = () => {
-    if (currentUserType === 'hotel' && collaboration.creator?.platforms) {
+    // Use pre-aggregated stats if available
+    if (currentUserType === 'hotel' && collaboration.creator?.avgEngagementRate !== undefined) {
+      return collaboration.creator.avgEngagementRate.toFixed(1)
+    }
+    // Fallback to platform average
+    if (currentUserType === 'hotel' && collaboration.creator?.platforms && collaboration.creator.platforms.length > 0) {
       const total = collaboration.creator.platforms.reduce((sum, p) => sum + p.engagementRate, 0)
       return (total / collaboration.creator.platforms.length).toFixed(1)
     }
-    return '0.0'
+    return '-'
   }
 
   const getHandle = () => {
@@ -110,16 +120,15 @@ export function CollaborationCard({
   }
 
   return (
-    <div 
-      className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 p-6 ${
-        collaboration.status === 'pending' && onViewDetails ? 'cursor-pointer' : ''
-      }`}
+    <div
+      className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 p-6 ${collaboration.status === 'pending' && onViewDetails ? 'cursor-pointer' : ''
+        }`}
       onClick={collaboration.status === 'pending' && onViewDetails ? handleCardClick : undefined}
     >
       <div className="flex items-start gap-4">
         {/* Profile Picture */}
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-2xl">
-          {currentUserType === 'hotel' 
+          {currentUserType === 'hotel'
             ? collaboration.creator?.name.charAt(0) || ''
             : collaboration.hotel?.name.charAt(0) || ''
           }
@@ -131,13 +140,13 @@ export function CollaborationCard({
           <div className="mb-2">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-bold text-gray-900 text-lg">
-                {currentUserType === 'hotel' 
+                {currentUserType === 'hotel'
                   ? collaboration.creator?.name || ''
                   : collaboration.hotel?.name || ''
                 }
               </h3>
               {(currentUserType === 'hotel' && collaboration.creator?.status === 'verified') ||
-               (currentUserType === 'creator' && collaboration.hotel?.status === 'verified') ? (
+                (currentUserType === 'creator' && collaboration.hotel?.status === 'verified') ? (
                 <CheckBadgeIcon className="w-5 h-5 text-primary-600 flex-shrink-0" />
               ) : null}
             </div>
@@ -149,7 +158,7 @@ export function CollaborationCard({
           {/* Stats */}
           {currentUserType === 'hotel' && collaboration.creator && (
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-              <span>{formatNumber(getTotalFollowers())} followers</span>
+              <span>{getTotalFollowers()} followers</span>
               <span>•</span>
               <span>{getAvgEngagement()}% engagement</span>
               <span>•</span>

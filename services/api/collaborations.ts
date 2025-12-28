@@ -59,6 +59,8 @@ export interface CollaborationResponse {
   creator_profile_picture: string | null
   hotel_id: string
   hotel_name: string
+  total_followers?: number
+  avg_engagement_rate?: number
   listing_id: string
   listing_name: string
   listing_location: string
@@ -93,13 +95,13 @@ export const collaborationService = {
     const queryParams = new URLSearchParams()
     if (params?.status) queryParams.append('status', params.status)
     if (params?.initiated_by) queryParams.append('initiated_by', params.initiated_by)
-    
+
     const query = queryParams.toString()
     const response = await apiClient.get<CollaborationResponse[]>(`/creators/me/collaborations${query ? `?${query}` : ''}`)
-    
+
     // Log the raw backend response
     console.log('GET /creators/me/collaborations - Raw backend response:', JSON.stringify(response, null, 2))
-    
+
     return response
   },
 
@@ -115,13 +117,13 @@ export const collaborationService = {
     if (params?.listing_id) queryParams.append('listing_id', params.listing_id)
     if (params?.status) queryParams.append('status', params.status)
     if (params?.initiated_by) queryParams.append('initiated_by', params.initiated_by)
-    
+
     const query = queryParams.toString()
     const response = await apiClient.get<CollaborationResponse[]>(`/hotels/me/collaborations${query ? `?${query}` : ''}`)
-    
+
     // Log the raw backend response
     console.log('GET /hotels/me/collaborations - Raw backend response:', JSON.stringify(response, null, 2))
-    
+
     return response
   },
 
@@ -141,7 +143,7 @@ export const collaborationService = {
     if (params?.status) queryParams.append('status', params.status)
     if (params?.hotelId) queryParams.append('hotelId', params.hotelId)
     if (params?.creatorId) queryParams.append('creatorId', params.creatorId)
-    
+
     const query = queryParams.toString()
     return apiClient.get<PaginatedResponse<Collaboration>>(`/collaborations${query ? `?${query}` : ''}`)
   },
@@ -193,45 +195,46 @@ export function transformCollaborationResponse(
   // Create hotel object from response
   const hotel: Hotel | undefined = response.hotel_id
     ? {
-        id: response.hotel_id,
-        name: response.hotel_name,
-        location: response.listing_location,
-        description: '',
-        images: [],
-        accommodationType: undefined,
-        collaborationType: undefined,
-        availability: undefined,
-        platforms: undefined,
-        minFollowers: undefined,
-        targetCountries: undefined,
-        targetAgeMin: undefined,
-        targetAgeMax: undefined,
-        createdAt: new Date(response.created_at),
-        updatedAt: new Date(response.updated_at),
-      }
+      id: response.hotel_id,
+      name: response.hotel_name,
+      location: response.listing_location,
+      description: '',
+      images: [],
+      accommodationType: undefined,
+      collaborationType: undefined,
+      availability: undefined,
+      platforms: undefined,
+      minFollowers: undefined,
+      targetCountries: undefined,
+      targetAgeMin: undefined,
+      targetAgeMax: undefined,
+      createdAt: new Date(response.created_at),
+      updatedAt: new Date(response.updated_at),
+    }
     : undefined
 
   // Create creator object from response
   const creator: Creator | undefined = response.creator_id
     ? {
-        id: response.creator_id,
-        email: '',
-        name: response.creator_name,
-        location: '',
-        platforms: [],
-        audienceSize: 0,
-        rating: {
-          averageRating: 0,
-          totalReviews: 0,
-        },
-        portfolioLink: undefined,
-        shortDescription: undefined,
-        phone: null,
-        profilePicture: response.creator_profile_picture || undefined,
-        status: 'verified' as const,
-        createdAt: new Date(response.created_at),
-        updatedAt: new Date(response.updated_at),
-      }
+      id: response.creator_id,
+      email: '',
+      name: response.creator_name,
+      location: '',
+      platforms: [],
+      audienceSize: response.total_followers ?? 0,
+      avgEngagementRate: response.avg_engagement_rate ?? undefined,
+      rating: {
+        averageRating: 0,
+        totalReviews: 0,
+      },
+      portfolioLink: undefined,
+      shortDescription: undefined,
+      phone: null,
+      profilePicture: response.creator_profile_picture || undefined,
+      status: 'verified' as const,
+      createdAt: new Date(response.created_at),
+      updatedAt: new Date(response.updated_at),
+    }
     : undefined
 
   return {
