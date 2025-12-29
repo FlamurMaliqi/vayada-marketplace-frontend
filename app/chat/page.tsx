@@ -7,8 +7,20 @@ import {
     MagnifyingGlassIcon,
     CheckIcon,
     XMarkIcon,
-    ChatBubbleOvalLeftEllipsisIcon
+    ChatBubbleOvalLeftEllipsisIcon,
+    PaperClipIcon,
+    PhotoIcon,
+    FaceSmileIcon,
+    PaperAirplaneIcon,
+    ArrowTopRightOnSquareIcon,
+    PencilSquareIcon,
+    CalendarIcon,
+    DocumentTextIcon,
+    MapPinIcon,
+    UserIcon,
+    CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import SuggestChangesModal from './SuggestChangesModal'
 
 // Social Media Icons
 const InstagramIcon = ({ className = "w-3 h-3" }) => (
@@ -29,7 +41,7 @@ const TikTokIcon = ({ className = "w-3 h-3" }) => (
     </svg>
 )
 
-// Mock Data with Platforms
+// Mock Data
 const PENDING_REQUESTS = [
     {
         id: 1,
@@ -93,7 +105,40 @@ const ACTIVE_CHATS = [
     }
 ]
 
-// Helper to get icon
+// Mock Messages for Chat Interface
+const MOCK_MESSAGES: Record<number, { id: number, sender: 'me' | 'them', content: string, time: string, date?: string }[]> = {
+    1: [
+        { id: 1, sender: 'them', content: "Hi! I'm excited about the collaboration opportunity at your property.", time: '03:21', date: 'December 29, 2025' },
+        { id: 2, sender: 'me', content: "Welcome Sarah! We'd love to have you. Let's discuss the details of your stay and content expectations.", time: '03:27' },
+        { id: 3, sender: 'them', content: "Perfect! I was thinking 3 Instagram Reels and 10 high-quality photos showcasing the amenities and views.", time: '03:34' },
+        { id: 4, sender: 'me', content: "That sounds great! I'll have the content ready by Friday.", time: '04:21' }
+    ],
+    2: [
+        { id: 1, sender: 'them', content: "Can we discuss the deliverables for the collaboration?", time: '09:00', date: 'Yesterday' },
+        { id: 2, sender: 'me', content: "Of course! What did you have in mind?", time: '09:15' }
+    ]
+}
+
+const COLLABORATION_DETAILS = {
+    1: {
+        creator: {
+            followers: '125.0K',
+            engagement: '4.8%',
+            platforms: ['instagram', 'youtube']
+        },
+        stay: {
+            checkIn: 'Jan 15, 2025',
+            checkOut: 'Jan 22, 2025'
+        },
+        deliverables: [
+            { id: 1, type: 'Instagram Reels', count: 3 },
+            { id: 2, type: 'High-Quality Photos', count: 10 },
+            { id: 3, type: 'Story Mentions', count: 5 }
+        ]
+    }
+}
+
+// Components
 const PlatformIcon = ({ platform, className }: { platform?: string, className?: string }) => {
     if (platform === 'instagram') return <InstagramIcon className={className} />
     if (platform === 'youtube') return <YouTubeIcon className={className} />
@@ -101,81 +146,92 @@ const PlatformIcon = ({ platform, className }: { platform?: string, className?: 
     return null
 }
 
+const PlatformBadge = ({ platform }: { platform: string }) => (
+    <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 border border-gray-200 rounded-md">
+        <PlatformIcon platform={platform} className="w-3.5 h-3.5 text-gray-500" />
+        <span className="text-[10px] font-medium text-gray-700 capitalize">{platform}</span>
+    </div>
+)
+
 function ChatPageContent() {
     const { isCollapsed } = useSidebar()
     const [activeTab, setActiveTab] = useState<'Active' | 'Archived'>('Active')
+    const [selectedChatId, setSelectedChatId] = useState<number | null>(null)
+    const [completedDeliverables, setCompletedDeliverables] = useState<number[]>([1]) // Mock initial state
+    const [messageInput, setMessageInput] = useState('')
+    const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false)
+
+    const activeChat = selectedChatId ? ACTIVE_CHATS.find(c => c.id === selectedChatId) : null
+    const messages = selectedChatId ? MOCK_MESSAGES[selectedChatId] : []
+    const details = selectedChatId ? COLLABORATION_DETAILS[1] : null // Mock details for all
+
+    // Calculate progress
+    const totalDeliverables = details?.deliverables.length || 0
+    const completedCount = completedDeliverables.length
+    const progressPercentage = totalDeliverables > 0 ? (completedCount / totalDeliverables) * 100 : 0
+
+    const toggleDeliverable = (id: number) => {
+        setCompletedDeliverables(prev =>
+            prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id]
+        )
+    }
+
+    const handleSendMessage = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!messageInput.trim()) return
+        // In a real app, you would add the message to the state here
+        setMessageInput('')
+    }
 
     return (
         <main className="min-h-screen bg-white flex flex-col">
             <AuthenticatedNavigation />
 
-            {/* Main Container - adjusting left padding based on sidebar state */}
+            {/* Main Container - Fixed positioning to guarantee viewport height adherence */}
             <div
-                className={`flex-1 flex transition-all duration-300 pt-16 ${isCollapsed ? 'md:pl-16' : 'md:pl-56'}`}
-                style={{ height: '100vh' }}
+                className={`fixed top-16 bottom-0 left-0 right-0 flex transition-all duration-300 ${isCollapsed ? 'md:pl-16' : 'md:pl-56'} z-0`}
             >
-                {/* Left Chat Sidebar */}
+                {/* COLUMN 1: LEFT SIDEBAR */}
                 <div className="w-80 md:w-96 border-r border-gray-200 flex flex-col h-full bg-white flex-shrink-0">
-
-                    {/* Search Header */}
+                    {/* Search */}
                     <div className="p-4 border-b border-gray-100">
                         <div className="relative">
                             <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            />
+                            <input type="text" placeholder="Search..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
                         </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        {/* New Applications Section */}
-                        <div className="border-b border-gray-100">
+                        {/* New Applications */}
+                        <div className="border-b-4 border-gray-50">
                             <div className="px-4 py-3 flex items-center justify-between bg-gray-50/50 border-b border-gray-200">
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 rounded-full bg-blue-600"></div>
                                     <span className="text-xs font-bold text-blue-600 tracking-wide uppercase">New Applications</span>
                                 </div>
-                                <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                    {PENDING_REQUESTS.length} pending
-                                </span>
+                                <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{PENDING_REQUESTS.length} pending</span>
                             </div>
-
                             <div className="divide-y divide-gray-200">
                                 {PENDING_REQUESTS.map((request) => (
                                     <div key={request.id} className="p-3 hover:bg-gray-50 transition-colors cursor-pointer group">
                                         <div className="flex items-center gap-3">
-                                            {/* Avatar */}
-                                            <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold ${request.avatarColor}`}>
-                                                {request.initials}
-                                            </div>
-
-                                            {/* Content */}
+                                            <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold ${request.avatarColor}`}>{request.initials}</div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-baseline gap-2 mb-0.5">
                                                     <h4 className="text-sm font-semibold text-gray-900 leading-none">{request.name}</h4>
                                                     <span className="text-[10px] text-gray-400">{request.time}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-gray-500 font-medium leading-none">
-                                                    <span>{request.followers}</span>
-                                                    <span>•</span>
-                                                    <span>{request.engagement}</span>
+                                                    <span>{request.followers}</span><span>•</span><span>{request.engagement}</span>
                                                     <div className="flex items-center gap-1">
                                                         <PlatformIcon platform={request.followersPlatform} className="w-3 h-3 text-gray-400" />
                                                         <PlatformIcon platform={request.engagementPlatform} className="w-3 h-3 text-gray-400" />
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            {/* Actions */}
                                             <div className="flex items-center gap-2">
-                                                <button className="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors shadow-sm" title="Accept">
-                                                    <CheckIcon className="w-5 h-5" />
-                                                </button>
-                                                <button className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 rounded-xl transition-colors shadow-sm" title="Decline">
-                                                    <XMarkIcon className="w-5 h-5" />
-                                                </button>
+                                                <button className="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors shadow-sm" title="Accept"><CheckIcon className="w-5 h-5" /></button>
+                                                <button className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 rounded-xl transition-colors shadow-sm" title="Decline"><XMarkIcon className="w-5 h-5" /></button>
                                             </div>
                                         </div>
                                     </div>
@@ -185,58 +241,29 @@ function ChatPageContent() {
 
                         {/* Tabs */}
                         <div className="flex items-center border-b border-gray-200 sticky top-0 bg-white z-10">
-                            <button
-                                onClick={() => setActiveTab('Active')}
-                                className={`flex-1 py-3 text-sm font-medium text-center relative ${activeTab === 'Active' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'}`}
-                            >
-                                Active
-                                {activeTab === 'Active' && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('Archived')}
-                                className={`flex-1 py-3 text-sm font-medium text-center relative ${activeTab === 'Archived' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'}`}
-                            >
-                                Archived
-                                {activeTab === 'Archived' && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
-                                )}
-                            </button>
+                            <button onClick={() => setActiveTab('Active')} className={`flex-1 py-3 text-sm font-medium text-center relative ${activeTab === 'Active' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'}`}>Active{activeTab === 'Active' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}</button>
+                            <button onClick={() => setActiveTab('Archived')} className={`flex-1 py-3 text-sm font-medium text-center relative ${activeTab === 'Archived' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'}`}>Archived{activeTab === 'Archived' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}</button>
                         </div>
 
                         {/* Chats List */}
                         <div className="divide-y divide-gray-50">
                             {activeTab === 'Active' && ACTIVE_CHATS.map((chat) => (
-                                <div key={chat.id} className="p-4 hover:bg-blue-50/50 cursor-pointer transition-colors relative">
+                                <div key={chat.id} onClick={() => setSelectedChatId(chat.id)} className={`p-4 hover:bg-blue-50/50 cursor-pointer transition-colors relative ${selectedChatId === chat.id ? 'bg-blue-50/80 border-r-2 border-blue-600' : ''}`}>
                                     <div className="flex gap-3">
                                         <div className="relative">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${chat.avatarColor}`}>
-                                                {chat.initials}
-                                            </div>
-                                            {chat.unread > 0 && (
-                                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
-                                                    {chat.unread}
-                                                </div>
-                                            )}
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${chat.avatarColor}`}>{chat.initials}</div>
+                                            {chat.unread > 0 && <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">{chat.unread}</div>}
                                         </div>
-
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between mb-0.5">
                                                 <h4 className="text-sm font-semibold text-gray-900 truncate">{chat.name}</h4>
                                                 <span className="text-[10px] text-gray-400 flex-shrink-0">{chat.time}</span>
                                             </div>
-
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="text-xs text-gray-500 truncate">{chat.handle}</span>
-                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${chat.statusColor}`}>
-                                                    {chat.status}
-                                                </span>
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${chat.statusColor}`}>{chat.status}</span>
                                             </div>
-
-                                            <p className={`text-sm truncate ${chat.unread > 0 ? 'font-medium text-gray-900' : 'text-gray-500'}`}>
-                                                {chat.message}
-                                            </p>
+                                            <p className={`text-sm truncate ${chat.unread > 0 ? 'font-medium text-gray-900' : 'text-gray-500'}`}>{chat.message}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -251,21 +278,227 @@ function ChatPageContent() {
                     </div>
                 </div>
 
-                {/* Right Chat Area - Empty State */}
-                <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 p-8 text-center">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 shadow-sm">
-                        <ChatBubbleOvalLeftEllipsisIcon className="w-8 h-8 text-gray-400" />
+                {/* MIDDLE & RIGHT COLUMNS */}
+                {selectedChatId && activeChat && details ? (
+                    <>
+                        {/* COLUMN 2: CHAT AREA (Flexible Width) */}
+                        <div className="flex-1 flex flex-col h-full bg-white relative border-r border-gray-200">
+                            {/* Chat Header */}
+                            <div className="h-[72px] border-b border-gray-100 flex items-center justify-between px-6 bg-white flex-shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${activeChat.avatarColor}`}>{activeChat.initials}</div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-gray-900">{activeChat.name}</h3>
+                                            <span className="text-xs text-gray-500 font-medium">{activeChat.handle}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs">
+                                            <span className="text-gray-400">Status:</span>
+                                            <span className="text-gray-600">{activeChat.status}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                                    Details <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+
+                            {/* Messages */}
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
+                                {messages.map((msg, idx) => (
+                                    <React.Fragment key={msg.id}>
+                                        {msg.date && <div className="flex justify-center my-6"><span className="bg-gray-100/80 text-gray-500 text-[10px] px-3 py-1 rounded-full font-medium">{msg.date}</span></div>}
+                                        <div className={`flex w-full ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className="max-w-[70%]">
+                                                <div className="flex items-end gap-2">
+                                                    {msg.sender === 'them' && <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${activeChat.avatarColor}`}>{activeChat.initials}</div>}
+                                                    <div>
+                                                        <div className={`p-4 rounded-2xl text-sm leading-relaxed ${msg.sender === 'me' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border border-gray-100 text-gray-700 rounded-bl-none shadow-sm'}`}>{msg.content}</div>
+                                                        <div className={`text-[10px] text-gray-400 mt-1 ${msg.sender === 'me' ? 'text-right' : 'text-left'}`}>{msg.time} {msg.sender === 'me' && '✓'}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </React.Fragment>
+                                ))}
+                            </div>
+
+                            {/* Fixed Footer: Message Input */}
+                            <div className="p-4 bg-white border-t border-gray-100 flex-shrink-0">
+                                <form onSubmit={handleSendMessage} className="flex items-center gap-3">
+                                    <div className="flex gap-2 text-gray-400">
+                                        <button type="button" className="p-2 hover:bg-gray-50 rounded-full transition-colors"><PaperClipIcon className="w-5 h-5" /></button>
+                                        <button type="button" className="p-2 hover:bg-gray-50 rounded-full transition-colors"><PhotoIcon className="w-5 h-5" /></button>
+                                    </div>
+                                    <div className="flex-1 relative">
+                                        <input type="text" placeholder="Type a message..." value={messageInput} onChange={(e) => setMessageInput(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-full pl-4 pr-10 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                                        <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 rounded-full transition-colors"><FaceSmileIcon className="w-5 h-5" /></button>
+                                    </div>
+                                    <button type="submit" disabled={!messageInput.trim()} className="p-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors shadow-sm"><PaperAirplaneIcon className="w-5 h-5" /></button>
+                                </form>
+                            </div>
+                        </div>
+
+                        {/* COLUMN 3: DETAILS PANEL (Fixed Width) */}
+                        <div className="w-[350px] flex flex-col h-full bg-white flex-shrink-0 border-l border-gray-100">
+                            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                                <div className="p-6 space-y-8">
+                                    {/* Header */}
+                                    <div>
+                                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Collaboration Details</h3>
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold ${activeChat.avatarColor}`}>{activeChat.initials}</div>
+                                            <div>
+                                                <h2 className="font-bold text-gray-900">{activeChat.name}</h2>
+                                                <a href="#" className="text-xs text-blue-600 hover:underline">{activeChat.handle}</a>
+                                            </div>
+                                            <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full font-medium ${activeChat.statusColor}`}>{activeChat.status}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Creator Stats */}
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <UserIcon className="w-4 h-4 text-gray-400" />
+                                            <h4 className="text-xs font-bold text-gray-900 uppercase">Creator Stats</h4>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4 mb-3">
+                                            <div>
+                                                <div className="text-[10px] text-gray-500 uppercase">Followers</div>
+                                                <div className="text-sm font-bold text-gray-900">{details.creator.followers}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] text-gray-500 uppercase">Engagement</div>
+                                                <div className="text-sm font-bold text-gray-900">{details.creator.engagement}</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {details.creator.platforms.map(p => <PlatformBadge key={p} platform={p} />)}
+                                        </div>
+                                    </div>
+
+                                    {/* Stay Details */}
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <CalendarIcon className="w-4 h-4 text-gray-400" />
+                                            <h4 className="text-xs font-bold text-gray-900 uppercase">Stay Details</h4>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <div className="text-[10px] text-gray-500 uppercase">Check-in</div>
+                                                <div className="text-sm font-bold text-gray-900">{details.stay.checkIn}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] text-gray-500 uppercase">Check-out</div>
+                                                <div className="text-sm font-bold text-gray-900">{details.stay.checkOut}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Deliverables */}
+                                    <div>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <DocumentTextIcon className="w-4 h-4 text-gray-400" />
+                                                <h4 className="text-xs font-bold text-gray-900 uppercase">Deliverables</h4>
+                                            </div>
+                                            <span className="text-[10px] text-gray-400">{completedCount}/{totalDeliverables}</span>
+                                        </div>
+
+                                        {/* Progress Bar */}
+                                        <div className="w-full bg-gray-100 rounded-full h-1.5 mb-4">
+                                            <div
+                                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                                style={{ width: `${progressPercentage}%` }}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            {details.deliverables.map(d => {
+                                                const isCompleted = completedDeliverables.includes(d.id)
+                                                return (
+                                                    <div
+                                                        key={d.id}
+                                                        onClick={() => toggleDeliverable(d.id)}
+                                                        className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer group ${isCompleted
+                                                            ? 'bg-blue-50/30 border-blue-100'
+                                                            : 'bg-white border-gray-100 hover:border-blue-200'
+                                                            }`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isCompleted
+                                                                ? 'bg-blue-600 text-white'
+                                                                : 'border-2 border-blue-600 bg-white'
+                                                                }`}>
+                                                                {isCompleted && <CheckIcon className="w-3.5 h-3.5" />}
+                                                            </div>
+                                                            <span className={`text-sm select-none ${isCompleted
+                                                                ? 'text-gray-400 line-through decoration-gray-400'
+                                                                : 'text-gray-700 font-medium'
+                                                                }`}>
+                                                                {d.type}
+                                                            </span>
+                                                        </div>
+                                                        <span className={`text-xs font-medium px-2 py-0.5 rounded border transition-colors ${isCompleted
+                                                            ? 'bg-gray-100 text-gray-400 border-transparent'
+                                                            : 'bg-gray-50 text-gray-600 border-gray-200 group-hover:border-blue-100'
+                                                            }`}>
+                                                            × {d.count}
+                                                        </span>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Fixed Footer: Actions */}
+                            <div className="p-4 bg-white border-t border-gray-100 flex-shrink-0 space-y-2">
+                                <button className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
+                                    <CheckIcon className="w-4 h-4" /> Accept Collaboration
+                                </button>
+                                <button
+                                    onClick={() => setIsSuggestModalOpen(true)}
+                                    className="w-full py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    <PencilSquareIcon className="w-4 h-4" /> Suggest Changes
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    // Empty State (Full Width of remaining space)
+                    <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 p-8 text-center">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 shadow-sm">
+                            <ChatBubbleOvalLeftEllipsisIcon className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-2">No conversation selected</h2>
+                        <p className="text-sm text-gray-500 max-w-sm mb-6">
+                            Select a conversation from the list to start chatting, or check your pending requests to begin new collaborations.
+                        </p>
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                            <ChatBubbleOvalLeftEllipsisIcon className="w-4 h-4" />
+                            View Pending Requests
+                        </button>
                     </div>
-                    <h2 className="text-lg font-semibold text-gray-900 mb-2">No conversation selected</h2>
-                    <p className="text-sm text-gray-500 max-w-sm mb-6">
-                        Select a conversation from the list to start chatting, or check your pending requests to begin new collaborations.
-                    </p>
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
-                        <ChatBubbleOvalLeftEllipsisIcon className="w-4 h-4" />
-                        View Pending Requests
-                    </button>
-                </div>
+                )}
             </div>
+
+            {/* Suggest Changes Modal */}
+            {activeChat && details && (
+                <SuggestChangesModal
+                    isOpen={isSuggestModalOpen}
+                    onClose={() => setIsSuggestModalOpen(false)}
+                    initialCheckIn={details.stay.checkIn}
+                    initialCheckOut={details.stay.checkOut}
+                    initialDeliverables={details.deliverables}
+                    onSubmit={(data: any) => {
+                        console.log('Counter-offer:', data)
+                        // Here you would typically send the data to the backend
+                        setIsSuggestModalOpen(false)
+                    }}
+                />
+            )}
         </main>
     )
 }
