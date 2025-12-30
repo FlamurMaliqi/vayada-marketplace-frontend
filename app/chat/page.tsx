@@ -460,7 +460,7 @@ function ChatPageContent() {
                             {/* Fixed Footer: Actions */}
                             <div className="p-4 bg-white border-t border-gray-100 flex-shrink-0 space-y-2">
                                 <button className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
-                                    <CheckIcon className="w-4 h-4" /> Accept Collaboration
+                                    <CheckIcon className="w-4 h-4" /> Confirm Collaboration
                                 </button>
                                 <button
                                     onClick={() => setIsSuggestModalOpen(true)}

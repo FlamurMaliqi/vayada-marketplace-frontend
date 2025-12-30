@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import type { CollaborationResponse } from '@/services/api/collaborations'
+import { CalendarEventModal } from './CalendarEventModal'
 
 const MONTHS = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -17,13 +19,14 @@ const DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 interface YearlyCalendarProps {
-    collaborations?: any[]
+    collaborations?: CollaborationResponse[]
 }
 
 export function YearlyCalendar({ collaborations = [] }: YearlyCalendarProps) {
     const [year, setYear] = useState(2026)
     const [month, setMonth] = useState(0) // 0-11
     const [view, setView] = useState<'month' | 'year'>('year')
+    const [selectedCollaboration, setSelectedCollaboration] = useState<CollaborationResponse | null>(null)
 
     const getDaysInMonth = (monthIndex: number, year: number) => {
         return new Date(year, monthIndex + 1, 0).getDate()
@@ -132,25 +135,22 @@ export function YearlyCalendar({ collaborations = [] }: YearlyCalendarProps) {
                 <div className="flex flex-wrap items-center gap-6 text-xs font-medium text-gray-600">
                     <span className="text-gray-400">Status:</span>
                     <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-orange-400"></span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#64748b]"></span>
                         <span>Negotiating</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
                         <span>Staying</span>
                     </div>
+
                     <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-                        <span>Awaiting Assets</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#0fb981]"></span>
                         <span>Campaign Active</span>
                     </div>
                 </div>
 
                 <button className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-                    <PlusIcon className="w-4 h-4" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus w-4 h-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg>
                     Add External Creator
                 </button>
             </div>
@@ -183,15 +183,93 @@ export function YearlyCalendar({ collaborations = [] }: YearlyCalendarProps) {
                                         <div className="grid divide-x divide-gray-50 border-r border-gray-50" style={{ gridTemplateColumns: 'repeat(31, minmax(0, 1fr))' }}>
                                             {DAYS.map(day => {
                                                 const isValidDate = day <= daysInMonth
+
+                                                // Create date for this cell (local time)
+                                                const cellDate = new Date(year, monthIndex, day)
+
+                                                // Format as YYYY-MM-DD for comparison
+                                                const yearStr = cellDate.getFullYear()
+                                                const monthStr = String(cellDate.getMonth() + 1).padStart(2, '0')
+                                                const dayStr = String(cellDate.getDate()).padStart(2, '0')
+                                                const currentDateStr = `${yearStr}-${monthStr}-${dayStr}`
+
+                                                // Find active collaboration for this day
+                                                const activeCollab = isValidDate ? collaborations.find(c => {
+                                                    // Get date strings (assuming YYYY-MM-DD or ISO)
+                                                    let startStr = c.travel_date_from || c.preferred_date_from
+                                                    let endStr = c.travel_date_to || c.preferred_date_to
+
+                                                    if (!startStr || !endStr) return false
+
+                                                    // Extract YYYY-MM-DD part
+                                                    startStr = startStr.split('T')[0]
+                                                    endStr = endStr.split('T')[0]
+
+                                                    return currentDateStr >= startStr && currentDateStr <= endStr
+                                                }) : null
+
+                                                // Determine visuals
+                                                let isStart = false
+                                                let isEnd = false
+                                                let colorClass = ''
+
+                                                if (activeCollab) {
+                                                    let startStr = activeCollab.travel_date_from || activeCollab.preferred_date_from
+                                                    let endStr = activeCollab.travel_date_to || activeCollab.preferred_date_to
+
+                                                    if (startStr) startStr = startStr.split('T')[0]
+                                                    if (endStr) endStr = endStr.split('T')[0]
+
+                                                    isStart = currentDateStr === startStr
+                                                    isEnd = currentDateStr === endStr
+
+                                                    if (activeCollab.status === 'pending') colorClass = 'bg-[#64748b]'
+                                                    else if (activeCollab.status === 'accepted') colorClass = 'bg-blue-500'
+                                                    else if (activeCollab.status === 'completed') colorClass = 'bg-[#0fb981]'
+                                                    else colorClass = 'bg-gray-400'
+                                                }
+
                                                 return (
                                                     <div
                                                         key={day}
                                                         className={`h-12 relative flex items-center justify-center transition-colors
                               ${!isValidDate ? 'bg-gray-50/30 pattern-diagonal-lines' : ''}
-                              ${isValidDate ? 'hover:bg-gray-100/50' : ''}
+                              ${isValidDate && !activeCollab ? 'hover:bg-gray-100/50' : ''}
                             `}
+                                                        style={{ zIndex: isStart ? 10 : 1 }}
                                                     >
                                                         {!isValidDate && <div className="w-full h-full bg-gray-50 opacity-50" />}
+
+                                                        {activeCollab && (
+                                                            <div
+                                                                onClick={() => setSelectedCollaboration(activeCollab)}
+                                                                className={`h-8 w-full flex items-center px-2 cursor-pointer hover:brightness-95 transition-all
+                                                                    ${colorClass} text-white shadow-sm shrink-0
+                                                                    ${isStart ? 'rounded-l-md ml-1' : ''}
+                                                                    ${isEnd ? 'rounded-r-md mr-1' : ''}
+                                                                    ${!isStart && !isEnd ? 'rounded-none min-w-[calc(100%+1px)] -ml-[1px]' : ''} 
+                                                                    ${isStart ? 'overflow-visible' : 'overflow-hidden'}
+                                                                `}
+                                                                title={`${activeCollab.creator_name} - ${activeCollab.status}`}
+                                                            >
+                                                                {isStart && (
+                                                                    <div className="flex items-center gap-2 min-w-max relative z-20">
+                                                                        {activeCollab.creator_profile_picture ? (
+                                                                            <img
+                                                                                src={activeCollab.creator_profile_picture}
+                                                                                alt=""
+                                                                                className="w-5 h-5 rounded-full border border-white/30 object-cover"
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[8px] font-bold">
+                                                                                {activeCollab.creator_name.charAt(0)}
+                                                                            </div>
+                                                                        )}
+                                                                        <span className="text-xs font-medium whitespace-nowrap drop-shadow-sm">{activeCollab.creator_name}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )
                                             })}
@@ -228,6 +306,12 @@ export function YearlyCalendar({ collaborations = [] }: YearlyCalendarProps) {
                     No collaborations found for {view === 'year' ? year : `${MONTHS[month]} ${year}`}
                 </div>
             )}
+
+            <CalendarEventModal
+                isOpen={!!selectedCollaboration}
+                onClose={() => setSelectedCollaboration(null)}
+                collaboration={selectedCollaboration}
+            />
         </div>
     )
 }
