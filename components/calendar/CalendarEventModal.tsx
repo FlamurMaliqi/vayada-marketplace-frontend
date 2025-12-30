@@ -7,9 +7,10 @@ interface CalendarEventModalProps {
     isOpen: boolean
     onClose: () => void
     collaboration: CollaborationResponse | null
+    onViewDetails: (id: string) => void
 }
 
-export function CalendarEventModal({ isOpen, onClose, collaboration }: CalendarEventModalProps) {
+export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetails }: CalendarEventModalProps) {
     if (!isOpen || !collaboration) return null
 
     // Format dates
@@ -158,7 +159,10 @@ export function CalendarEventModal({ isOpen, onClose, collaboration }: CalendarE
                                 <button
                                     type="button"
                                     className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                                    onClick={onClose}
+                                    onClick={() => {
+                                        onViewDetails(collaboration.id)
+                                        onClose()
+                                    }}
                                 >
                                     View Profile
                                     <ArrowTopRightOnSquareIcon className="w-4 h-4 text-gray-400" />

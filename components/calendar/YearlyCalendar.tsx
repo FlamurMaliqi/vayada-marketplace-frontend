@@ -20,9 +20,10 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 interface YearlyCalendarProps {
     collaborations?: CollaborationResponse[]
+    onViewDetails: (id: string) => void
 }
 
-export function YearlyCalendar({ collaborations = [] }: YearlyCalendarProps) {
+export function YearlyCalendar({ collaborations = [], onViewDetails }: YearlyCalendarProps) {
     const [year, setYear] = useState(2026)
     const [month, setMonth] = useState(0) // 0-11
     const [view, setView] = useState<'month' | 'year'>('year')
@@ -311,6 +312,7 @@ export function YearlyCalendar({ collaborations = [] }: YearlyCalendarProps) {
                 isOpen={!!selectedCollaboration}
                 onClose={() => setSelectedCollaboration(null)}
                 collaboration={selectedCollaboration}
+                onViewDetails={onViewDetails}
             />
         </div>
     )
