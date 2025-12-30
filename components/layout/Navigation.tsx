@@ -10,7 +10,7 @@ export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   // Filter to only show "For Properties" and "For Creators" in center
-  const centerLinks = NAVIGATION_LINKS.filter(link => 
+  const centerLinks = NAVIGATION_LINKS.filter(link =>
     link.label === 'For Properties' || link.label === 'For Creators'
   )
 
@@ -21,7 +21,7 @@ export default function Navigation() {
         <div className="absolute left-[10vw] flex items-center">
           <a href={ROUTES.HOME} className="flex items-center gap-2">
             <Image
-              src="/vayada-logo.svg"
+              src="/vayada-logo.png"
               alt="vayada logo"
               width={32}
               height={32}
@@ -30,7 +30,7 @@ export default function Navigation() {
             <span className="text-xl font-normal text-black lowercase">vayada</span>
           </a>
         </div>
-        
+
         {/* Center Links */}
         <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
           {centerLinks.map((link) => (
@@ -43,10 +43,10 @@ export default function Navigation() {
             </a>
           ))}
         </div>
-        
+
         {/* Right Side - Contact us and Sign up */}
         <div className="absolute right-[10vw] hidden md:flex items-center gap-4">
-          <a 
+          <a
             href={ROUTES.CONTACT}
             className="text-gray-500 hover:text-primary-600 transition-colors font-medium border-[0.2px] border-black-300David Matthaei rounded-2xl px-4 py-2"
           >

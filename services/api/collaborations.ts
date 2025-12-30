@@ -46,6 +46,11 @@ export interface UpdateCollaborationTermsRequest {
   }>
 }
 
+export interface CollaborationResponseRequest {
+  status: 'accepted' | 'declined'
+  response_message?: string
+}
+
 // Hotel invitation request
 export interface CreateHotelCollaborationRequest {
   initiator_type: 'hotel'
@@ -69,6 +74,7 @@ export type CreateCollaborationRequest = CreateCreatorCollaborationRequest | Cre
 export interface CollaborationResponse {
   id: string
   initiator_type: 'creator' | 'hotel'
+  is_initiator: boolean
   status: 'pending' | 'accepted' | 'declined' | 'completed' | 'cancelled'
   creator_id: string
   creator_name: string
@@ -133,7 +139,6 @@ export interface CollaborationResponse {
 export type DetailedCollaboration = Collaboration & {
   hotel?: Hotel
   creator?: Creator
-  initiatorType?: 'creator' | 'hotel'
   listingId?: string
   listingName?: string
   listingLocation?: string
@@ -223,11 +228,16 @@ export const collaborationService = {
     return response
   },
 
-  /**
-   * Get hotel collaboration details by ID
-   */
   getHotelCollaborationDetails: async (id: string): Promise<CollaborationResponse> => {
     const response = await apiClient.get<CollaborationResponse>(`/hotels/me/collaborations/${id}`)
+    return response
+  },
+
+  /**
+   * Get creator collaboration details by ID
+   */
+  getCreatorCollaborationDetails: async (id: string): Promise<CollaborationResponse> => {
+    const response = await apiClient.get<CollaborationResponse>(`/creators/me/collaborations/${id}`)
     return response
   },
 
@@ -334,6 +344,13 @@ export const collaborationService = {
   updateTerms: async (collaborationId: string, data: UpdateCollaborationTermsRequest): Promise<CollaborationResponse> => {
     return apiClient.put<CollaborationResponse>(`/collaborations/${collaborationId}/terms`, data)
   },
+
+  /**
+   * Accept or Decline a collaboration request
+   */
+  respondToCollaboration: async (collaborationId: string, data: CollaborationResponseRequest): Promise<CollaborationResponse> => {
+    return apiClient.post<CollaborationResponse>(`/collaborations/${collaborationId}/respond`, data)
+  },
 }
 
 /**
@@ -418,8 +435,9 @@ export function transformCollaborationResponse(
     updatedAt: new Date(response.updated_at),
     hotel,
     creator,
+    is_initiator: response.is_initiator,
     // Store additional backend fields for use in components
-    initiatorType: response.initiator_type,
+    initiator_type: response.initiator_type,
     listingId: response.listing_id,
     listingName: response.listing_name,
     listingLocation: response.listing_location,

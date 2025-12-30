@@ -237,6 +237,8 @@ export interface Collaboration {
   hotelId: string
   creatorId: string
   status: CollaborationStatus
+  initiator_type: UserType
+  is_initiator: boolean
   hasRated?: boolean // Whether the hotel has rated this completed collaboration
   whyGreatFit?: string
   platformDeliverables?: PlatformDeliverablesItem[]

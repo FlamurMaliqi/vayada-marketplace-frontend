@@ -208,22 +208,38 @@ export function CollaborationCard({
         {/* Action Buttons - Only for pending */}
         {onStatusUpdate && collaboration.status === 'pending' && (
           <div className="flex gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="primary"
-              size="md"
-              className="min-w-[100px]"
-              onClick={() => onStatusUpdate(collaboration.id, 'accepted')}
-            >
-              Accept
-            </Button>
-            <Button
-              variant="outline"
-              size="md"
-              className="min-w-[100px]"
-              onClick={() => onStatusUpdate(collaboration.id, 'rejected')}
-            >
-              Decline
-            </Button>
+            {!collaboration.is_initiator ? (
+              <>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="min-w-[100px]"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onStatusUpdate(collaboration.id, 'accepted')
+                  }}
+                >
+                  Accept
+                </Button>
+                <Button
+                  variant="outline"
+                  size="md"
+                  className="min-w-[100px]"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onStatusUpdate(collaboration.id, 'rejected')
+                  }}
+                >
+                  Decline
+                </Button>
+              </>
+            ) : (
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-xs font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100 italic">
+                  Waiting for {collaboration.initiator_type === 'hotel' ? 'Creator' : 'Hotel'} response...
+                </span>
+              </div>
+            )}
           </div>
         )}
 

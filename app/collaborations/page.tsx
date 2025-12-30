@@ -116,17 +116,23 @@ function CollaborationsPageContent() {
   const handleStatusUpdate = async (id: string, newStatus: CollaborationStatus) => {
     setUpdatingId(id)
     try {
-      // Map frontend status to backend status
-      const statusMap: Record<CollaborationStatus, string> = {
-        pending: 'pending',
-        accepted: 'accepted',
-        rejected: 'declined', // Backend uses 'declined', frontend uses 'rejected'
-        completed: 'completed',
-        cancelled: 'cancelled',
-      }
+      if (newStatus === 'accepted' || newStatus === 'rejected') {
+        const backendStatus = newStatus === 'accepted' ? 'accepted' : 'declined'
+        await collaborationService.respondToCollaboration(id, { status: backendStatus as 'accepted' | 'declined' })
+      } else {
+        // Map frontend status to backend status
+        const statusMap: Record<CollaborationStatus, string> = {
+          pending: 'pending',
+          accepted: 'accepted',
+          rejected: 'declined', // Backend uses 'declined', frontend uses 'rejected'
+          negotiating: 'negotiating',
+          completed: 'completed',
+          cancelled: 'cancelled',
+        }
 
-      const backendStatus = statusMap[newStatus]
-      await collaborationService.updateStatus(id, backendStatus)
+        const backendStatus = statusMap[newStatus]
+        await collaborationService.updateStatus(id, backendStatus)
+      }
       // Reload collaborations after status update
       await loadCollaborations()
     } catch (error) {

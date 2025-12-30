@@ -483,19 +483,27 @@ export function CollaborationRequestDetailModal({
             <div className="flex items-center gap-3">
               {collaboration.status === 'pending' && (
                 <>
-                  <Button
-                    variant="outline"
-                    onClick={handleDecline}
-                    className="bg-red-600 text-white border-red-600 hover:bg-red-700 hover:border-red-700"
-                  >
-                    Decline
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={handleAccept}
-                  >
-                    Accept
-                  </Button>
+                  {!collaboration.is_initiator ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={handleDecline}
+                        className="bg-red-600 text-white border-red-600 hover:bg-red-700 hover:border-red-700"
+                      >
+                        Decline
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={handleAccept}
+                      >
+                        Accept
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="text-gray-400 text-sm font-medium flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-100 italic">
+                      Waiting for {collaboration.initiator_type === 'hotel' ? 'Creator' : 'Hotel'} response...
+                    </div>
+                  )}
                 </>
               )}
               {collaboration.status === 'negotiating' && (

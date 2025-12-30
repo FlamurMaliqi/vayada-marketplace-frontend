@@ -57,9 +57,9 @@ export default function ForgotPasswordPage() {
             {/* Logo */}
             <div className="mb-6">
               <img
-                src="/vayada-logo.svg"
+                src="/vayada-logo.png"
                 alt="Vayada"
-                className="h-10 mb-4 rounded-lg"
+                className="h-10 mb-4"
               />
             </div>
 
@@ -137,7 +137,7 @@ export default function ForgotPasswordPage() {
           {/* Logo */}
           <div className="mb-6">
             <img
-              src="/vayada-logo.svg"
+              src="/vayada-logo.png"
               alt="Vayada"
               className="h-10 mb-4"
             />

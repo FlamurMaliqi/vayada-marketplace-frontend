@@ -166,7 +166,9 @@ function ChatPageContent() {
     const [detailCollaboration, setDetailCollaboration] = useState<(Collaboration & { hotel?: Hotel; creator?: Creator }) | null>(null)
 
     // State for pending applications and conversations
+    const [userType, setUserType] = useState<string>('hotel')
     const [pendingRequests, setPendingRequests] = useState<any[]>([])
+    const [applicationsTab, setApplicationsTab] = useState<'received' | 'sent'>('received')
     const [conversations, setConversations] = useState<any[]>([])
     const [isLoadingConversations, setIsLoadingConversations] = useState(true)
 
@@ -189,40 +191,53 @@ function ChatPageContent() {
     }, [realMessages, isLoadingMessages, isLoadingMore])
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch pending collaborations initiated by creators
-                const requestsData = await collaborationService.getHotelCollaborations({
-                    status: 'pending'
-                })
+        if (typeof window !== 'undefined') {
+            const storedUserType = localStorage.getItem('userType')
+            if (storedUserType) setUserType(storedUserType)
+        }
+    }, [])
 
-                // Map API response to UI format
-                const formattedRequests = requestsData.map(collab => ({
+    const fetchData = async () => {
+        try {
+            // Fetch pending collaborations based on user type
+            const requestsData = userType === 'hotel'
+                ? await collaborationService.getHotelCollaborations({ status: 'pending' })
+                : await collaborationService.getCreatorCollaborations({ status: 'pending' })
+
+            // Map API response to UI format
+            const formattedRequests = requestsData.map(collab => {
+                // Check if received: current role is NOT the initiator
+                const isReceived = !collab.is_initiator
+
+                return {
                     id: collab.id,
-                    name: collab.creator_name,
+                    name: userType === 'hotel' ? collab.creator_name : (collab.hotel_name || 'Hotel'),
                     time: new Date(collab.created_at).toLocaleDateString(),
                     followers: formatNumber(collab.total_followers),
                     followersPlatform: (collab.active_platform || 'instagram').toLowerCase(),
                     engagement: (collab.avg_engagement_rate || 0).toFixed(1) + '%',
                     engagementPlatform: (collab.active_platform || 'instagram').toLowerCase(),
                     avatarColor: 'bg-blue-100 text-blue-600',
-                    avatarUrl: collab.creator_profile_picture,
-                    initials: collab.creator_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-                }))
-                setPendingRequests(formattedRequests)
+                    avatarUrl: userType === 'hotel' ? collab.creator_profile_picture : collab.hotel_picture,
+                    initials: getInitials(userType === 'hotel' ? collab.creator_name : (collab.hotel_name || 'Hotel')),
+                    isReceived
+                }
+            })
+            setPendingRequests(formattedRequests)
 
-                // Fetch conversations
-                const convData = await collaborationService.getConversations()
-                setConversations(convData)
-            } catch (error) {
-                console.error('Failed to fetch chat data:', error)
-            } finally {
-                setIsLoadingConversations(false)
-            }
+            // Fetch conversations
+            const convData = await collaborationService.getConversations()
+            setConversations(convData)
+        } catch (error) {
+            console.error('Failed to fetch chat data:', error)
+        } finally {
+            setIsLoadingConversations(false)
         }
+    }
 
+    useEffect(() => {
         fetchData()
-    }, [])
+    }, [userType])
 
     const fetchMessages = async () => {
         if (!selectedChatId) return
@@ -252,7 +267,10 @@ function ChatPageContent() {
 
             // Fetch collaboration details for the right panel
             setIsLoadingDetails(true)
-            const detailResponse = await collaborationService.getHotelCollaborationDetails(selectedChatId)
+            const detailResponse = userType === 'hotel'
+                ? await collaborationService.getHotelCollaborationDetails(selectedChatId)
+                : await collaborationService.getCreatorCollaborationDetails(selectedChatId)
+
             const detailedCollaboration = transformCollaborationResponse(detailResponse)
             setActiveCollaboration(detailedCollaboration)
         } catch (error) {
@@ -308,10 +326,13 @@ function ChatPageContent() {
 
     const handleAccept = async (id: string) => {
         try {
-            await collaborationService.updateStatus(id, 'accepted')
+            await collaborationService.respondToCollaboration(id, { status: 'accepted' })
             // Refresh list
             setPendingRequests(prev => prev.filter(r => r.id !== id))
             setDetailCollaboration(null)
+            // Refresh conversations to show the newly accepted one
+            const convData = await collaborationService.getConversations()
+            setConversations(convData)
         } catch (error) {
             console.error('Error accepting collaboration:', error)
         }
@@ -319,10 +340,13 @@ function ChatPageContent() {
 
     const handleDecline = async (id: string) => {
         try {
-            await collaborationService.updateStatus(id, 'declined')
+            await collaborationService.respondToCollaboration(id, { status: 'declined' })
             // Refresh list
             setPendingRequests(prev => prev.filter(r => r.id !== id))
             setDetailCollaboration(null)
+            // Refresh conversations? Declined usually cancels it, so we might want to refresh too
+            const convData = await collaborationService.getConversations()
+            setConversations(convData)
         } catch (error) {
             console.error('Error declining collaboration:', error)
         }
@@ -501,65 +525,106 @@ function ChatPageContent() {
                                     <div className="w-2 h-2 rounded-full bg-blue-600"></div>
                                     <span className="text-xs font-bold text-blue-600 tracking-wide uppercase">New Applications</span>
                                 </div>
-                                <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{pendingRequests.length} pending</span>
+                                <span className="bg-blue-600/10 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-600/20">{pendingRequests.length} total</span>
                             </div>
+
+                            {/* Sub-tabs for Received/Sent */}
+                            <div className="px-3 py-2 bg-white border-b border-gray-100 flex gap-2">
+                                <button
+                                    onClick={() => setApplicationsTab('received')}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${applicationsTab === 'received'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                        }`}
+                                >
+                                    Received
+                                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${applicationsTab === 'received' ? 'bg-white/20' : 'bg-gray-200 text-gray-500'}`}>
+                                        {pendingRequests.filter(r => r.isReceived).length}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setApplicationsTab('sent')}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${applicationsTab === 'sent'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                        }`}
+                                >
+                                    Sent
+                                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${applicationsTab === 'sent' ? 'bg-white/20' : 'bg-gray-200 text-gray-500'}`}>
+                                        {pendingRequests.filter(r => !r.isReceived).length}
+                                    </span>
+                                </button>
+                            </div>
+
                             <div className="divide-y divide-gray-200">
-                                {pendingRequests.map((request) => (
-                                    <div
-                                        key={request.id}
-                                        className="p-3 hover:bg-gray-50 transition-colors cursor-pointer group"
-                                        onClick={() => handleViewDetails(request.id)}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            {request.avatarUrl ? (
-                                                <img
-                                                    src={request.avatarUrl}
-                                                    alt={request.name}
-                                                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                                                />
-                                            ) : (
-                                                <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold ${request.avatarColor}`}>
-                                                    {request.initials}
-                                                </div>
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-baseline gap-2 mb-0.5">
-                                                    <h4 className="text-sm font-semibold text-gray-900 leading-none">{request.name}</h4>
-                                                    <span className="text-[10px] text-gray-400">{request.time}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-xs text-gray-500 font-medium leading-none">
-                                                    <span>{request.followers}</span><span>•</span><span>{request.engagement}</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <PlatformIcon platform={request.followersPlatform} className="w-3 h-3 text-gray-400" />
-                                                        <PlatformIcon platform={request.engagementPlatform} className="w-3 h-3 text-gray-400" />
+                                {pendingRequests
+                                    .filter(r => applicationsTab === 'received' ? r.isReceived : !r.isReceived)
+                                    .map((request) => (
+                                        <div
+                                            key={request.id}
+                                            className="p-3 hover:bg-gray-50 transition-colors cursor-pointer group"
+                                            onClick={() => handleViewDetails(request.id)}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                {request.avatarUrl ? (
+                                                    <img
+                                                        src={request.avatarUrl}
+                                                        alt={request.name}
+                                                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                                    />
+                                                ) : (
+                                                    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold ${request.avatarColor}`}>
+                                                        {request.initials}
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-baseline gap-2 mb-0.5">
+                                                        <h4 className="text-sm font-semibold text-gray-900 leading-none">{request.name}</h4>
+                                                        <span className="text-[10px] text-gray-400">{request.time}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-xs text-gray-500 font-medium leading-none">
+                                                        <span>{request.followers}</span><span>•</span><span>{request.engagement}</span>
+                                                        <div className="flex items-center gap-1">
+                                                            <PlatformIcon platform={request.followersPlatform} className="w-3 h-3 text-gray-400" />
+                                                            <PlatformIcon platform={request.engagementPlatform} className="w-3 h-3 text-gray-400" />
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    className="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors shadow-sm"
-                                                    title="Accept"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        handleAccept(request.id)
-                                                    }}
-                                                >
-                                                    <CheckIcon className="w-5 h-5" />
-                                                </button>
-                                                <button
-                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 rounded-xl transition-colors shadow-sm"
-                                                    title="Decline"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        handleDecline(request.id)
-                                                    }}
-                                                >
-                                                    <XMarkIcon className="w-5 h-5" />
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    {request.isReceived ? (
+                                                        <>
+                                                            <button
+                                                                className="w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors shadow-sm"
+                                                                title="Accept"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    handleAccept(request.id)
+                                                                }}
+                                                            >
+                                                                <CheckIcon className="w-5 h-5" />
+                                                            </button>
+                                                            <button
+                                                                className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 rounded-xl transition-colors shadow-sm"
+                                                                title="Decline"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    handleDecline(request.id)
+                                                                }}
+                                                            >
+                                                                <XMarkIcon className="w-5 h-5" />
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <div className="flex flex-col items-end gap-1">
+                                                            <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100 italic whitespace-nowrap">
+                                                                Waiting for {userType === 'hotel' ? 'Creator' : 'Hotel'} response
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
                             </div>
                         </div>
 

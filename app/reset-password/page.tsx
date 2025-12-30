@@ -35,7 +35,7 @@ function ResetPasswordForm() {
       ...prev,
       [name]: value,
     }))
-    
+
     // Clear errors when user types
     if (error) setError('')
     if (passwordError) setPasswordError('')
@@ -85,7 +85,7 @@ function ResetPasswordForm() {
     try {
       await authService.resetPassword(token, formData.password)
       setIsSuccess(true)
-      
+
       // Redirect to login after 3 seconds
       setTimeout(() => {
         router.push(ROUTES.LOGIN)
@@ -115,9 +115,9 @@ function ResetPasswordForm() {
             {/* Logo */}
             <div className="mb-6">
               <img
-                src="/vayada-logo.svg"
+                src="/vayada-logo.png"
                 alt="Vayada"
-                className="h-10 mb-4 rounded-lg"
+                className="h-10 mb-4"
               />
             </div>
 
@@ -213,9 +213,9 @@ function ResetPasswordForm() {
           {/* Logo */}
           <div className="mb-6">
             <img
-              src="/vayada-logo.svg"
+              src="/vayada-logo.png"
               alt="Vayada"
-              className="h-10 mb-4 rounded-lg"
+              className="h-10 mb-4"
             />
           </div>
 
@@ -248,9 +248,8 @@ function ResetPasswordForm() {
                 placeholder="Enter your new password"
                 autoComplete="new-password"
                 disabled={isSubmitting || !token}
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white text-gray-900 ${
-                  passwordError ? 'border-red-300' : 'border-gray-300'
-                } ${isSubmitting || !token ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white text-gray-900 ${passwordError ? 'border-red-300' : 'border-gray-300'
+                  } ${isSubmitting || !token ? 'opacity-50 cursor-not-allowed' : ''}`}
               />
               {passwordError && (
                 <p className="mt-1 text-sm text-red-600">{passwordError}</p>
@@ -275,9 +274,8 @@ function ResetPasswordForm() {
                 placeholder="Confirm your new password"
                 autoComplete="new-password"
                 disabled={isSubmitting || !token}
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white text-gray-900 ${
-                  passwordError ? 'border-red-300' : 'border-gray-300'
-                } ${isSubmitting || !token ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white text-gray-900 ${passwordError ? 'border-red-300' : 'border-gray-300'
+                  } ${isSubmitting || !token ? 'opacity-50 cursor-not-allowed' : ''}`}
               />
               {passwordError && (
                 <p className="mt-1 text-sm text-red-600">{passwordError}</p>
