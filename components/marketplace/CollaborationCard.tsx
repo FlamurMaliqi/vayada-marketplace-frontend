@@ -7,6 +7,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   StarIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
 import { CollaborationRatingModal } from './CollaborationRatingModal'
@@ -24,6 +25,7 @@ interface CollaborationCardProps {
 
 const statusConfig: Record<CollaborationStatus, { label: string; color: string; icon: any }> = {
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: ClockIcon },
+  negotiating: { label: 'Negotiating', color: 'bg-blue-100 text-blue-800', icon: ArrowPathIcon },
   accepted: { label: 'Accepted', color: 'bg-blue-100 text-blue-800', icon: CheckCircleIcon },
   rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800', icon: XCircleIcon },
   completed: { label: 'Completed', color: 'bg-green-100 text-green-800', icon: CheckCircleIcon },

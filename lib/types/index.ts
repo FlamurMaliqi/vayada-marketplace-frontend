@@ -240,11 +240,17 @@ export interface Collaboration {
   hasRated?: boolean // Whether the hotel has rated this completed collaboration
   whyGreatFit?: string
   platformDeliverables?: PlatformDeliverablesItem[]
+  travelDateFrom?: string | null
+  travelDateTo?: string | null
+  preferredDateFrom?: string | null
+  preferredDateTo?: string | null
+  hotelAgreedAt?: Date | null
+  creatorAgreedAt?: Date | null
   createdAt: Date
   updatedAt: Date
 }
 
-export type CollaborationStatus = 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled'
+export type CollaborationStatus = 'pending' | 'negotiating' | 'accepted' | 'rejected' | 'completed' | 'cancelled'
 
 // API Response types
 export interface ApiResponse<T> {

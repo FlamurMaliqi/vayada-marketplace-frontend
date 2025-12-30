@@ -122,6 +122,8 @@ export interface CollaborationResponse {
       created_at: string
     }>
   }
+  hotel_agreed_at: string | null
+  creator_agreed_at: string | null
   consent: boolean | null
   created_at: string
   cancelled_at: string | null
@@ -147,6 +149,8 @@ export type DetailedCollaboration = Collaboration & {
   preferredMonths?: string[] | null
   whyGreatFit?: string | null
   platformDeliverables?: PlatformDeliverablesItem[]
+  hotelAgreedAt?: Date | null
+  creatorAgreedAt?: Date | null
   consent?: boolean | null
   respondedAt?: string | null
   cancelledAt?: string | null
@@ -311,6 +315,13 @@ export const collaborationService = {
   },
 
   /**
+   * Approve terms (Double Confirmation)
+   */
+  approveCollaboration: async (collaborationId: string): Promise<CollaborationResponse> => {
+    return apiClient.post<CollaborationResponse>(`/collaborations/${collaborationId}/approve`)
+  },
+
+  /**
    * Suggest new terms for a collaboration
    */
   updateTerms: async (collaborationId: string, data: UpdateCollaborationTermsRequest): Promise<CollaborationResponse> => {
@@ -417,6 +428,8 @@ export function transformCollaborationResponse(
     preferredMonths: response.preferred_months,
     whyGreatFit: response.why_great_fit,
     platformDeliverables: response.platform_deliverables,
+    hotelAgreedAt: response.hotel_agreed_at ? new Date(response.hotel_agreed_at) : null,
+    creatorAgreedAt: response.creator_agreed_at ? new Date(response.creator_agreed_at) : null,
     consent: response.consent,
     respondedAt: response.responded_at,
     cancelledAt: response.cancelled_at,

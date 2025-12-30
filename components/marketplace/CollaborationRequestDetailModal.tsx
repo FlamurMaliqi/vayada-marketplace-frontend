@@ -3,7 +3,7 @@
 import { Collaboration, Hotel, Creator, UserType } from '@/lib/types'
 import { Button, StarRating } from '@/components/ui'
 import { XMarkIcon } from '@heroicons/react/24/solid'
-import { CheckBadgeIcon, MapPinIcon, StarIcon } from '@heroicons/react/24/outline'
+import { CheckBadgeIcon, MapPinIcon, StarIcon, ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
 
 interface CollaborationRequestDetailModalProps {
@@ -13,6 +13,7 @@ interface CollaborationRequestDetailModalProps {
   currentUserType: UserType
   onAccept?: (id: string) => void
   onDecline?: (id: string) => void
+  onApprove?: (id: string) => void
 }
 
 // Platform icons mapping
@@ -84,6 +85,7 @@ export function CollaborationRequestDetailModal({
   currentUserType,
   onAccept,
   onDecline,
+  onApprove,
 }: CollaborationRequestDetailModalProps) {
   if (!isOpen || !collaboration) return null
 
@@ -123,9 +125,9 @@ export function CollaborationRequestDetailModal({
     return "Looking forward to collaborating with you!"
   }
 
-  // Mock travel dates - in production this would come from collaboration data
-  const travelDateFrom = 'Jun 15, 2024'
-  const travelDateTo = 'Jun 20, 2024'
+  // Real travel dates from collaboration data
+  const travelDateFrom = collaboration.travelDateFrom || collaboration.preferredDateFrom || 'TBD'
+  const travelDateTo = collaboration.travelDateTo || collaboration.preferredDateTo || 'TBD'
 
   const otherParty = currentUserType === 'hotel' ? collaboration.creator : collaboration.hotel
   const otherPartyName = otherParty?.name || ''
@@ -150,6 +152,17 @@ export function CollaborationRequestDetailModal({
     }
     onClose()
   }
+
+  const handleApprove = () => {
+    if (onApprove) {
+      onApprove(collaboration.id)
+    }
+    onClose()
+  }
+
+  // Check if current user has already agreed
+  const hasUserAgreed = (currentUserType === 'hotel' && collaboration.hotelAgreedAt) ||
+    (currentUserType === 'creator' && collaboration.creatorAgreedAt)
 
   return (
     <div
@@ -465,22 +478,43 @@ export function CollaborationRequestDetailModal({
         </div>
 
         {/* Modal Footer */}
-        {collaboration.status === 'pending' && (
+        {(collaboration.status === 'pending' || collaboration.status === 'negotiating') && (
           <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-end">
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={handleDecline}
-                className="bg-red-600 text-white border-red-600 hover:bg-red-700 hover:border-red-700"
-              >
-                Decline
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleAccept}
-              >
-                Accept
-              </Button>
+              {collaboration.status === 'pending' && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={handleDecline}
+                    className="bg-red-600 text-white border-red-600 hover:bg-red-700 hover:border-red-700"
+                  >
+                    Decline
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleAccept}
+                  >
+                    Accept
+                  </Button>
+                </>
+              )}
+              {collaboration.status === 'negotiating' && (
+                <>
+                  {hasUserAgreed ? (
+                    <div className="text-gray-400 text-sm font-medium flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-100">
+                      <ArrowPathIcon className="w-4 h-4 animate-spin-slow" /> Waiting for {otherPartyName}...
+                    </div>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      onClick={handleApprove}
+                      className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                    >
+                      <CheckCircleIcon className="w-5 h-5" /> Approve Terms
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
           </div>
         )}

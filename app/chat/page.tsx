@@ -395,6 +395,21 @@ function ChatPageContent() {
         }
     }
 
+    const handleApproveTerms = async (id?: string) => {
+        const collabId = id || selectedChatId
+        if (!collabId) return
+
+        try {
+            const updatedResponse = await collaborationService.approveCollaboration(collabId)
+            const detailedCollaboration = transformCollaborationResponse(updatedResponse)
+            setActiveCollaboration(detailedCollaboration)
+            // Refresh messages to show the system notification
+            fetchMessages()
+        } catch (error) {
+            console.error('Failed to approve terms:', error)
+        }
+    }
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!messageInput.trim() || !selectedChatId) return
@@ -611,7 +626,10 @@ function ChatPageContent() {
                                         </div>
                                     </div>
                                 </div>
-                                <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                                <button
+                                    onClick={() => setDetailCollaboration(activeCollaboration)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                                >
                                     Details <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
                                 </button>
                             </div>
@@ -843,15 +861,40 @@ function ChatPageContent() {
                             </div>
                             {/* Fixed Footer: Actions */}
                             <div className="p-4 bg-white border-t border-gray-100 flex-shrink-0 space-y-2">
-                                <button className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
-                                    <CheckIcon className="w-4 h-4" /> Confirm Collaboration
-                                </button>
-                                <button
-                                    onClick={() => setIsSuggestModalOpen(true)}
-                                    className="w-full py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
-                                >
-                                    <PencilSquareIcon className="w-4 h-4" /> Suggest Changes
-                                </button>
+                                {['pending', 'negotiating'].includes(activeChat.collaboration_status.toLowerCase()) ? (
+                                    <>
+                                        {((activeChat.my_role === 'hotel' && !activeCollaboration.hotelAgreedAt) ||
+                                            (activeChat.my_role === 'creator' && !activeCollaboration.creatorAgreedAt)) ? (
+                                            <button
+                                                onClick={() => handleApproveTerms()}
+                                                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+                                            >
+                                                <CheckCircleIcon className="w-4 h-4" /> Approve Terms
+                                            </button>
+                                        ) : (
+                                            <div className="w-full py-2.5 bg-gray-50 text-gray-400 text-sm font-medium rounded-lg flex items-center justify-center gap-2 border border-gray-100">
+                                                <ArrowPathIcon className="w-4 h-4 animate-spin-slow" /> Waiting for {activeChat.partner_name}...
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => setIsSuggestModalOpen(true)}
+                                            className="w-full py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+                                        >
+                                            <PencilSquareIcon className="w-4 h-4" /> Suggest Changes
+                                        </button>
+                                    </>
+                                ) : activeChat.collaboration_status.toLowerCase() === 'accepted' ? (
+                                    <div className="w-full py-2.5 bg-emerald-50 text-emerald-700 text-sm font-bold rounded-lg flex items-center justify-center gap-2 border border-emerald-100">
+                                        <CheckCircleIcon className="w-4 h-4" /> Collaboration Accepted
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => setDetailCollaboration(activeCollaboration)}
+                                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+                                    >
+                                        <DocumentTextIcon className="w-4 h-4" /> View Full Terms
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </>
@@ -892,6 +935,7 @@ function ChatPageContent() {
                 currentUserType="hotel"
                 onAccept={handleAccept}
                 onDecline={handleDecline}
+                onApprove={handleApproveTerms}
             />
         </main>
     )
