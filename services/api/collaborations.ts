@@ -288,6 +288,13 @@ export const collaborationService = {
   },
 
   /**
+   * Mark all messages in a collaboration as read
+   */
+  markAsRead: async (collaborationId: string): Promise<void> => {
+    return apiClient.post<void>(`/collaborations/${collaborationId}/read`)
+  },
+
+  /**
    * Get messages for a collaboration
    */
   getMessages: async (collaborationId: string, before?: string): Promise<MessageResponse[]> => {

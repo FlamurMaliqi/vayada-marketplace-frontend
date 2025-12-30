@@ -228,6 +228,14 @@ function ChatPageContent() {
         if (!selectedChatId) return
         setIsLoadingMessages(true)
         setHasMoreMessages(true)
+
+        // Reset unread count locally for snappy UI
+        setConversations(prev => prev.map(conv =>
+            conv.collaboration_id === selectedChatId
+                ? { ...conv, unread_count: 0 }
+                : conv
+        ))
+
         try {
             // Fetch messages
             const msgData = await collaborationService.getMessages(selectedChatId)
@@ -236,6 +244,11 @@ function ChatPageContent() {
             if (msgData.length < 50) {
                 setHasMoreMessages(false)
             }
+
+            // Mark as read in backend
+            collaborationService.markAsRead(selectedChatId).catch(err =>
+                console.error('Failed to mark as read:', err)
+            )
 
             // Fetch collaboration details for the right panel
             setIsLoadingDetails(true)
@@ -433,6 +446,22 @@ function ChatPageContent() {
             }
 
             setRealMessages(prev => [...prev, tempMessage])
+
+            // Update conversations list to move this chat to top and update last message
+            setConversations(prev => {
+                const chatIndex = prev.findIndex(c => c.collaboration_id === selectedChatId)
+                if (chatIndex === -1) return prev
+
+                const updatedChat = {
+                    ...prev[chatIndex],
+                    last_message_content: content,
+                    last_message_at: tempMessage.created_at,
+                    unread_count: 0
+                }
+
+                const filtered = prev.filter(c => c.collaboration_id !== selectedChatId)
+                return [updatedChat, ...filtered]
+            })
 
             await collaborationService.sendMessage(selectedChatId, content)
 
