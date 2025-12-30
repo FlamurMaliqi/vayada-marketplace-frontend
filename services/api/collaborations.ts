@@ -33,6 +33,19 @@ export interface CreateCreatorCollaborationRequest {
   platform_deliverables: PlatformDeliverablesItem[]
 }
 
+export interface UpdateCollaborationTermsRequest {
+  travel_date_from?: string
+  travel_date_to?: string
+  platform_deliverables?: Array<{
+    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+    deliverables: Array<{
+      id?: string
+      type: string
+      quantity: number
+    }>
+  }>
+}
+
 // Hotel invitation request
 export interface CreateHotelCollaborationRequest {
   initiator_type: 'hotel'
@@ -295,6 +308,13 @@ export const collaborationService = {
    */
   toggleDeliverable: async (collaborationId: string, deliverableId: string): Promise<CollaborationResponse> => {
     return apiClient.post<CollaborationResponse>(`/collaborations/${collaborationId}/deliverables/${deliverableId}/toggle`)
+  },
+
+  /**
+   * Suggest new terms for a collaboration
+   */
+  updateTerms: async (collaborationId: string, data: UpdateCollaborationTermsRequest): Promise<CollaborationResponse> => {
+    return apiClient.put<CollaborationResponse>(`/collaborations/${collaborationId}/terms`, data)
   },
 }
 
