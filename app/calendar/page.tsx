@@ -13,9 +13,19 @@ function CalendarPageContent() {
     const [collaborations, setCollaborations] = useState<CollaborationResponse[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [detailCollaboration, setDetailCollaboration] = useState<(Collaboration & { hotel?: Hotel; creator?: Creator }) | null>(null)
+    const [userType, setUserType] = useState<'hotel' | 'creator'>('hotel')
 
     useEffect(() => {
+        const storedUserType = localStorage.getItem('userType') as 'hotel' | 'creator'
+        if (storedUserType) {
+            setUserType(storedUserType)
+        }
+
         const fetchCollaborations = async () => {
+            if (storedUserType === 'creator') {
+                setIsLoading(false)
+                return
+            }
             try {
                 const data = await collaborationService.getHotelCollaborations()
                 setCollaborations(data)
@@ -52,6 +62,7 @@ function CalendarPageContent() {
                         <YearlyCalendar
                             collaborations={collaborations}
                             onViewDetails={handleViewDetails}
+                            userType={userType}
                         />
                     )}
                 </div>
@@ -61,7 +72,7 @@ function CalendarPageContent() {
                 isOpen={!!detailCollaboration}
                 onClose={() => setDetailCollaboration(null)}
                 collaboration={detailCollaboration}
-                currentUserType="hotel"
+                currentUserType={userType}
             />
         </main>
     )

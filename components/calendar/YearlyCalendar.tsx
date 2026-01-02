@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import type { CollaborationResponse } from '@/services/api/collaborations'
 import { CalendarEventModal } from './CalendarEventModal'
+import { AddCollaborationModal } from './AddCollaborationModal'
+import { AddTripModal } from './AddTripModal'
 
 const MONTHS = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -21,13 +23,16 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 interface YearlyCalendarProps {
     collaborations?: CollaborationResponse[]
     onViewDetails: (id: string) => void
+    userType?: 'hotel' | 'creator'
 }
 
-export function YearlyCalendar({ collaborations = [], onViewDetails }: YearlyCalendarProps) {
+export function YearlyCalendar({ collaborations = [], onViewDetails, userType = 'hotel' }: YearlyCalendarProps) {
     const [year, setYear] = useState(2026)
     const [month, setMonth] = useState(0) // 0-11
     const [view, setView] = useState<'month' | 'year'>('year')
     const [selectedCollaboration, setSelectedCollaboration] = useState<CollaborationResponse | null>(null)
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+    const [isTripModalOpen, setIsTripModalOpen] = useState(false)
 
     const getDaysInMonth = (monthIndex: number, year: number) => {
         return new Date(year, monthIndex + 1, 0).getDate()
@@ -89,8 +94,12 @@ export function YearlyCalendar({ collaborations = [], onViewDetails }: YearlyCal
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Collaboration Calendar</h2>
-                    <p className="text-sm text-gray-500 mt-1">View all creator collaborations for the year</p>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        {userType === 'creator' ? 'My Calendar' : 'Collaboration Calendar'}
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        {userType === 'creator' ? 'Manage your trips and collaborations' : 'View all creator collaborations for the year'}
+                    </p>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -150,10 +159,33 @@ export function YearlyCalendar({ collaborations = [], onViewDetails }: YearlyCal
                     </div>
                 </div>
 
-                <button className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus w-4 h-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg>
-                    Add External Creator
-                </button>
+                <div className="flex items-center gap-3">
+                    {userType === 'creator' && (
+                        <button
+                            onClick={() => setIsTripModalOpen(true)}
+                            className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border border-gray-200 shadow-sm"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plane h-4 w-4"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>
+                            Add Trip
+                        </button>
+                    )}
+                    <button
+                        onClick={() => userType === 'creator' ? setIsAddModalOpen(true) : null}
+                        className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"
+                    >
+                        {userType === 'creator' ? (
+                            <>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus w-4 h-4"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                                Add Collaboration
+                            </>
+                        ) : (
+                            <>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus w-4 h-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg>
+                                Add External Creator
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* VIEW: YEARLY */}
@@ -313,6 +345,16 @@ export function YearlyCalendar({ collaborations = [], onViewDetails }: YearlyCal
                 onClose={() => setSelectedCollaboration(null)}
                 collaboration={selectedCollaboration}
                 onViewDetails={onViewDetails}
+            />
+
+            <AddCollaborationModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+            />
+
+            <AddTripModal
+                isOpen={isTripModalOpen}
+                onClose={() => setIsTripModalOpen(false)}
             />
         </div>
     )
