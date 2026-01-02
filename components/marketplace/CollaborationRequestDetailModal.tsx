@@ -360,7 +360,7 @@ export function CollaborationRequestDetailModal({
 
                   {collaboration.creatorRequirements.targetCountries && collaboration.creatorRequirements.targetCountries.length > 0 && (
                     <div>
-                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Target Countries</p>
+                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Top Countries</p>
                       <p className="text-sm font-semibold text-gray-900">{collaboration.creatorRequirements.targetCountries.join(', ')}</p>
                     </div>
                   )}

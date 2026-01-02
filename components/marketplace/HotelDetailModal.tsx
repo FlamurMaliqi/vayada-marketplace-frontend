@@ -374,10 +374,10 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
                 </div>
               )}
 
-              {/* Target Audience */}
+              {/* Top Countries */}
               {hotel.targetAudience && hotel.targetAudience.length > 0 && (
                 <div>
-                  <div className="text-sm text-gray-500 mb-2">Target Audience</div>
+                  <div className="text-sm text-gray-500 mb-2">Top Countries</div>
                   <div className="flex flex-wrap gap-2">
                     {hotel.targetAudience.map((audience, index) => (
                       <span

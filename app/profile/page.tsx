@@ -111,8 +111,8 @@ const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherla
 const HotelBadgeIcon = ({ active }: { active?: boolean }) => (
   <div
     className={`w-8 h-8 rounded-lg flex items-center justify-center ${active
-        ? 'bg-[#2F54EB] text-white'
-        : 'bg-[#EEF2FF] text-[#2F54EB]'
+      ? 'bg-[#2F54EB] text-white'
+      : 'bg-[#EEF2FF] text-[#2F54EB]'
       }`}
   >
     <svg
@@ -4025,7 +4025,7 @@ export default function ProfilePage() {
 
                                               {/* Top Countries */}
                                               <div>
-                                                <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries</label>
+                                                <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries (optional)</label>
                                                 <p className="text-sm text-gray-600 mb-3">Select up to 3 countries your target audience is from</p>
                                                 {listing.targetGroupCountries && listing.targetGroupCountries.length > 0 ? (
                                                   <div className="flex flex-wrap gap-2">
@@ -4645,7 +4645,7 @@ export default function ProfilePage() {
 
                                   {/* Top Countries */}
                                   <div>
-                                    <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries</label>
+                                    <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries (optional)</label>
                                     <p className="text-sm text-gray-600 mb-3">Select up to 3 countries your target audience is from</p>
                                     <div className="space-y-2">
                                       <input
