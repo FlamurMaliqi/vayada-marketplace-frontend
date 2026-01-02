@@ -498,7 +498,7 @@ export function CollaborationRequestDetailModal({
                                   <span className="text-sm font-medium text-gray-900">{country.country}</span>
                                 </div>
                                 <span className="text-sm font-bold text-gray-900">
-                                  {country.percentage}%
+                                  {country.percentage && `${country.percentage}%`}
                                 </span>
                               </div>
                             ))}
@@ -515,7 +515,7 @@ export function CollaborationRequestDetailModal({
                               <div key={idx} className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-gray-900">{ageGroup.ageRange}</span>
                                 <span className="text-sm font-bold text-gray-900">
-                                  {ageGroup.percentage}%
+                                  {ageGroup.percentage && `${ageGroup.percentage}%`}
                                 </span>
                               </div>
                             ))}
@@ -530,11 +530,11 @@ export function CollaborationRequestDetailModal({
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-gray-900">Male</span>
-                              <span className="text-sm font-bold text-gray-900">{platform.genderSplit.male}%</span>
+                              <span className="text-sm font-bold text-gray-900">{platform.genderSplit.male && `${platform.genderSplit.male}%`}</span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-gray-900">Female</span>
-                              <span className="text-sm font-bold text-gray-900">{platform.genderSplit.female}%</span>
+                              <span className="text-sm font-bold text-gray-900">{platform.genderSplit.female && `${platform.genderSplit.female}%`}</span>
                             </div>
                           </div>
                         </div>
