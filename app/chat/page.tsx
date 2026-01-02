@@ -202,25 +202,45 @@ function ChatPageContent() {
             // Fetch pending collaborations based on user type
             const requestsData = userType === 'hotel'
                 ? await collaborationService.getHotelCollaborations({ status: 'pending' })
-                : await collaborationService.getCreatorCollaborations({ status: 'pending' })
+                : await collaborationService.getCreatorCollaborations() // Get all collaborations for creators
 
             // Map API response to UI format
             const formattedRequests = requestsData.map(collab => {
                 // Check if received: current role is NOT the initiator
                 const isReceived = !collab.is_initiator
 
+                // Format offer details for creators viewing hotels
+                let offerDetails = ''
+                if (userType === 'creator' && collab.collaboration_type) {
+                    if (collab.collaboration_type === 'Free Stay' && collab.free_stay_max_nights) {
+                        offerDetails = `${collab.free_stay_max_nights} Nights`
+                    } else if (collab.collaboration_type === 'Paid' && collab.paid_amount) {
+                        offerDetails = `$${collab.paid_amount}`
+                    } else if (collab.collaboration_type === 'Discount' && collab.discount_percentage) {
+                        offerDetails = `${collab.discount_percentage}% Off`
+                    } else {
+                        offerDetails = collab.collaboration_type
+                    }
+                }
+
                 return {
                     id: collab.id,
                     name: userType === 'hotel' ? collab.creator_name : (collab.hotel_name || 'Hotel'),
                     time: new Date(collab.created_at).toLocaleDateString(),
+                    // Creator metrics (for hotels viewing creators)
                     followers: formatNumber(collab.total_followers),
                     followersPlatform: (collab.active_platform || 'instagram').toLowerCase(),
                     engagement: (collab.avg_engagement_rate || 0).toFixed(1) + '%',
                     engagementPlatform: (collab.active_platform || 'instagram').toLowerCase(),
+                    // Hotel info (for creators viewing hotels)
+                    location: collab.listing_location || collab.hotel_location || '',
+                    collaborationType: collab.collaboration_type || '',
+                    offerDetails: offerDetails,
                     avatarColor: 'bg-blue-100 text-blue-600',
                     avatarUrl: userType === 'hotel' ? collab.creator_profile_picture : collab.hotel_picture,
                     initials: getInitials(userType === 'hotel' ? collab.creator_name : (collab.hotel_name || 'Hotel')),
-                    isReceived
+                    isReceived,
+                    status: collab.status // Keep the status for filtering
                 }
             })
             setPendingRequests(formattedRequests)
@@ -583,13 +603,30 @@ function ChatPageContent() {
                                                             <h4 className="text-sm font-semibold text-gray-900 leading-none">{request.name}</h4>
                                                             <span className="text-[10px] text-gray-400">{request.time}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-xs text-gray-500 font-medium leading-none">
-                                                            <span>{request.followers}</span><span>•</span><span>{request.engagement}</span>
-                                                            <div className="flex items-center gap-1">
-                                                                <PlatformIcon platform={request.followersPlatform} className="w-3 h-3 text-gray-400" />
-                                                                <PlatformIcon platform={request.engagementPlatform} className="w-3 h-3 text-gray-400" />
+                                                        {userType === 'hotel' ? (
+                                                            <div className="flex items-center gap-2 text-xs text-gray-500 font-medium leading-none">
+                                                                <span>{request.followers}</span><span>•</span><span>{request.engagement}</span>
+                                                                <div className="flex items-center gap-1">
+                                                                    <PlatformIcon platform={request.followersPlatform} className="w-3 h-3 text-gray-400" />
+                                                                    <PlatformIcon platform={request.engagementPlatform} className="w-3 h-3 text-gray-400" />
+                                                                </div>
                                                             </div>
-                                                        </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 text-xs text-gray-500 font-medium leading-none">
+                                                                {request.location && (
+                                                                    <>
+                                                                        <MapPinIcon className="w-3 h-3 text-gray-400" />
+                                                                        <span className="truncate max-w-[120px]">{request.location}</span>
+                                                                    </>
+                                                                )}
+                                                                {request.collaborationType && request.offerDetails && (
+                                                                    <>
+                                                                        <span>•</span>
+                                                                        <span className="font-semibold text-blue-600">{request.offerDetails}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         {request.isReceived ? (
