@@ -110,11 +110,10 @@ const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherla
 
 const HotelBadgeIcon = ({ active }: { active?: boolean }) => (
   <div
-    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-      active
+    className={`w-8 h-8 rounded-lg flex items-center justify-center ${active
         ? 'bg-[#2F54EB] text-white'
         : 'bg-[#EEF2FF] text-[#2F54EB]'
-    }`}
+      }`}
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -180,7 +179,7 @@ export default function ProfilePage() {
   const hotelFileInputRef = useRef<HTMLInputElement | null>(null)
   const listingImageInputRef = useRef<HTMLInputElement | null>(null)
   const creatorImageInputRef = useRef<HTMLInputElement | null>(null)
-  
+
   // Error modal state
   const [errorModal, setErrorModal] = useState<{
     isOpen: boolean
@@ -202,12 +201,12 @@ export default function ProfilePage() {
     listingId: null,
     listingName: '',
   })
-  
+
   // Platform management state
   const [expandedPlatforms, setExpandedPlatforms] = useState<Set<number>>(new Set())
   const [platformCountryInputs, setPlatformCountryInputs] = useState<Record<number, string>>({})
   const [platformSaveStatus, setPlatformSaveStatus] = useState<Record<number, string>>({})
-  
+
   // Edit form state
   const [editFormData, setEditFormData] = useState({
     name: '',
@@ -394,7 +393,7 @@ export default function ProfilePage() {
     const portfolioLink = apiCreator.portfolioLink || apiCreator.portfolio_link || undefined
     const email = apiCreator.email || ''
     const phone = apiCreator.phone || ''
-    
+
     // Transform platforms - handle both snake_case and camelCase
     const platforms = (apiCreator.platforms || []).map((platform: any) => {
       // Handle genderSplit - might be a string (JSON) or object
@@ -448,10 +447,10 @@ export default function ProfilePage() {
     const averageRating = ratingData.averageRating ?? ratingData.average_rating ?? 0
     const totalReviews = ratingData.totalReviews ?? ratingData.total_reviews ?? 0
     const reviews = ratingData.reviews || []
-    
+
     const rating = {
-      averageRating: typeof averageRating === 'number' && !isNaN(averageRating) 
-        ? averageRating 
+      averageRating: typeof averageRating === 'number' && !isNaN(averageRating)
+        ? averageRating
         : 0,
       totalReviews: typeof totalReviews === 'number' && !isNaN(totalReviews)
         ? totalReviews
@@ -624,7 +623,7 @@ export default function ProfilePage() {
       // Check profile status first
       const status = await checkProfileStatus(userType)
       setProfileStatus(status)
-      
+
       if (status && !status.profile_complete) {
         // Profile is incomplete - show page without profile data
         setIsProfileIncomplete(true)
@@ -632,10 +631,10 @@ export default function ProfilePage() {
         setHotelProfile(null)
         return
       }
-      
+
       // Profile is complete, fetch profile data
       setIsProfileIncomplete(false)
-      
+
       if (userType === 'creator') {
         try {
           const apiProfile = await creatorService.getMyProfile()
@@ -669,8 +668,8 @@ export default function ProfilePage() {
             website: apiProfile.website || undefined,
             about: apiProfile.about || undefined,
             picture: (apiProfile.picture && apiProfile.picture.trim() !== '') ? apiProfile.picture : undefined,
-            status: (apiProfile.status === 'verified' || apiProfile.status === 'pending' || apiProfile.status === 'rejected') 
-              ? apiProfile.status 
+            status: (apiProfile.status === 'verified' || apiProfile.status === 'pending' || apiProfile.status === 'rejected')
+              ? apiProfile.status
               : 'pending',
             listings: (apiProfile.listings || []).map((listing: any) => ({
               id: listing.id,
@@ -755,28 +754,28 @@ export default function ProfilePage() {
     if (platformLower.includes('instagram')) {
       return (
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
         </svg>
       )
     }
     if (platformLower.includes('tiktok')) {
       return (
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
         </svg>
       )
     }
     if (platformLower.includes('youtube') || platformLower.includes('yt')) {
       return (
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
         </svg>
       )
     }
     if (platformLower.includes('facebook')) {
       return (
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
         </svg>
       )
     }
@@ -840,7 +839,7 @@ export default function ProfilePage() {
     if (!email || !email.includes('@')) {
       return
     }
-    
+
     setIsSavingContact(true)
     // Simulate API call
     setTimeout(() => {
@@ -929,28 +928,28 @@ export default function ProfilePage() {
         // Filter out empty or null age ranges first - handle both ageRange and age_range formats
         const validAgeGroups = platform.topAgeGroups && platform.topAgeGroups.length > 0
           ? platform.topAgeGroups
-              .map((tag: any) => {
-                // Handle both camelCase and snake_case formats, and null values
-                const ageRangeValue = tag.ageRange ?? tag.age_range ?? null
-                // Only process if we have a valid non-null value
-                if (ageRangeValue === null || ageRangeValue === undefined) {
-                  return null
-                }
-                const trimmedAgeRange = String(ageRangeValue).trim()
-                return {
-                  ageRange: trimmedAgeRange,
-                  percentage: tag.percentage ?? 0,
-                }
-              })
-              .filter((tag: any) => {
-                // Filter out null entries and invalid age ranges
-                if (!tag || tag === null) return false
-                return tag.ageRange && tag.ageRange !== '' && tag.ageRange !== 'null'
-              })
-              .map((tag: any) => ({
-                ageRange: tag.ageRange.trim(), // Use camelCase - backend expects ageRange not age_range
-                percentage: tag.percentage,
-              }))
+            .map((tag: any) => {
+              // Handle both camelCase and snake_case formats, and null values
+              const ageRangeValue = tag.ageRange ?? tag.age_range ?? null
+              // Only process if we have a valid non-null value
+              if (ageRangeValue === null || ageRangeValue === undefined) {
+                return null
+              }
+              const trimmedAgeRange = String(ageRangeValue).trim()
+              return {
+                ageRange: trimmedAgeRange,
+                percentage: tag.percentage ?? 0,
+              }
+            })
+            .filter((tag: any) => {
+              // Filter out null entries and invalid age ranges
+              if (!tag || tag === null) return false
+              return tag.ageRange && tag.ageRange !== '' && tag.ageRange !== 'null'
+            })
+            .map((tag: any) => ({
+              ageRange: tag.ageRange.trim(), // Use camelCase - backend expects ageRange not age_range
+              percentage: tag.percentage,
+            }))
           : []
 
         return {
@@ -1022,7 +1021,7 @@ export default function ProfilePage() {
           profilePicture: profilePictureUrl,
         }),
       }
-      
+
       // Debug: inspect payload we send (check country percentages)
       console.log('Creator update payload (profile page):', updatePayload.platforms?.map((p: any) => ({
         name: p?.name,
@@ -1031,7 +1030,7 @@ export default function ProfilePage() {
 
       // Update creator profile (replaces all platforms)
       const updatedProfile = await creatorService.updateMyProfile(updatePayload as any)
-      
+
       // Update profile picture immediately from response if available
       if (updatedProfile && (updatedProfile.profilePicture || (updatedProfile as any).profile_picture)) {
         const pictureUrl = updatedProfile.profilePicture || (updatedProfile as any).profile_picture
@@ -1048,14 +1047,14 @@ export default function ProfilePage() {
           }
         }
       }
-      
+
       // Re-fetch full profile to get updated data
       await loadProfile()
-      
+
       // Clear file state after successful save
       setCreatorProfilePictureFile(null)
       setProfilePicturePreview(null)
-      
+
       setIsEditingProfile(false)
     } catch (error: unknown) {
       const detail =
@@ -1163,12 +1162,12 @@ export default function ProfilePage() {
       if ((phone || '') !== (hotelProfile.phone || '')) {
         payload.phone = phone || undefined
       }
-      
+
       // If there's a profile picture file, use FormData; otherwise use JSON
       if (hotelProfilePictureFile) {
         // Use FormData for file upload
         const formData = new FormData()
-        
+
         // Add all fields that have changed
         if (hotelEditFormData.name.trim() !== hotelProfile.name) {
           formData.append('name', hotelEditFormData.name.trim())
@@ -1185,19 +1184,19 @@ export default function ProfilePage() {
         if ((phone || '') !== (hotelProfile.phone || '')) {
           formData.append('phone', phone || '')
         }
-        
+
         // Include email if it changed
         const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
         if (userEmail && userEmail !== hotelProfile.email) {
           formData.append('email', userEmail)
         }
-        
+
         // Add image file with the correct field name
         formData.append('picture', hotelProfilePictureFile)
-        
+
         // Update hotel profile with FormData
         const updatedProfile = await hotelService.updateMyProfile(formData)
-        
+
         // Update picture immediately from response if available
         if (updatedProfile && updatedProfile.picture) {
           setHotelEditFormData(prev => ({
@@ -1239,7 +1238,7 @@ export default function ProfilePage() {
 
         // Update hotel profile with partial data
         const updatedProfile = await hotelService.updateMyProfile(payload)
-        
+
         // Update picture immediately from response if available
         if (updatedProfile && updatedProfile.picture) {
           setHotelEditFormData(prev => ({
@@ -1254,12 +1253,12 @@ export default function ProfilePage() {
           }
         }
       }
-      
+
       // Re-fetch full profile to get updated data
       await loadProfile()
-      
+
       setIsEditingHotelProfile(false)
-      
+
       // Clear file input and preview
       const hotelInput = hotelFileInputRef.current
       if (hotelInput) {
@@ -1321,7 +1320,7 @@ export default function ProfilePage() {
       showError('Validation Error', 'Please enter a valid email address')
       return
     }
-    
+
     if (!hotelProfile) return
 
     setIsSavingContact(true)
@@ -1348,10 +1347,10 @@ export default function ProfilePage() {
 
       // Update hotel profile with partial data
       await hotelService.updateMyProfile(payload)
-      
+
       // Re-fetch full profile to get updated data
       await loadProfile()
-      
+
       setIsEditingContact(false)
     } catch (error: unknown) {
       const detail =
@@ -1450,7 +1449,7 @@ export default function ProfilePage() {
       // Separate existing URLs from new base64 images
       let imageUrls = listingFormData.images.filter((img) => !img.startsWith('data:'))
       const base64Images = listingFormData.images.filter((img) => img.startsWith('data:'))
-      
+
       // Upload new base64 images first (convert to File objects)
       if (base64Images.length > 0) {
         try {
@@ -1461,7 +1460,7 @@ export default function ProfilePage() {
             const file = new File([blob], 'image.jpg', { type: blob.type })
             files.push(file)
           }
-          
+
           // Upload images using standalone endpoint
           const uploadResponse = await hotelService.uploadListingImages(files)
           const newImageUrls = uploadResponse.images.map((img) => img.url)
@@ -1482,13 +1481,13 @@ export default function ProfilePage() {
           return
         }
       }
-      
+
       // Build listing data with all image URLs (existing + newly uploaded)
       const apiListingData = transformListingToApi({
         ...listingFormData,
         images: imageUrls,
       })
-      
+
       if (editingListingId) {
         const listingId = editingListingId as string
         // Update existing listing with all image URLs
@@ -1497,10 +1496,10 @@ export default function ProfilePage() {
         // Create new listing with all image URLs
         await hotelService.createListing(apiListingData)
       }
-      
+
       // Re-fetch full profile to get updated data
       await loadProfile()
-      
+
       handleCancelListing()
       setIsSavingListing(false)
     } catch (error: unknown) {
@@ -1568,10 +1567,10 @@ export default function ProfilePage() {
 
     try {
       await hotelService.deleteListing(deleteConfirmModal.listingId)
-      
+
       // Close modal
       setDeleteConfirmModal({ isOpen: false, listingId: null, listingName: '' })
-      
+
       // Re-fetch full profile to get updated data
       await loadProfile()
     } catch (error: unknown) {
@@ -1622,7 +1621,7 @@ export default function ProfilePage() {
       // Upload images using standalone endpoint
       const uploadResponse = await hotelService.uploadListingImages(fileList)
       const newImageUrls = uploadResponse.images.map((img) => img.url)
-      
+
       // Add uploaded URLs to form data
       setListingFormData({
         ...listingFormData,
@@ -1659,10 +1658,10 @@ export default function ProfilePage() {
   const addPlatform = () => {
     setEditFormData({
       ...editFormData,
-      platforms: [...editFormData.platforms, { 
-        name: '', 
-        handle: '', 
-        followers: 0, 
+      platforms: [...editFormData.platforms, {
+        name: '',
+        handle: '',
+        followers: 0,
         engagementRate: 0,
         topCountries: [],
         topAgeGroups: [],
@@ -1706,10 +1705,10 @@ export default function ProfilePage() {
       const nextValue =
         field === 'percentage'
           ? (() => {
-              const parsed = typeof value === 'number' ? value : parseFloat(String(value))
-              const safeValue = Number.isNaN(parsed) ? 0 : parsed
-              return Math.max(0, Math.min(100, safeValue))
-            })()
+            const parsed = typeof value === 'number' ? value : parseFloat(String(value))
+            const safeValue = Number.isNaN(parsed) ? 0 : parsed
+            return Math.max(0, Math.min(100, safeValue))
+          })()
           : value
       return { ...country, [field]: nextValue }
     })
@@ -1828,7 +1827,7 @@ export default function ProfilePage() {
     try {
       // Store the File object for upload
       setCreatorProfilePictureFile(file)
-      
+
       // Create preview for display
       const reader = new FileReader()
       reader.onloadend = () => {
@@ -1851,7 +1850,7 @@ export default function ProfilePage() {
         <div className="pt-4">
           <ProfileWarningBanner />
         </div>
-        
+
         <div className="max-w-7xl mx-auto pt-4 pb-8" style={{ paddingLeft: 'clamp(0.5rem, 3%, 3rem)', paddingRight: '2rem' }}>
           {/* Header */}
           <div className="mb-8">
@@ -1882,31 +1881,28 @@ export default function ProfilePage() {
                       <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => setActiveCreatorTab('overview')}
-                          className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                            activeCreatorTab === 'overview'
-                              ? 'bg-primary-600 text-white'
-                              : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                          }`}
+                          className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${activeCreatorTab === 'overview'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                            }`}
                         >
                           Overview
                         </button>
                         <button
                           onClick={() => setActiveCreatorTab('platforms')}
-                          className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                            activeCreatorTab === 'platforms'
-                              ? 'bg-primary-600 text-white'
-                              : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                          }`}
+                          className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${activeCreatorTab === 'platforms'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                            }`}
                         >
                           Social Media Platforms
                         </button>
                         <button
                           onClick={() => setActiveCreatorTab('reviews')}
-                          className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                            activeCreatorTab === 'reviews'
-                              ? 'bg-primary-600 text-white'
-                              : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                          }`}
+                          className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${activeCreatorTab === 'reviews'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                            }`}
                         >
                           Reviews & Ratings
                         </button>
@@ -1961,7 +1957,7 @@ export default function ProfilePage() {
                           {/* Left Column: Name & Location */}
                           <div className="flex-1 space-y-3">
                             <Input
-                              label="Name *"
+                              label="Name"
                               type="text"
                               value={isEditingProfile ? editFormData.name : creatorProfile.name}
                               onChange={(e) => {
@@ -1976,7 +1972,7 @@ export default function ProfilePage() {
                             />
 
                             <Input
-                              label="Location *"
+                              label="Location"
                               type="text"
                               value={isEditingProfile ? editFormData.location : creatorProfile.location}
                               onChange={(e) => {
@@ -1995,9 +1991,8 @@ export default function ProfilePage() {
                           <div className="w-full md:w-auto flex flex-col items-center gap-2">
                             <span className="text-xs font-semibold text-gray-700">Profile Picture</span>
                             <div
-                              className={`relative w-40 h-40 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center transition-all overflow-hidden bg-gray-50 group ${
-                                isEditingProfile ? 'cursor-pointer hover:border-primary-500 hover:bg-gray-50' : 'cursor-default'
-                              }`}
+                              className={`relative w-40 h-40 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center transition-all overflow-hidden bg-gray-50 group ${isEditingProfile ? 'cursor-pointer hover:border-primary-500 hover:bg-gray-50' : 'cursor-default'
+                                }`}
                               onClick={() => {
                                 if (isEditingProfile) {
                                   fileInputRef.current?.click()
@@ -2050,7 +2045,7 @@ export default function ProfilePage() {
 
                         <div className="space-y-1">
                           <Textarea
-                            label="Creator Biography *"
+                            label="Creator Biography"
                             value={isEditingProfile ? editFormData.shortDescription : creatorProfile.shortDescription}
                             onChange={(e) => {
                               if (isEditingProfile) {
@@ -2093,7 +2088,7 @@ export default function ProfilePage() {
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Input
-                              label="Email *"
+                              label="Email"
                               type="email"
                               value={typeof window !== 'undefined' ? localStorage.getItem('userEmail') || email : email}
                               disabled
@@ -2102,7 +2097,7 @@ export default function ProfilePage() {
                               className="bg-gray-50 text-gray-500"
                             />
                             <Input
-                              label="Phone *"
+                              label="Phone"
                               type="tel"
                               required
                               value={phone}
@@ -2178,71 +2173,71 @@ export default function ProfilePage() {
                                       <div className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm text-white bg-gradient-to-br ${platformColors[platform.name] || 'from-gray-500 to-gray-400'}`}>
                                         {renderPlatformIcon()}
                                       </div>
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <h3 className="font-semibold text-gray-900 text-lg">{platform.name}</h3>
-                                      </div>
-                                      <div className="flex items-center gap-2 text-gray-700">
-                                        <span className="font-medium">{platform.handle}</span>
-                                        <span className="text-gray-400">•</span>
-                                        <span>{formatFollowersDE(platform.followers ?? 0)} Follower</span>
-                                        <span className="text-gray-400">•</span>
-                                        <span>{(platform.engagementRate ?? 0).toFixed(1).replace('.', ',')}% Engagement</span>
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <h3 className="font-semibold text-gray-900 text-lg">{platform.name}</h3>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-gray-700">
+                                          <span className="font-medium">{platform.handle}</span>
+                                          <span className="text-gray-400">•</span>
+                                          <span>{formatFollowersDE(platform.followers ?? 0)} Follower</span>
+                                          <span className="text-gray-400">•</span>
+                                          <span>{(platform.engagementRate ?? 0).toFixed(1).replace('.', ',')}% Engagement</span>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
 
-                                  {/* Platform Metrics */}
-                                  {(platform.topCountries && platform.topCountries.length > 0) ||
-                                   (platform.topAgeGroups && platform.topAgeGroups.length > 0) ||
-                                   platform.genderSplit ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                      {/* Top Countries */}
-                                      {platform.topCountries && platform.topCountries.length > 0 && (
-                                        <div>
-                                          <div className="text-sm font-semibold text-gray-700 mb-2">Top Countries</div>
-                                          <ul className="space-y-2">
-                                            {platform.topCountries.map((country, idx) => (
-                                              <li key={idx} className="flex items-center gap-2">
-                                                <span className="text-lg">{getCountryFlag(country.country)}</span>
-                                                <span className="text-sm text-gray-700">{country.country}: <span className="font-semibold text-gray-900">{country.percentage}%</span></span>
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                      )}
-
-                                      {/* Top Age Groups */}
-                                      {platform.topAgeGroups && platform.topAgeGroups.length > 0 && (
-                                        <div>
-                                          <div className="text-sm font-semibold text-gray-700 mb-2">Top Age Groups</div>
-                                          <ul className="space-y-2">
-                                            {platform.topAgeGroups.map((ageGroup, idx) => (
-                                              <li key={idx} className="text-sm text-gray-700">
-                                                {ageGroup.ageRange}
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                      )}
-
-                                      {/* Gender Split */}
-                                      {platform.genderSplit && (
-                                        <div>
-                                          <div className="text-sm font-semibold text-gray-700 mb-2">Gender Split</div>
-                                          <div className="space-y-2">
-                                            <div className="text-sm text-gray-700">Male: <span className="font-semibold text-gray-900">{platform.genderSplit.male}%</span></div>
-                                            <div className="text-sm text-gray-700">Female: <span className="font-semibold text-gray-900">{platform.genderSplit.female}%</span></div>
+                                    {/* Platform Metrics */}
+                                    {(platform.topCountries && platform.topCountries.length > 0) ||
+                                      (platform.topAgeGroups && platform.topAgeGroups.length > 0) ||
+                                      platform.genderSplit ? (
+                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {/* Top Countries */}
+                                        {platform.topCountries && platform.topCountries.length > 0 && (
+                                          <div>
+                                            <div className="text-sm font-semibold text-gray-700 mb-2">Top Countries</div>
+                                            <ul className="space-y-2">
+                                              {platform.topCountries.map((country, idx) => (
+                                                <li key={idx} className="flex items-center gap-2">
+                                                  <span className="text-lg">{getCountryFlag(country.country)}</span>
+                                                  <span className="text-sm text-gray-700">{country.country}: <span className="font-semibold text-gray-900">{country.percentage}%</span></span>
+                                                </li>
+                                              ))}
+                                            </ul>
                                           </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm text-gray-500 italic">
-                                      No additional metrics available. Edit your profile to add platform metrics.
-                                    </div>
-                                  )}
-                                </div>
+                                        )}
+
+                                        {/* Top Age Groups */}
+                                        {platform.topAgeGroups && platform.topAgeGroups.length > 0 && (
+                                          <div>
+                                            <div className="text-sm font-semibold text-gray-700 mb-2">Top Age Groups</div>
+                                            <ul className="space-y-2">
+                                              {platform.topAgeGroups.map((ageGroup, idx) => (
+                                                <li key={idx} className="text-sm text-gray-700">
+                                                  {ageGroup.ageRange}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+
+                                        {/* Gender Split */}
+                                        {platform.genderSplit && (
+                                          <div>
+                                            <div className="text-sm font-semibold text-gray-700 mb-2">Gender Split</div>
+                                            <div className="space-y-2">
+                                              <div className="text-sm text-gray-700">Male: <span className="font-semibold text-gray-900">{platform.genderSplit.male}%</span></div>
+                                              <div className="text-sm text-gray-700">Female: <span className="font-semibold text-gray-900">{platform.genderSplit.female}%</span></div>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm text-gray-500 italic">
+                                        No additional metrics available. Edit your profile to add platform metrics.
+                                      </div>
+                                    )}
+                                  </div>
                                 )
                               })
                             ) : (
@@ -2272,357 +2267,356 @@ export default function ProfilePage() {
 
                               {/* Platform Cards Grid */}
                               <div className="space-y-3 mt-4">
-                            {PLATFORM_OPTIONS.map((platformName) => {
-                              // Get all platforms of this type
-                              const platformsOfThisType = editFormData.platforms.filter((p) => p.name === platformName)
-                              const hasPlatforms = platformsOfThisType.length > 0
+                                {PLATFORM_OPTIONS.map((platformName) => {
+                                  // Get all platforms of this type
+                                  const platformsOfThisType = editFormData.platforms.filter((p) => p.name === platformName)
+                                  const hasPlatforms = platformsOfThisType.length > 0
 
-                              const platformColors: Record<string, string> = {
-                                Instagram: 'from-yellow-400 via-pink-500 to-purple-600',
-                                TikTok: 'from-gray-900 to-gray-800',
-                                YouTube: 'from-red-600 to-red-500',
-                                Facebook: 'from-blue-600 to-blue-500',
-                              }
+                                  const platformColors: Record<string, string> = {
+                                    Instagram: 'from-yellow-400 via-pink-500 to-purple-600',
+                                    TikTok: 'from-gray-900 to-gray-800',
+                                    YouTube: 'from-red-600 to-red-500',
+                                    Facebook: 'from-blue-600 to-blue-500',
+                                  }
 
-                              const renderIcon = () => {
-                                if (platformName === 'Instagram') {
-                                  return (
-                                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
-                                    </svg>
-                                  )
-                                }
-                                if (platformName === 'TikTok') {
-                                  return (
-                                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.1 1.75 2.9 2.9 0 0 1 2.31-4.64 2.88 2.88 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-.96-.1z" />
-                                    </svg>
-                                  )
-                                }
-                                if (platformName === 'YouTube') {
-                                  return (
-                                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                    </svg>
-                                  )
-                                }
-                                return (
-                                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                                  </svg>
-                                )
-                              }
+                                  const renderIcon = () => {
+                                    if (platformName === 'Instagram') {
+                                      return (
+                                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+                                        </svg>
+                                      )
+                                    }
+                                    if (platformName === 'TikTok') {
+                                      return (
+                                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.1 1.75 2.9 2.9 0 0 1 2.31-4.64 2.88 2.88 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-.96-.1z" />
+                                        </svg>
+                                      )
+                                    }
+                                    if (platformName === 'YouTube') {
+                                      return (
+                                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                        </svg>
+                                      )
+                                    }
+                                    return (
+                                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                      </svg>
+                                    )
+                                  }
 
-                              return (
-                                <div key={platformName} className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
-                                  {/* Platform Header */}
-                                  <div className="flex items-center justify-between gap-4 p-4">
-                                    <div className="flex items-center gap-3">
-                                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-white bg-gradient-to-br ${platformColors[platformName] || 'from-gray-500 to-gray-400'}`}>
-                                        {renderIcon()}
+                                  return (
+                                    <div key={platformName} className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
+                                      {/* Platform Header */}
+                                      <div className="flex items-center justify-between gap-4 p-4">
+                                        <div className="flex items-center gap-3">
+                                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm text-white bg-gradient-to-br ${platformColors[platformName] || 'from-gray-500 to-gray-400'}`}>
+                                            {renderIcon()}
+                                          </div>
+                                          <div>
+                                            <p className="font-bold text-gray-900 text-lg">{platformName}</p>
+                                            {hasPlatforms && (
+                                              <p className="text-xs text-gray-500 mt-0.5">
+                                                {platformsOfThisType.length} {platformsOfThisType.length === 1 ? 'account' : 'accounts'} added
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Always show Add button */}
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setEditFormData({
+                                              ...editFormData,
+                                              platforms: [
+                                                ...editFormData.platforms,
+                                                {
+                                                  name: platformName,
+                                                  handle: '',
+                                                  followers: 0,
+                                                  engagementRate: 0,
+                                                  topCountries: [],
+                                                  topAgeGroups: [],
+                                                  genderSplit: { male: 0, female: 0 },
+                                                },
+                                              ],
+                                            })
+                                          }}
+                                          className="px-4 py-2 border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors text-sm font-medium"
+                                        >
+                                          Add Account
+                                        </button>
                                       </div>
-                                      <div>
-                                        <p className="font-bold text-gray-900 text-lg">{platformName}</p>
-                                        {hasPlatforms && (
-                                          <p className="text-xs text-gray-500 mt-0.5">
-                                            {platformsOfThisType.length} {platformsOfThisType.length === 1 ? 'account' : 'accounts'} added
-                                          </p>
-                                        )}
-                                      </div>
-                                    </div>
 
-                                    {/* Always show Add button */}
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setEditFormData({
-                                          ...editFormData,
-                                          platforms: [
-                                            ...editFormData.platforms,
-                                            {
-                                              name: platformName,
-                                              handle: '',
-                                              followers: 0,
-                                              engagementRate: 0,
-                                              topCountries: [],
-                                              topAgeGroups: [],
-                                              genderSplit: { male: 0, female: 0 },
-                                            },
-                                          ],
-                                        })
-                                      }}
-                                      className="px-4 py-2 border border-primary-200 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors text-sm font-medium"
-                                    >
-                                      Add Account
-                                    </button>
-                                  </div>
+                                      {/* Show all platforms of this type */}
+                                      {platformsOfThisType.length > 0 && (
+                                        <div className="border-t border-gray-100 divide-y divide-gray-100">
+                                          {platformsOfThisType.map((platform, idx) => {
+                                            // Find the actual index in editFormData.platforms
+                                            // Get all indices of platforms with this name, then use the idx-th one
+                                            const allIndices = editFormData.platforms
+                                              .map((p, i) => p.name === platformName ? i : -1)
+                                              .filter(i => i !== -1)
+                                            const actualIndex = allIndices[idx]
 
-                                  {/* Show all platforms of this type */}
-                                  {platformsOfThisType.length > 0 && (
-                                    <div className="border-t border-gray-100 divide-y divide-gray-100">
-                                      {platformsOfThisType.map((platform, idx) => {
-                                        // Find the actual index in editFormData.platforms
-                                        // Get all indices of platforms with this name, then use the idx-th one
-                                        const allIndices = editFormData.platforms
-                                          .map((p, i) => p.name === platformName ? i : -1)
-                                          .filter(i => i !== -1)
-                                        const actualIndex = allIndices[idx]
-                                        
-                                        return (
-                                          <div key={`${platformName}-${idx}`} className="px-4 md:px-6 pb-5 pt-4">
-                                            {/* Account Header */}
-                                            <div className="flex items-center justify-between mb-4">
-                                              <div>
-                                                <p className="text-sm font-semibold text-gray-700">
-                                                  {platform.handle || `Account ${idx + 1}`}
-                                                </p>
-                                                {platform.handle && (
-                                                  <p className="text-xs text-gray-500 mt-0.5">
-                                                    {platform.followers > 0 ? `${formatFollowersDE(platform.followers)} followers` : 'No followers set'}
-                                                  </p>
-                                                )}
-                                              </div>
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  // Find all platforms of this type and get the correct index
-                                                  const allOfType = editFormData.platforms
-                                                    .map((p, i) => ({ platform: p, index: i }))
-                                                    .filter(({ platform }) => platform.name === platformName)
-                                                  const platformToRemove = allOfType[idx]
-                                                  if (platformToRemove) {
-                                                    removePlatform(platformToRemove.index)
-                                                  }
-                                                }}
-                                                className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
-                                              >
-                                                Remove
-                                              </button>
-                                            </div>
-
-                                            {/* Account Form */}
-                                            <div className="space-y-3 mb-4">
-                                              <Input
-                                                label="Username"
-                                                type="text"
-                                                value={actualIndex >= 0 ? editFormData.platforms[actualIndex].handle : ''}
-                                                onChange={(e) => updatePlatform(actualIndex, 'handle', e.target.value)}
-                                                placeholder="@ username"
-                                                required
-                                                className="bg-gray-50"
-                                              />
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                <Input
-                                                  label="Followers"
-                                                  type="number"
-                                                  value={actualIndex >= 0 ? editFormData.platforms[actualIndex].followers || '' : ''}
-                                                  onChange={(e) => updatePlatform(actualIndex, 'followers', e.target.value === '' ? '' : parseInt(e.target.value))}
-                                                  required
-                                                  placeholder="0"
-                                                  min={1}
-                                                  className="bg-gray-50"
-                                                />
-                                                <Input
-                                                  label="Engagement Rate (%)"
-                                                  type="number"
-                                                  value={actualIndex >= 0 ? editFormData.platforms[actualIndex].engagementRate || '' : ''}
-                                                  onChange={(e) => {
-                                                    const raw = e.target.value.replace(',', '.')
-                                                    updatePlatform(actualIndex, 'engagementRate', raw === '' ? '' : parseFloat(raw))
-                                                  }}
-                                                  required
-                                                  placeholder="0.00"
-                                                  min={0.01}
-                                                  max={100}
-                                                  step="0.01"
-                                                  className="bg-gray-50"
-                                                />
-                                              </div>
-                                            </div>
-
-                                            <div className="bg-white border border-gray-200 rounded-xl p-3">
-                                              <button
-                                                type="button"
-                                                onClick={() => togglePlatformExpanded(actualIndex)}
-                                                className="flex items-center justify-between w-full text-left"
-                                              >
-                                                <span className="text-sm font-semibold text-gray-800">Audience Demographics (Optional)</span>
-                                                {expandedPlatforms.has(actualIndex) ? (
-                                                  <ChevronUpIcon className="w-5 h-5 text-gray-500" />
-                                                ) : (
-                                                  <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-                                                )}
-                                              </button>
-
-                                              {expandedPlatforms.has(actualIndex) && (
-                                          <div className="mt-4 space-y-4">
-                                            {/* Top Countries */}
-                                            <div className="space-y-2">
-                                              <div className="flex items-center justify-between">
-                                                <div>
-                                                  <p className="text-sm font-semibold text-gray-800">Top Countries</p>
-                                                  <p className="text-xs text-gray-500">Select up to 3 countries with their audience percentage</p>
-                                                </div>
-                                              </div>
-                                              <div className="space-y-2">
-                                                <input
-                                                  type="text"
-                                                  value={platformCountryInputs[actualIndex] || ''}
-                                                  onChange={(e) => handleCountryInputChange(actualIndex, e.target.value)}
-                                                  onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                      e.preventDefault()
-                                                      addCountryFromInput(actualIndex)
-                                                    }
-                                                  }}
-                                                  placeholder="Search countries..."
-                                                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
-                                                />
-                                                {/* Dropdown suggestions */}
-                                                {getAvailableCountries(actualIndex).length > 0 && (
-                                                  <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                                                    {getAvailableCountries(actualIndex).map((country) => (
-                                                      <button
-                                                        key={country}
-                                                        type="button"
-                                                        onClick={() => addCountryFromInput(actualIndex, country)}
-                                                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
-                                                      >
-                                                        {country}
-                                                      </button>
-                                                    ))}
+                                            return (
+                                              <div key={`${platformName}-${idx}`} className="px-4 md:px-6 pb-5 pt-4">
+                                                {/* Account Header */}
+                                                <div className="flex items-center justify-between mb-4">
+                                                  <div>
+                                                    <p className="text-sm font-semibold text-gray-700">
+                                                      {platform.handle || `Account ${idx + 1}`}
+                                                    </p>
+                                                    {platform.handle && (
+                                                      <p className="text-xs text-gray-500 mt-0.5">
+                                                        {platform.followers > 0 ? `${formatFollowersDE(platform.followers)} followers` : 'No followers set'}
+                                                      </p>
+                                                    )}
                                                   </div>
-                                                )}
-                                                {editFormData.platforms[actualIndex]?.topCountries?.length ? (
-                                                  <div className="space-y-2">
-                                                    {editFormData.platforms[actualIndex].topCountries!.map((country, countryIndex) => (
-                                                      <div
-                                                        key={`${country.country}-${countryIndex}`}
-                                                        className="flex items-center gap-3 rounded-lg border border-gray-200 bg-primary-50/60 px-3 py-2"
-                                                      >
-                                                        <div className="flex-1 min-w-0">
-                                                          <p className="text-sm font-semibold text-gray-800 truncate">{country.country || 'Country'}</p>
-                                                          <p className="text-xs text-gray-500">Audience percentage</p>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                          <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
-                                                            <input
-                                                              type="text"
-                                                              inputMode="decimal"
-                                                              value={country.percentage && country.percentage > 0 ? country.percentage : ''}
-                                                              onChange={(e) => {
-                                                                const raw = e.target.value
-                                                                const parsed = raw === '' ? 0 : parseFloat(raw)
-                                                                updateTopCountry(actualIndex, countryIndex, 'percentage', parsed)
-                                                              }}
-                                                              placeholder="0"
-                                                              className="w-16 bg-transparent text-sm text-gray-800 outline-none"
-                                                            />
-                                                            <span className="text-sm text-gray-500">%</span>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      // Find all platforms of this type and get the correct index
+                                                      const allOfType = editFormData.platforms
+                                                        .map((p, i) => ({ platform: p, index: i }))
+                                                        .filter(({ platform }) => platform.name === platformName)
+                                                      const platformToRemove = allOfType[idx]
+                                                      if (platformToRemove) {
+                                                        removePlatform(platformToRemove.index)
+                                                      }
+                                                    }}
+                                                    className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+                                                  >
+                                                    Remove
+                                                  </button>
+                                                </div>
+
+                                                {/* Account Form */}
+                                                <div className="space-y-3 mb-4">
+                                                  <Input
+                                                    label="Username"
+                                                    type="text"
+                                                    value={actualIndex >= 0 ? editFormData.platforms[actualIndex].handle : ''}
+                                                    onChange={(e) => updatePlatform(actualIndex, 'handle', e.target.value)}
+                                                    placeholder="@ username"
+                                                    required
+                                                    className="bg-gray-50"
+                                                  />
+                                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    <Input
+                                                      label="Followers"
+                                                      type="number"
+                                                      value={actualIndex >= 0 ? editFormData.platforms[actualIndex].followers || '' : ''}
+                                                      onChange={(e) => updatePlatform(actualIndex, 'followers', e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                      required
+                                                      placeholder="0"
+                                                      min={1}
+                                                      className="bg-gray-50"
+                                                    />
+                                                    <Input
+                                                      label="Engagement Rate (%)"
+                                                      type="number"
+                                                      value={actualIndex >= 0 ? editFormData.platforms[actualIndex].engagementRate || '' : ''}
+                                                      onChange={(e) => {
+                                                        const raw = e.target.value.replace(',', '.')
+                                                        updatePlatform(actualIndex, 'engagementRate', raw === '' ? '' : parseFloat(raw))
+                                                      }}
+                                                      required
+                                                      placeholder="0.00"
+                                                      min={0.01}
+                                                      max={100}
+                                                      step="0.01"
+                                                      className="bg-gray-50"
+                                                    />
+                                                  </div>
+                                                </div>
+
+                                                <div className="bg-white border border-gray-200 rounded-xl p-3">
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => togglePlatformExpanded(actualIndex)}
+                                                    className="flex items-center justify-between w-full text-left"
+                                                  >
+                                                    <span className="text-sm font-semibold text-gray-800">Audience Demographics (Optional)</span>
+                                                    {expandedPlatforms.has(actualIndex) ? (
+                                                      <ChevronUpIcon className="w-5 h-5 text-gray-500" />
+                                                    ) : (
+                                                      <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+                                                    )}
+                                                  </button>
+
+                                                  {expandedPlatforms.has(actualIndex) && (
+                                                    <div className="mt-4 space-y-4">
+                                                      {/* Top Countries */}
+                                                      <div className="space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                          <div>
+                                                            <p className="text-sm font-semibold text-gray-800">Top Countries</p>
+                                                            <p className="text-xs text-gray-500">Select up to 3 countries with their audience percentage</p>
                                                           </div>
-                                                          <button
-                                                            type="button"
-                                                            onClick={() => removeCountryTag(actualIndex, countryIndex)}
-                                                            className="p-1 text-gray-500 hover:text-primary-700"
-                                                            aria-label={`Remove ${country.country}`}
-                                                          >
-                                                            <XMarkIcon className="w-4 h-4" />
-                                                          </button>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                          <input
+                                                            type="text"
+                                                            value={platformCountryInputs[actualIndex] || ''}
+                                                            onChange={(e) => handleCountryInputChange(actualIndex, e.target.value)}
+                                                            onKeyDown={(e) => {
+                                                              if (e.key === 'Enter') {
+                                                                e.preventDefault()
+                                                                addCountryFromInput(actualIndex)
+                                                              }
+                                                            }}
+                                                            placeholder="Search countries..."
+                                                            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
+                                                          />
+                                                          {/* Dropdown suggestions */}
+                                                          {getAvailableCountries(actualIndex).length > 0 && (
+                                                            <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                                                              {getAvailableCountries(actualIndex).map((country) => (
+                                                                <button
+                                                                  key={country}
+                                                                  type="button"
+                                                                  onClick={() => addCountryFromInput(actualIndex, country)}
+                                                                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
+                                                                >
+                                                                  {country}
+                                                                </button>
+                                                              ))}
+                                                            </div>
+                                                          )}
+                                                          {editFormData.platforms[actualIndex]?.topCountries?.length ? (
+                                                            <div className="space-y-2">
+                                                              {editFormData.platforms[actualIndex].topCountries!.map((country, countryIndex) => (
+                                                                <div
+                                                                  key={`${country.country}-${countryIndex}`}
+                                                                  className="flex items-center gap-3 rounded-lg border border-gray-200 bg-primary-50/60 px-3 py-2"
+                                                                >
+                                                                  <div className="flex-1 min-w-0">
+                                                                    <p className="text-sm font-semibold text-gray-800 truncate">{country.country || 'Country'}</p>
+                                                                    <p className="text-xs text-gray-500">Audience percentage</p>
+                                                                  </div>
+                                                                  <div className="flex items-center gap-2">
+                                                                    <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
+                                                                      <input
+                                                                        type="text"
+                                                                        inputMode="decimal"
+                                                                        value={country.percentage && country.percentage > 0 ? country.percentage : ''}
+                                                                        onChange={(e) => {
+                                                                          const raw = e.target.value
+                                                                          const parsed = raw === '' ? 0 : parseFloat(raw)
+                                                                          updateTopCountry(actualIndex, countryIndex, 'percentage', parsed)
+                                                                        }}
+                                                                        placeholder="0"
+                                                                        className="w-16 bg-transparent text-sm text-gray-800 outline-none"
+                                                                      />
+                                                                      <span className="text-sm text-gray-500">%</span>
+                                                                    </div>
+                                                                    <button
+                                                                      type="button"
+                                                                      onClick={() => removeCountryTag(actualIndex, countryIndex)}
+                                                                      className="p-1 text-gray-500 hover:text-primary-700"
+                                                                      aria-label={`Remove ${country.country}`}
+                                                                    >
+                                                                      <XMarkIcon className="w-4 h-4" />
+                                                                    </button>
+                                                                  </div>
+                                                                </div>
+                                                              ))}
+                                                            </div>
+                                                          ) : (
+                                                            <p className="text-xs text-gray-500">Add up to 3 countries and set the audience % for each.</p>
+                                                          )}
                                                         </div>
                                                       </div>
-                                                    ))}
-                                                  </div>
-                                                ) : (
-                                                  <p className="text-xs text-gray-500">Add up to 3 countries and set the audience % for each.</p>
-                                                )}
-                                              </div>
-                                            </div>
 
-                                            {/* Top Age Groups */}
-                                            <div className="space-y-2">
-                                              <div>
-                                                <p className="text-sm font-semibold text-gray-800">Age Groups</p>
-                                                <p className="text-xs text-gray-500">Select up to 3 age groups with their audience percentage</p>
-                                              </div>
-                                              <div className="flex flex-wrap gap-2">
-                                                {AGE_GROUP_OPTIONS.map((range) => {
-                                                  const isSelected = editFormData.platforms[actualIndex]?.topAgeGroups?.some((a) => a.ageRange === range)
-                                                  return (
-                                                    <button
-                                                      key={range}
-                                                      type="button"
-                                                      onClick={() => toggleAgeGroupTag(actualIndex, range)}
-                                                      className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
-                                                        isSelected
-                                                          ? 'bg-primary-50 text-primary-700 border-primary-200'
-                                                          : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700'
-                                                      }`}
-                                                    >
-                                                      {range}
-                                                    </button>
-                                                  )
-                                                })}
-                                              </div>
-                                            </div>
+                                                      {/* Top Age Groups */}
+                                                      <div className="space-y-2">
+                                                        <div>
+                                                          <p className="text-sm font-semibold text-gray-800">Age Groups</p>
+                                                          <p className="text-xs text-gray-500">Select up to 3 age groups with their audience percentage</p>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-2">
+                                                          {AGE_GROUP_OPTIONS.map((range) => {
+                                                            const isSelected = editFormData.platforms[actualIndex]?.topAgeGroups?.some((a) => a.ageRange === range)
+                                                            return (
+                                                              <button
+                                                                key={range}
+                                                                type="button"
+                                                                onClick={() => toggleAgeGroupTag(actualIndex, range)}
+                                                                className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${isSelected
+                                                                  ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                                                  : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700'
+                                                                  }`}
+                                                              >
+                                                                {range}
+                                                              </button>
+                                                            )
+                                                          })}
+                                                        </div>
+                                                      </div>
 
-                                            {/* Gender Split */}
-                                            <div className="space-y-2">
-                                              <p className="text-sm font-semibold text-gray-800">Gender Split</p>
-                                              <div className="grid grid-cols-2 gap-3">
-                                                <Input
-                                                  label="Male %"
-                                                  type="number"
-                                                  value={editFormData.platforms[actualIndex]?.genderSplit?.male && editFormData.platforms[actualIndex].genderSplit!.male > 0 ? editFormData.platforms[actualIndex].genderSplit!.male : ''}
-                                                  onChange={(e) => {
-                                                    const val = e.target.value
-                                                    const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
-                                                    updateGenderSplit(actualIndex, 'male', cleanVal === '' ? 0 : parseInt(cleanVal))
-                                                  }}
-                                                  placeholder="45"
-                                                  min={0}
-                                                  max={100}
-                                                  step="0.1"
-                                                  className="bg-gray-50"
-                                                />
-                                                <Input
-                                                  label="Female %"
-                                                  type="number"
-                                                  value={editFormData.platforms[actualIndex]?.genderSplit?.female && editFormData.platforms[actualIndex].genderSplit!.female > 0 ? editFormData.platforms[actualIndex].genderSplit!.female : ''}
-                                                  onChange={(e) => {
-                                                    const val = e.target.value
-                                                    const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
-                                                    updateGenderSplit(actualIndex, 'female', cleanVal === '' ? 0 : parseInt(cleanVal))
-                                                  }}
-                                                  placeholder="55"
-                                                  min={0}
-                                                  max={100}
-                                                  step="0.1"
-                                                  className="bg-gray-50"
-                                                />
+                                                      {/* Gender Split */}
+                                                      <div className="space-y-2">
+                                                        <p className="text-sm font-semibold text-gray-800">Gender Split</p>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                          <Input
+                                                            label="Male %"
+                                                            type="number"
+                                                            value={editFormData.platforms[actualIndex]?.genderSplit?.male && editFormData.platforms[actualIndex].genderSplit!.male > 0 ? editFormData.platforms[actualIndex].genderSplit!.male : ''}
+                                                            onChange={(e) => {
+                                                              const val = e.target.value
+                                                              const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
+                                                              updateGenderSplit(actualIndex, 'male', cleanVal === '' ? 0 : parseInt(cleanVal))
+                                                            }}
+                                                            placeholder="45"
+                                                            min={0}
+                                                            max={100}
+                                                            step="0.1"
+                                                            className="bg-gray-50"
+                                                          />
+                                                          <Input
+                                                            label="Female %"
+                                                            type="number"
+                                                            value={editFormData.platforms[actualIndex]?.genderSplit?.female && editFormData.platforms[actualIndex].genderSplit!.female > 0 ? editFormData.platforms[actualIndex].genderSplit!.female : ''}
+                                                            onChange={(e) => {
+                                                              const val = e.target.value
+                                                              const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
+                                                              updateGenderSplit(actualIndex, 'female', cleanVal === '' ? 0 : parseInt(cleanVal))
+                                                            }}
+                                                            placeholder="55"
+                                                            min={0}
+                                                            max={100}
+                                                            step="0.1"
+                                                            className="bg-gray-50"
+                                                          />
+                                                        </div>
+                                                        {editFormData.platforms[actualIndex]?.genderSplit && (editFormData.platforms[actualIndex].genderSplit!.male + editFormData.platforms[actualIndex].genderSplit!.female) > 100 && (
+                                                          <p className="text-xs text-red-600 mt-1">⚠️ Total &gt; 100%</p>
+                                                        )}
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
                                               </div>
-                                              {editFormData.platforms[actualIndex]?.genderSplit && (editFormData.platforms[actualIndex].genderSplit!.male + editFormData.platforms[actualIndex].genderSplit!.female) > 100 && (
-                                                <p className="text-xs text-red-600 mt-1">⚠️ Total &gt; 100%</p>
-                                              )}
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                            </div>
-                                          )
-                                        })}
-                                      </div>
-                                    )}
-                                  </div>
-                                )
-                              })}
-                          </div>
+                                            )
+                                          })}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </div>
 
-                          {/* Error Message */}
-                          {editFormData.platforms.length === 0 && (
-                            <p className="text-center text-orange-700 font-medium text-sm mt-4">
-                              Connect at least one platform to complete your profile
-                            </p>
-                          )}
+                              {/* Error Message */}
+                              {editFormData.platforms.length === 0 && (
+                                <p className="text-center text-orange-700 font-medium text-sm mt-4">
+                                  Connect at least one platform to complete your profile
+                                </p>
+                              )}
 
                               {/* Info Box */}
                               <div className="mt-6 flex items-center gap-3 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-700">
@@ -2741,21 +2735,19 @@ export default function ProfilePage() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => setActiveHotelTab('overview')}
-                        className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                          activeHotelTab === 'overview'
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                        }`}
+                        className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${activeHotelTab === 'overview'
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                          }`}
                       >
                         Overview
                       </button>
                       <button
                         onClick={() => setActiveHotelTab('listings')}
-                        className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                          activeHotelTab === 'listings'
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                        }`}
+                        className={`px-4 py-2.5 rounded-lg font-semibold transition-all duration-200 ${activeHotelTab === 'listings'
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                          }`}
                       >
                         Listings
                       </button>
@@ -2769,7 +2761,7 @@ export default function ProfilePage() {
                             title="Edit Profile"
                           >
                             <PencilIcon className="w-5 h-5" />
-                            
+
                           </Button>
                         ) : (
                           <div className="flex gap-3">
@@ -3130,7 +3122,7 @@ export default function ProfilePage() {
                                                     )}
                                                   </div>
                                                 ) : (
-                                                  <div 
+                                                  <div
                                                     className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:border-primary-400 hover:bg-primary-50 transition-all group cursor-pointer"
                                                     onClick={() => listingImageInputRef.current?.click()}
                                                   >
@@ -3178,11 +3170,10 @@ export default function ProfilePage() {
                                                     return (
                                                       <label
                                                         key={type}
-                                                        className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${
-                                                          isSelected
-                                                            ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
-                                                            : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
-                                                        }`}
+                                                        className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${isSelected
+                                                          ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
+                                                          : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
+                                                          }`}
                                                       >
                                                         <input
                                                           type="checkbox"
@@ -3202,9 +3193,8 @@ export default function ProfilePage() {
                                                           }}
                                                           className="sr-only"
                                                         />
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                                                          isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
-                                                        }`}>
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
+                                                          }`}>
                                                           <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-700'}`} />
                                                         </div>
                                                         <div className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
@@ -3366,11 +3356,10 @@ export default function ProfilePage() {
                                                           })
                                                         }
                                                       }}
-                                                      className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${
-                                                        MONTHS.every(month => listingFormData.availability.includes(month))
-                                                          ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
-                                                          : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
-                                                      }`}
+                                                      className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${MONTHS.every(month => listingFormData.availability.includes(month))
+                                                        ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
+                                                        : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
+                                                        }`}
                                                     >
                                                       <span className="flex items-center justify-center gap-2">
                                                         <CalendarDaysIcon className="w-5 h-5" />
@@ -3386,11 +3375,10 @@ export default function ProfilePage() {
                                                       return (
                                                         <label
                                                           key={month}
-                                                          className={`relative flex flex-col items-center justify-center py-2 rounded-xl border cursor-pointer transition-all text-xs ${
-                                                            isSelected
-                                                              ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
-                                                              : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                                                          }`}
+                                                          className={`relative flex flex-col items-center justify-center py-2 rounded-xl border cursor-pointer transition-all text-xs ${isSelected
+                                                            ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
+                                                            : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                                                            }`}
                                                         >
                                                           <input
                                                             type="checkbox"
@@ -3428,11 +3416,10 @@ export default function ProfilePage() {
                                                     return (
                                                       <label
                                                         key={platform}
-                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
-                                                          isSelected
-                                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                                                        }`}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
+                                                          ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                                          }`}
                                                       >
                                                         <input
                                                           type="checkbox"
@@ -3453,11 +3440,10 @@ export default function ProfilePage() {
                                                           className="sr-only"
                                                         />
                                                         <span
-                                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                                            isSelected
-                                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                              : 'border-gray-400 bg-white'
-                                                          }`}
+                                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                                            ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                                            : 'border-gray-400 bg-white'
+                                                            }`}
                                                         >
                                                           {isSelected && (
                                                             <span className="w-2 h-2 rounded-full bg-white"></span>
@@ -3491,11 +3477,10 @@ export default function ProfilePage() {
                                                     return (
                                                       <label
                                                         key={platform}
-                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
-                                                          isSelected
-                                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                                                        }`}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
+                                                          ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                                          }`}
                                                       >
                                                         <input
                                                           type="checkbox"
@@ -3516,11 +3501,10 @@ export default function ProfilePage() {
                                                           className="sr-only"
                                                         />
                                                         <span
-                                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                                            isSelected
-                                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                              : 'border-gray-400 bg-white'
-                                                          }`}
+                                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                                            ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                                            : 'border-gray-400 bg-white'
+                                                            }`}
                                                         >
                                                           {isSelected && (
                                                             <span className="w-2 h-2 rounded-full bg-white"></span>
@@ -3577,34 +3561,34 @@ export default function ProfilePage() {
                                                     placeholder="Search countries..."
                                                     className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
                                                   />
-                                                  {listingCountryInput && COUNTRIES.filter(c => 
+                                                  {listingCountryInput && COUNTRIES.filter(c =>
                                                     c.toLowerCase().includes(listingCountryInput.toLowerCase()) &&
                                                     !listingFormData.targetGroupCountries.includes(c)
                                                   ).length > 0 && (
-                                                    <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                                                      {COUNTRIES.filter(c => 
-                                                        c.toLowerCase().includes(listingCountryInput.toLowerCase()) &&
-                                                        !listingFormData.targetGroupCountries.includes(c)
-                                                      ).map((country) => (
-                                                        <button
-                                                          key={country}
-                                                          type="button"
-                                                          onClick={() => {
-                                                            if (listingFormData.targetGroupCountries.length < 3 && !listingFormData.targetGroupCountries.includes(country)) {
-                                                              setListingFormData({
-                                                                ...listingFormData,
-                                                                targetGroupCountries: [...listingFormData.targetGroupCountries, country],
-                                                              })
-                                                              setListingCountryInput('')
-                                                            }
-                                                          }}
-                                                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
-                                                        >
-                                                          {country}
-                                                        </button>
-                                                      ))}
-                                                    </div>
-                                                  )}
+                                                      <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                                                        {COUNTRIES.filter(c =>
+                                                          c.toLowerCase().includes(listingCountryInput.toLowerCase()) &&
+                                                          !listingFormData.targetGroupCountries.includes(c)
+                                                        ).map((country) => (
+                                                          <button
+                                                            key={country}
+                                                            type="button"
+                                                            onClick={() => {
+                                                              if (listingFormData.targetGroupCountries.length < 3 && !listingFormData.targetGroupCountries.includes(country)) {
+                                                                setListingFormData({
+                                                                  ...listingFormData,
+                                                                  targetGroupCountries: [...listingFormData.targetGroupCountries, country],
+                                                                })
+                                                                setListingCountryInput('')
+                                                              }
+                                                            }}
+                                                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
+                                                          >
+                                                            {country}
+                                                          </button>
+                                                        ))}
+                                                      </div>
+                                                    )}
                                                   {listingFormData.targetGroupCountries.length > 0 && (
                                                     <div className="flex flex-wrap gap-2">
                                                       {listingFormData.targetGroupCountries.map((country, countryIndex) => (
@@ -3657,11 +3641,10 @@ export default function ProfilePage() {
                                                           }
                                                         }}
                                                         disabled={!isSelected && (listingFormData.targetGroupAgeGroups?.length || 0) >= 3}
-                                                        className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
-                                                          isSelected
-                                                            ? 'bg-primary-50 text-primary-700 border-primary-200'
-                                                            : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
-                                                        }`}
+                                                        className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${isSelected
+                                                          ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                                          : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                                                          }`}
                                                       >
                                                         {range}
                                                       </button>
@@ -3704,7 +3687,7 @@ export default function ProfilePage() {
                                                 <Input
                                                   label="Listing Name"
                                                   value={listing.name || ''}
-                                                  onChange={() => {}}
+                                                  onChange={() => { }}
                                                   disabled
                                                   placeholder="Luxury Beach Villa"
                                                   className="bg-gray-50 border-gray-200"
@@ -3712,7 +3695,7 @@ export default function ProfilePage() {
                                                 <Input
                                                   label="Location"
                                                   value={listing.location || ''}
-                                                  onChange={() => {}}
+                                                  onChange={() => { }}
                                                   disabled
                                                   placeholder="Bali, Indonesia"
                                                   className="bg-gray-50 border-gray-200"
@@ -3724,7 +3707,7 @@ export default function ProfilePage() {
                                                 </label>
                                                 <select
                                                   value={listing.accommodationType || ''}
-                                                  onChange={() => {}}
+                                                  onChange={() => { }}
                                                   disabled
                                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900 cursor-not-allowed opacity-60"
                                                 >
@@ -3739,7 +3722,7 @@ export default function ProfilePage() {
                                               <Textarea
                                                 label="Description"
                                                 value={listing.description || ''}
-                                                onChange={() => {}}
+                                                onChange={() => { }}
                                                 disabled
                                                 rows={3}
                                                 placeholder="A stunning beachfront villa with private pool and ocean views."
@@ -3813,15 +3796,13 @@ export default function ProfilePage() {
                                                     return (
                                                       <div
                                                         key={type}
-                                                        className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all text-center ${
-                                                          isSelected
-                                                            ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
-                                                            : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 opacity-50'
-                                                        }`}
+                                                        className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all text-center ${isSelected
+                                                          ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
+                                                          : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 opacity-50'
+                                                          }`}
                                                       >
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                                                          isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
-                                                        }`}>
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
+                                                          }`}>
                                                           <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-700'}`} />
                                                         </div>
                                                         <div className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
@@ -3856,7 +3837,7 @@ export default function ProfilePage() {
                                                       label="Min. Nights"
                                                       type="number"
                                                       value={listing.freeStayMinNights || ''}
-                                                      onChange={() => {}}
+                                                      onChange={() => { }}
                                                       disabled
                                                       placeholder="1"
                                                       className="bg-gray-50 border-gray-200"
@@ -3865,7 +3846,7 @@ export default function ProfilePage() {
                                                       label="Max. Nights"
                                                       type="number"
                                                       value={listing.freeStayMaxNights || ''}
-                                                      onChange={() => {}}
+                                                      onChange={() => { }}
                                                       disabled
                                                       placeholder="5"
                                                       className="bg-gray-50 border-gray-200"
@@ -3890,7 +3871,7 @@ export default function ProfilePage() {
                                                     label="Max. Amount ($)"
                                                     type="number"
                                                     value={listing.paidMaxAmount || ''}
-                                                    onChange={() => {}}
+                                                    onChange={() => { }}
                                                     disabled
                                                     placeholder="5000"
                                                     className="bg-gray-50 border-gray-200"
@@ -3914,7 +3895,7 @@ export default function ProfilePage() {
                                                     label="Discount Percentage (%)"
                                                     type="number"
                                                     value={listing.discountPercentage || ''}
-                                                    onChange={() => {}}
+                                                    onChange={() => { }}
                                                     disabled
                                                     placeholder="20"
                                                     className="bg-gray-50 border-gray-200"
@@ -3939,11 +3920,10 @@ export default function ProfilePage() {
                                                       return (
                                                         <div
                                                           key={month}
-                                                          className={`relative flex flex-col items-center justify-center py-2 rounded-xl border transition-all text-xs ${
-                                                            isSelected
-                                                              ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
-                                                              : 'bg-gray-100 border-gray-200 text-gray-700 opacity-50'
-                                                          }`}
+                                                          className={`relative flex flex-col items-center justify-center py-2 rounded-xl border transition-all text-xs ${isSelected
+                                                            ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
+                                                            : 'bg-gray-100 border-gray-200 text-gray-700 opacity-50'
+                                                            }`}
                                                         >
                                                           <div className={`font-semibold ${isSelected ? 'text-white' : 'text-gray-700'}`}>{monthAbbr}</div>
                                                         </div>
@@ -3963,18 +3943,16 @@ export default function ProfilePage() {
                                                     return (
                                                       <div
                                                         key={platform}
-                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                                                          isSelected
-                                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                                            : 'border-gray-200 bg-white text-gray-700 opacity-50'
-                                                        }`}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${isSelected
+                                                          ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                                          : 'border-gray-200 bg-white text-gray-700 opacity-50'
+                                                          }`}
                                                       >
                                                         <span
-                                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                                            isSelected
-                                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                              : 'border-gray-400 bg-white'
-                                                          }`}
+                                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                                            ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                                            : 'border-gray-400 bg-white'
+                                                            }`}
                                                         >
                                                           {isSelected && (
                                                             <span className="w-2 h-2 rounded-full bg-white"></span>
@@ -4008,18 +3986,16 @@ export default function ProfilePage() {
                                                     return (
                                                       <div
                                                         key={platform}
-                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                                                          isSelected
-                                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                                            : 'border-gray-200 bg-white text-gray-700 opacity-50'
-                                                        }`}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${isSelected
+                                                          ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                                          : 'border-gray-200 bg-white text-gray-700 opacity-50'
+                                                          }`}
                                                       >
                                                         <span
-                                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                                            isSelected
-                                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                              : 'border-gray-400 bg-white'
-                                                          }`}
+                                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                                            ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                                            : 'border-gray-400 bg-white'
+                                                            }`}
                                                         >
                                                           {isSelected && (
                                                             <span className="w-2 h-2 rounded-full bg-white"></span>
@@ -4040,7 +4016,7 @@ export default function ProfilePage() {
                                                 <Input
                                                   type="number"
                                                   value={listing.lookingForMinFollowers || ''}
-                                                  onChange={() => {}}
+                                                  onChange={() => { }}
                                                   disabled
                                                   placeholder="e.g., 50000"
                                                   className="bg-gray-50"
@@ -4073,7 +4049,7 @@ export default function ProfilePage() {
                                                     <Input
                                                       type="number"
                                                       value={listing.targetGroupAgeMin || ''}
-                                                      onChange={() => {}}
+                                                      onChange={() => { }}
                                                       disabled
                                                       placeholder="Min"
                                                       className="bg-gray-50 w-24"
@@ -4082,7 +4058,7 @@ export default function ProfilePage() {
                                                     <Input
                                                       type="number"
                                                       value={listing.targetGroupAgeMax || ''}
-                                                      onChange={() => {}}
+                                                      onChange={() => { }}
                                                       disabled
                                                       placeholder="Max"
                                                       className="bg-gray-50 w-24"
@@ -4255,7 +4231,7 @@ export default function ProfilePage() {
                                         )}
                                       </div>
                                     ) : (
-                                      <div 
+                                      <div
                                         className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:border-primary-400 hover:bg-primary-50 transition-all group cursor-pointer"
                                         onClick={() => listingImageInputRef.current?.click()}
                                       >
@@ -4303,11 +4279,10 @@ export default function ProfilePage() {
                                         return (
                                           <label
                                             key={type}
-                                            className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${
-                                              isSelected
-                                                ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
-                                                : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
-                                            }`}
+                                            className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${isSelected
+                                              ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
+                                              : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
+                                              }`}
                                           >
                                             <input
                                               type="checkbox"
@@ -4327,9 +4302,8 @@ export default function ProfilePage() {
                                               }}
                                               className="sr-only"
                                             />
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                                              isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
-                                            }`}>
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
+                                              }`}>
                                               <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-700'}`} />
                                             </div>
                                             <div className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
@@ -4491,11 +4465,10 @@ export default function ProfilePage() {
                                               })
                                             }
                                           }}
-                                          className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${
-                                            MONTHS.every(month => listingFormData.availability.includes(month))
-                                              ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
-                                              : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
-                                          }`}
+                                          className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${MONTHS.every(month => listingFormData.availability.includes(month))
+                                            ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
+                                            : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
+                                            }`}
                                         >
                                           <span className="flex items-center justify-center gap-2">
                                             <CalendarDaysIcon className="w-5 h-5" />
@@ -4511,11 +4484,10 @@ export default function ProfilePage() {
                                           return (
                                             <label
                                               key={month}
-                                              className={`relative flex flex-col items-center justify-center py-2 rounded-xl border cursor-pointer transition-all text-xs ${
-                                                isSelected
-                                                  ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
-                                                  : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                                              }`}
+                                              className={`relative flex flex-col items-center justify-center py-2 rounded-xl border cursor-pointer transition-all text-xs ${isSelected
+                                                ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
+                                                : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                                                }`}
                                             >
                                               <input
                                                 type="checkbox"
@@ -4553,11 +4525,10 @@ export default function ProfilePage() {
                                         return (
                                           <label
                                             key={platform}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
-                                              isSelected
-                                                ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                                            }`}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
+                                              ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                              }`}
                                           >
                                             <input
                                               type="checkbox"
@@ -4578,11 +4549,10 @@ export default function ProfilePage() {
                                               className="sr-only"
                                             />
                                             <span
-                                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                                isSelected
-                                                  ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                  : 'border-gray-400 bg-white'
-                                              }`}
+                                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                                ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                                : 'border-gray-400 bg-white'
+                                                }`}
                                             >
                                               {isSelected && (
                                                 <span className="w-2 h-2 rounded-full bg-white"></span>
@@ -4616,11 +4586,10 @@ export default function ProfilePage() {
                                         return (
                                           <label
                                             key={platform}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
-                                              isSelected
-                                                ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                                            }`}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
+                                              ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                              }`}
                                           >
                                             <input
                                               type="checkbox"
@@ -4641,11 +4610,10 @@ export default function ProfilePage() {
                                               className="sr-only"
                                             />
                                             <span
-                                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                                isSelected
-                                                  ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                  : 'border-gray-400 bg-white'
-                                              }`}
+                                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                                ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                                : 'border-gray-400 bg-white'
+                                                }`}
                                             >
                                               {isSelected && (
                                                 <span className="w-2 h-2 rounded-full bg-white"></span>
@@ -4702,34 +4670,34 @@ export default function ProfilePage() {
                                         placeholder="Search countries..."
                                         className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
                                       />
-                                      {listingCountryInput && COUNTRIES.filter(c => 
+                                      {listingCountryInput && COUNTRIES.filter(c =>
                                         c.toLowerCase().includes(listingCountryInput.toLowerCase()) &&
                                         !listingFormData.targetGroupCountries.includes(c)
                                       ).length > 0 && (
-                                        <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                                          {COUNTRIES.filter(c => 
-                                            c.toLowerCase().includes(listingCountryInput.toLowerCase()) &&
-                                            !listingFormData.targetGroupCountries.includes(c)
-                                          ).map((country) => (
-                                            <button
-                                              key={country}
-                                              type="button"
-                                              onClick={() => {
-                                                if (listingFormData.targetGroupCountries.length < 3 && !listingFormData.targetGroupCountries.includes(country)) {
-                                                  setListingFormData({
-                                                    ...listingFormData,
-                                                    targetGroupCountries: [...listingFormData.targetGroupCountries, country],
-                                                  })
-                                                  setListingCountryInput('')
-                                                }
-                                              }}
-                                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
-                                            >
-                                              {country}
-                                            </button>
-                                          ))}
-                                        </div>
-                                      )}
+                                          <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                                            {COUNTRIES.filter(c =>
+                                              c.toLowerCase().includes(listingCountryInput.toLowerCase()) &&
+                                              !listingFormData.targetGroupCountries.includes(c)
+                                            ).map((country) => (
+                                              <button
+                                                key={country}
+                                                type="button"
+                                                onClick={() => {
+                                                  if (listingFormData.targetGroupCountries.length < 3 && !listingFormData.targetGroupCountries.includes(country)) {
+                                                    setListingFormData({
+                                                      ...listingFormData,
+                                                      targetGroupCountries: [...listingFormData.targetGroupCountries, country],
+                                                    })
+                                                    setListingCountryInput('')
+                                                  }
+                                                }}
+                                                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
+                                              >
+                                                {country}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        )}
                                       {listingFormData.targetGroupCountries.length > 0 && (
                                         <div className="flex flex-wrap gap-2">
                                           {listingFormData.targetGroupCountries.map((country, countryIndex) => (
@@ -4782,11 +4750,10 @@ export default function ProfilePage() {
                                               }
                                             }}
                                             disabled={!isSelected && (listingFormData.targetGroupAgeGroups?.length || 0) >= 3}
-                                            className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
-                                              isSelected
-                                                ? 'bg-primary-50 text-primary-700 border-primary-200'
-                                                : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
-                                            }`}
+                                            className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${isSelected
+                                              ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                              : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                                              }`}
                                           >
                                             {range}
                                           </button>
@@ -4857,7 +4824,7 @@ export default function ProfilePage() {
                       Profile Data Unavailable
                     </h3>
                     <p className="text-gray-600 mb-6">
-                      Your profile status is being checked, but profile data endpoints are currently unavailable. 
+                      Your profile status is being checked, but profile data endpoints are currently unavailable.
                       You can still manage your profile through the profile completion page.
                     </p>
                     <Button
@@ -4926,16 +4893,16 @@ export default function ProfilePage() {
                         showError('Invalid File Type', 'Please select an image file')
                         return
                       }
-                      
+
                       // Validate file size (5MB max)
                       if (file.size > 5 * 1024 * 1024) {
                         showError('File Too Large', 'Image must be less than 5MB')
                         return
                       }
-                      
+
                       // Store the File object for upload
                       setHotelProfilePictureFile(file)
-                      
+
                       // Show preview immediately
                       const reader = new FileReader()
                       reader.onloadend = () => {
@@ -5207,7 +5174,7 @@ export default function ProfilePage() {
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Thumbnail Grid */}
                         {listingFormData.images.length > 1 && (
                           <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
@@ -5233,7 +5200,7 @@ export default function ProfilePage() {
                                 </div>
                               </div>
                             ))}
-                            
+
                             {/* Add More Button */}
                             {listingFormData.images.length < 10 && (
                               <button
@@ -5245,7 +5212,7 @@ export default function ProfilePage() {
                                 <span className="text-[10px] font-medium">Add</span>
                               </button>
                             )}
-                            
+
                             {/* Show remaining count if more than 6 images */}
                             {listingFormData.images.length > 6 && (
                               <div className="aspect-square rounded-lg bg-gray-800/80 flex items-center justify-center text-white text-xs font-semibold">
@@ -5254,7 +5221,7 @@ export default function ProfilePage() {
                             )}
                           </div>
                         )}
-                        
+
                         {/* Add First Image Button (if only one image) */}
                         {listingFormData.images.length === 1 && listingFormData.images.length < 10 && (
                           <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
@@ -5270,7 +5237,7 @@ export default function ProfilePage() {
                         )}
                       </div>
                     ) : (
-                      <div 
+                      <div
                         className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:border-primary-400 hover:bg-primary-50 transition-all group cursor-pointer"
                         onClick={() => listingImageInputRef.current?.click()}
                       >
@@ -5322,11 +5289,10 @@ export default function ProfilePage() {
                         return (
                           <label
                             key={type}
-                            className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${
-                              isSelected
-                                ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
-                                : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
-                            }`}
+                            className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${isSelected
+                              ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
+                              : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
+                              }`}
                           >
                             <input
                               type="checkbox"
@@ -5346,9 +5312,8 @@ export default function ProfilePage() {
                               }}
                               className="sr-only"
                             />
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                              isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
-                            }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
+                              }`}>
                               <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-700'}`} />
                             </div>
                             <div className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
@@ -5516,11 +5481,10 @@ export default function ProfilePage() {
                               })
                             }
                           }}
-                          className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${
-                            MONTHS.every(month => listingFormData.availability.includes(month))
-                              ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
-                              : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
-                          }`}
+                          className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${MONTHS.every(month => listingFormData.availability.includes(month))
+                            ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
+                            : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
+                            }`}
                         >
                           <span className="flex items-center justify-center gap-2">
                             <CalendarDaysIcon className="w-5 h-5" />
@@ -5536,11 +5500,10 @@ export default function ProfilePage() {
                           return (
                             <label
                               key={month}
-                              className={`relative flex flex-col items-center justify-center py-3 rounded-xl border cursor-pointer transition-all ${
-                                isSelected
-                                  ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
-                                  : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                              }`}
+                              className={`relative flex flex-col items-center justify-center py-3 rounded-xl border cursor-pointer transition-all ${isSelected
+                                ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
+                                : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                                }`}
                             >
                               <input
                                 type="checkbox"
@@ -5578,11 +5541,10 @@ export default function ProfilePage() {
                         return (
                           <label
                             key={platform}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
-                              isSelected
-                                ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                            }`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
+                              ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                              }`}
                           >
                             <input
                               type="checkbox"
@@ -5603,11 +5565,10 @@ export default function ProfilePage() {
                               className="sr-only"
                             />
                             <span
-                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                isSelected
-                                  ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                  : 'border-gray-400 bg-white'
-                              }`}
+                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                : 'border-gray-400 bg-white'
+                                }`}
                             >
                               {isSelected && (
                                 <span className="w-2 h-2 rounded-full bg-white"></span>
@@ -5642,11 +5603,10 @@ export default function ProfilePage() {
                         return (
                           <label
                             key={platform}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
-                              isSelected
-                                ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                            }`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
+                              ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                              }`}
                           >
                             <input
                               type="checkbox"
@@ -5667,11 +5627,10 @@ export default function ProfilePage() {
                               className="sr-only"
                             />
                             <span
-                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                isSelected
-                                  ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                  : 'border-gray-400 bg-white'
-                              }`}
+                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                : 'border-gray-400 bg-white'
+                                }`}
                             >
                               {isSelected && (
                                 <span className="w-2 h-2 rounded-full bg-white"></span>
@@ -5729,34 +5688,34 @@ export default function ProfilePage() {
                         className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
                       />
                       {/* Dropdown suggestions */}
-                      {listingCountryInput && COUNTRIES.filter(c => 
+                      {listingCountryInput && COUNTRIES.filter(c =>
                         c.toLowerCase().includes(listingCountryInput.toLowerCase()) &&
                         !listingFormData.targetGroupCountries.includes(c)
                       ).length > 0 && (
-                        <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                          {COUNTRIES.filter(c => 
-                            c.toLowerCase().includes(listingCountryInput.toLowerCase()) &&
-                            !listingFormData.targetGroupCountries.includes(c)
-                          ).map((country) => (
-                            <button
-                              key={country}
-                              type="button"
-                              onClick={() => {
-                                if (listingFormData.targetGroupCountries.length < 3 && !listingFormData.targetGroupCountries.includes(country)) {
-                                  setListingFormData({
-                                    ...listingFormData,
-                                    targetGroupCountries: [...listingFormData.targetGroupCountries, country],
-                                  })
-                                  setListingCountryInput('')
-                                }
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
-                            >
-                              {country}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                          <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                            {COUNTRIES.filter(c =>
+                              c.toLowerCase().includes(listingCountryInput.toLowerCase()) &&
+                              !listingFormData.targetGroupCountries.includes(c)
+                            ).map((country) => (
+                              <button
+                                key={country}
+                                type="button"
+                                onClick={() => {
+                                  if (listingFormData.targetGroupCountries.length < 3 && !listingFormData.targetGroupCountries.includes(country)) {
+                                    setListingFormData({
+                                      ...listingFormData,
+                                      targetGroupCountries: [...listingFormData.targetGroupCountries, country],
+                                    })
+                                    setListingCountryInput('')
+                                  }
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
+                              >
+                                {country}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       {listingFormData.targetGroupCountries.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {listingFormData.targetGroupCountries.map((country, countryIndex) => (
@@ -5809,11 +5768,10 @@ export default function ProfilePage() {
                               }
                             }}
                             disabled={!isSelected && (listingFormData.targetGroupAgeGroups?.length || 0) >= 3}
-                            className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
-                              isSelected
-                                ? 'bg-primary-50 text-primary-700 border-primary-200'
-                                : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
-                            }`}
+                            className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${isSelected
+                              ? 'bg-primary-50 text-primary-700 border-primary-200'
+                              : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                              }`}
                           >
                             {range}
                           </button>
@@ -5860,11 +5818,11 @@ export default function ProfilePage() {
       {deleteConfirmModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setDeleteConfirmModal({ isOpen: false, listingId: null, listingName: '' })}
           />
-          
+
           {/* Modal */}
           <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8 animate-in fade-in zoom-in duration-200">
             {/* Close Button */}
