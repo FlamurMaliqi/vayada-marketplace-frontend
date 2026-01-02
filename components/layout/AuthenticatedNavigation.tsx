@@ -149,11 +149,6 @@ export default function AuthenticatedNavigation() {
       icon: MessageCustomIcon,
     },
     {
-      href: ROUTES.COLLABORATIONS,
-      label: 'Collaborations',
-      icon: UserGroupIcon,
-    },
-    {
       href: ROUTES.PROFILE,
       label: 'My Profile',
       icon: ProfileCustomIcon,
