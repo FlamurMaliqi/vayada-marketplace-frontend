@@ -8,7 +8,6 @@ import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters'
 import { HotelCard } from '@/components/marketplace/HotelCard'
 import { CreatorCard } from '@/components/marketplace/CreatorCard'
 import { Button } from '@/components/ui'
-import { FeatureUnavailableModal } from '@/components/ui/FeatureUnavailableModal'
 import { ROUTES } from '@/lib/constants/routes'
 import type { Hotel, Creator, UserType } from '@/lib/types'
 import { hotelService } from '@/services/api/hotels'
@@ -28,9 +27,11 @@ export default function MarketplacePage() {
     offering?: string | string[]
     availability?: string | string[]
     budget?: number
+    minFollowers?: number
+    minEngagementRate?: number
+    creatorPlatforms?: string | string[]
+    topCountries?: string | string[]
   }>({})
-  const [showUnavailableModal, setShowUnavailableModal] = useState(false)
-
   // Get userType from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -49,22 +50,31 @@ export default function MarketplacePage() {
     if (!userType) return
     
     setLoading(true)
-    // Marketplace endpoints have been removed from backend
-    // Backend only supports authentication endpoints
-    console.warn('Marketplace endpoints are not available. Backend only supports authentication.')
-    setHotels([])
-    setCreators([])
-    setLoading(false)
-  }
+    try {
+      // Load hotels if user is creator
+      if (userType === 'creator') {
+        const hotelsResponse = await hotelService.getAll()
+        setHotels(hotelsResponse.data)
+      } else {
+        setHotels([])
+      }
 
-  const hasNoData = !loading && hotels.length === 0 && creators.length === 0
-
-  // Show modal when data is unavailable
-  useEffect(() => {
-    if (hasNoData && !loading) {
-      setShowUnavailableModal(true)
+      // Load creators if user is hotel
+      if (userType === 'hotel') {
+        const creatorsResponse = await creatorService.getAll()
+        setCreators(creatorsResponse.data)
+      } else {
+        setCreators([])
+      }
+    } catch (error) {
+      console.error('Error loading marketplace data:', error)
+      // Set empty arrays on error
+      setHotels([])
+      setCreators([])
+    } finally {
+      setLoading(false)
     }
-  }, [hasNoData, loading])
+  }
 
   const filteredHotels = hotels.filter((hotel) => {
     // Search filter
@@ -120,29 +130,9 @@ export default function MarketplacePage() {
         ? filters.availability 
         : [filters.availability]
       
-      // Map English month names to German month names
-      const monthMap: Record<string, string> = {
-        'January': 'Januar',
-        'February': 'Februar',
-        'March': 'März',
-        'April': 'April',
-        'May': 'Mai',
-        'June': 'Juni',
-        'July': 'Juli',
-        'August': 'August',
-        'September': 'September',
-        'October': 'Oktober',
-        'November': 'November',
-        'December': 'Dezember',
-      }
-      
-      // Get all possible German month names for selected filters
-      const germanMonths = selectedMonths.map(month => monthMap[month] || month)
-      
+      // Backend returns months in English, so we can check directly
       // Check if hotel's availability includes any of the selected months
-      const hasAvailability = germanMonths.some(month => 
-        hotel.availability?.includes(month)
-      ) || selectedMonths.some(month => 
+      const hasAvailability = selectedMonths.some(month => 
         hotel.availability?.includes(month)
       )
       
@@ -167,8 +157,53 @@ export default function MarketplacePage() {
       if (!matchesSearch) return false
     }
 
-    // Creator-specific filters can be added here when needed
-    // Currently, only hotel filters are implemented
+    // Minimum Followers filter
+    if (filters.minFollowers) {
+      if (creator.audienceSize < filters.minFollowers) {
+        return false
+      }
+    }
+
+    // Minimum Engagement Rate filter
+    if (filters.minEngagementRate) {
+      const avgEngagementRate = creator.platforms.length > 0
+        ? creator.platforms.reduce((sum, platform) => sum + (platform.engagementRate || 0), 0) / creator.platforms.length
+        : 0
+      if (avgEngagementRate < filters.minEngagementRate) {
+        return false
+      }
+    }
+
+    // Platforms filter (multiselect)
+    if (filters.creatorPlatforms) {
+      const selectedPlatforms = Array.isArray(filters.creatorPlatforms)
+        ? filters.creatorPlatforms
+        : [filters.creatorPlatforms]
+      
+      const creatorPlatformNames = creator.platforms.map(p => p.name)
+      const hasMatchingPlatform = selectedPlatforms.some(platform =>
+        creatorPlatformNames.includes(platform)
+      )
+      
+      if (!hasMatchingPlatform) return false
+    }
+
+    // Top Countries filter (multiselect)
+    if (filters.topCountries) {
+      const selectedCountries = Array.isArray(filters.topCountries)
+        ? filters.topCountries
+        : [filters.topCountries]
+      
+      // Check if any platform has any of the selected countries in topCountries
+      const hasMatchingCountry = creator.platforms.some(platform => {
+        if (!platform.topCountries || platform.topCountries.length === 0) return false
+        return platform.topCountries.some(countryData =>
+          selectedCountries.includes(countryData.country)
+        )
+      })
+      
+      if (!hasMatchingCountry) return false
+    }
 
     return true
   })
@@ -235,10 +270,6 @@ export default function MarketplacePage() {
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-primary-600 absolute top-0 left-0"></div>
             </div>
           </div>
-        ) : hasNoData ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">The marketplace will be available shortly.</p>
-          </div>
         ) : (
           <>
             {/* Hotels Section - Only show if user is creator */}
@@ -279,12 +310,6 @@ export default function MarketplacePage() {
         </div>
       </div>
 
-      {/* Feature Unavailable Modal */}
-      <FeatureUnavailableModal
-        isOpen={showUnavailableModal}
-        onClose={() => setShowUnavailableModal(false)}
-        featureName="The Marketplace"
-      />
     </main>
   )
 }

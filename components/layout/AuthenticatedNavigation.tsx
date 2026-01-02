@@ -3,14 +3,13 @@
 import { useState, useEffect, createContext, useContext } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/constants/routes'
 import { authService } from '@/services/auth'
 import {
-  BuildingStorefrontIcon,
   ArrowRightOnRectangleIcon,
   UserGroupIcon,
-  UserIcon,
   ViewColumnsIcon,
 } from '@heroicons/react/24/outline'
 
@@ -20,8 +19,84 @@ const SidebarContext = createContext<{
   toggleSidebar: () => void
 }>({
   isCollapsed: true,
-  toggleSidebar: () => {},
+  toggleSidebar: () => { },
 })
+
+const HotelCustomIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+    <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+    <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+    <path d="M10 6h4" />
+    <path d="M10 10h4" />
+    <path d="M10 14h4" />
+    <path d="M10 18h4" />
+  </svg>
+)
+
+const ProfileCustomIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+)
+
+const CalendarCustomIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M8 2v4" />
+    <path d="M16 2v4" />
+    <rect width="18" height="18" x="3" y="4" rx="2" />
+    <path d="M3 10h18" />
+    <path d="M8 14h.01" />
+    <path d="M12 14h.01" />
+    <path d="M16 14h.01" />
+    <path d="M8 18h.01" />
+    <path d="M12 18h.01" />
+    <path d="M16 18h.01" />
+  </svg>
+)
+
+const MessageCustomIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+  </svg>
+)
 
 export const useSidebar = () => useContext(SidebarContext)
 
@@ -61,7 +136,17 @@ export default function AuthenticatedNavigation() {
     {
       href: ROUTES.MARKETPLACE,
       label: 'Marketplace',
-      icon: BuildingStorefrontIcon,
+      icon: HotelCustomIcon,
+    },
+    {
+      href: ROUTES.CALENDAR,
+      label: 'Calendar',
+      icon: CalendarCustomIcon,
+    },
+    {
+      href: ROUTES.CHAT,
+      label: 'Messages',
+      icon: MessageCustomIcon,
     },
     {
       href: ROUTES.COLLABORATIONS,
@@ -71,7 +156,7 @@ export default function AuthenticatedNavigation() {
     {
       href: ROUTES.PROFILE,
       label: 'My Profile',
-      icon: UserIcon,
+      icon: ProfileCustomIcon,
     },
   ]
 
@@ -84,27 +169,42 @@ export default function AuthenticatedNavigation() {
           onClick={toggleSidebar}
         />
       )}
-      
+
       {/* Transparent backdrop for desktop when sidebar is expanded - click to collapse */}
       {!isCollapsed && (
         <div
           className="hidden md:block fixed inset-0 z-30"
-          style={{ left: '256px' }} // 64 * 4 = 256px (w-64)
+          style={{ left: '224px' }} // 56 * 4 = 224px (w-56)
           onClick={toggleSidebar}
         />
       )}
-      
+
       {/* Sidebar - Hidden on small screens when collapsed, visible when expanded or on larger screens */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 bg-primary-800 flex-col z-50 transition-all duration-300 ${
-          isCollapsed ? 'w-20' : 'w-64'
-        } ${
-          isCollapsed 
+        className={`fixed left-0 top-0 bottom-0 bg-white border-r border-gray-200 flex-col z-50 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-56'
+          } ${isCollapsed
             ? 'hidden md:flex' // Hidden on small screens when collapsed, visible on larger screens
             : 'flex' // Always visible when expanded
-        }`}
+          }`}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Sidebar Logo */}
+        <div className="h-16 flex items-center justify-center border-b border-gray-100">
+          <Link
+            href={ROUTES.MARKETPLACE}
+            className="flex items-center justify-center transition-opacity hover:opacity-80"
+          >
+            <Image
+              src="/vayada-logo-navbar.png"
+              alt="vayada"
+              width={isCollapsed ? 32 : 110}
+              height={32}
+              className={`object-contain transition-all duration-300 ${isCollapsed ? 'w-8 h-8' : 'h-8 w-auto'}`}
+              priority
+            />
+          </Link>
+        </div>
+
         {/* Navigation Links */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navLinks.map((link) => {
@@ -114,13 +214,11 @@ export default function AuthenticatedNavigation() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center font-medium transition-all duration-200 ${
-                  isCollapsed ? 'justify-center px-3 py-3 rounded-lg' : 'gap-3 px-4 py-3 rounded-lg'
-                } ${
-                  active
-                    ? 'bg-primary-700 text-white'
-                    : 'text-white/80 hover:text-white hover:bg-primary-700/50'
-                }`}
+                className={`flex items-center font-medium transition-all duration-200 ${isCollapsed ? 'justify-center px-2 py-3 rounded-lg' : 'gap-2 px-3 py-3 rounded-lg'
+                  } ${active
+                    ? 'bg-primary-50 text-primary-700'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
                 title={isCollapsed ? link.label : undefined}
               >
                 <Icon className="w-6 h-6 flex-shrink-0" />
@@ -131,12 +229,11 @@ export default function AuthenticatedNavigation() {
         </nav>
 
         {/* Logout Button - Bottom Left */}
-        <div className="mt-auto p-4 border-t border-primary-700/50">
+        <div className="mt-auto p-4 border-t border-gray-100">
           <button
             onClick={handleLogout}
-            className={`flex items-center rounded-lg font-medium text-white/80 hover:text-white hover:bg-primary-700/50 transition-all duration-200 w-full ${
-              isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3 justify-start'
-            }`}
+            className={`flex items-center rounded-lg font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 w-full ${isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3 justify-start'
+              }`}
             title={isCollapsed ? 'Sign Out' : undefined}
           >
             <ArrowRightOnRectangleIcon className="w-6 h-6 flex-shrink-0" />
@@ -146,9 +243,8 @@ export default function AuthenticatedNavigation() {
       </aside>
 
       {/* Top Header - Visible on all screen sizes */}
-      <header className={`fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-40 transition-all duration-300 ${
-        isCollapsed ? 'md:pl-20' : 'md:pl-64'
-      }`}>
+      <header className={`fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-40 transition-all duration-300 ${isCollapsed ? 'md:pl-16' : 'md:pl-56'
+        }`}>
         <div className="flex items-center justify-between h-full w-full px-6">
           {/* Toggle Button - Left - Hidden when sidebar is expanded */}
           {isCollapsed && (
@@ -161,7 +257,7 @@ export default function AuthenticatedNavigation() {
             </button>
           )}
 
-          {/* Logo - Centered */}
+          {/* Logo - Centered - Visible on all screens */}
           <Link
             href={ROUTES.MARKETPLACE}
             className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors"

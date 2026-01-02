@@ -8,7 +8,13 @@ export const metadata: Metadata = {
   title: 'vayada - Where hotels and creators connect',
   description: 'A transparent marketplace connecting hotels with verified travel influencers for authentic collaborations.',
   icons: {
-    icon: '/vayada-logo.svg',
+    icon: [
+      { url: '/vayada-logo.png' },
+      { url: '/vayada-logo.png', sizes: '64x64', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/vayada-logo.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
 }
 

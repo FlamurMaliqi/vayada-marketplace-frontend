@@ -179,11 +179,10 @@ export default function ProfileCompletePage() {
   const [creatorProfilePictureFile, setCreatorProfilePictureFile] = useState<File | null>(null)
   const HotelBadgeIcon = ({ active }: { active?: boolean }) => (
     <div
-      className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-        active
+      className={`w-10 h-10 rounded-xl flex items-center justify-center border ${active
           ? 'bg-[#2F54EB] text-white border-[#2F54EB]'
           : 'bg-[#EEF2FF] text-[#2F54EB] border-[#E0E7FF]'
-      }`}
+        }`}
     >
       <BuildingOffice2Icon className="w-5 h-5" />
     </div>
@@ -388,10 +387,10 @@ export default function ProfileCompletePage() {
       const nextValue =
         field === 'percentage'
           ? (() => {
-              const parsed = typeof value === 'number' ? value : parseFloat(String(value))
-              const safeValue = Number.isNaN(parsed) ? 0 : parsed
-              return Math.max(0, Math.min(100, safeValue))
-            })()
+            const parsed = typeof value === 'number' ? value : parseFloat(String(value))
+            const safeValue = Number.isNaN(parsed) ? 0 : parsed
+            return Math.max(0, Math.min(100, safeValue))
+          })()
           : value
 
       updated[platformIndex].top_countries![countryIndex] = {
@@ -746,7 +745,7 @@ export default function ProfileCompletePage() {
     const fileArray = Array.from(files)
     const maxImages = 10
     const currentListing = hotelListings[listingIndex]
-    
+
     // Validate total count
     if (currentListing.images.length + fileArray.length > maxImages) {
       setError(`Maximum ${maxImages} images allowed per listing`)
@@ -897,11 +896,11 @@ export default function ProfileCompletePage() {
         // Filter out empty age ranges first
         const validAgeGroups = p.top_age_groups && p.top_age_groups.length > 0
           ? p.top_age_groups
-              .filter(tag => tag.ageRange && tag.ageRange.trim() !== '')
-              .map(tag => ({
-                ageRange: tag.ageRange.trim(),
-                percentage: tag.percentage,
-              }))
+            .filter(tag => tag.ageRange && tag.ageRange.trim() !== '')
+            .map(tag => ({
+              ageRange: tag.ageRange.trim(),
+              percentage: tag.percentage,
+            }))
           : []
 
         return {
@@ -1007,9 +1006,9 @@ export default function ProfileCompletePage() {
           const creatorStatus = updatedStatus as CreatorProfileStatus
           const missingFields = creatorStatus.missing_fields || []
           const completionSteps = creatorStatus.completion_steps || []
-          
+
           let errorMessage = 'Profile updated successfully, but some required information is still missing:\n\n'
-          
+
           if (completionSteps.length > 0) {
             errorMessage += completionSteps.slice(0, 5).map((step, idx) => `${idx + 1}. ${step}`).join('\n')
             if (completionSteps.length > 5) {
@@ -1020,7 +1019,7 @@ export default function ProfileCompletePage() {
           } else {
             errorMessage += 'Please review all sections and ensure all required fields are completed.'
           }
-          
+
           setError(errorMessage)
         } else {
           setError('Profile updated, but some fields may still be missing. Please check the requirements.')
@@ -1097,7 +1096,7 @@ export default function ProfileCompletePage() {
         email: userEmail, // Backend requires email
         ...(profilePictureUrl && { picture: profilePictureUrl }),
       }
-      
+
       console.log('Sending hotel profile update to backend:', updatePayload)
       console.log('Profile picture URL to include:', profilePictureUrl)
       console.log('Update payload includes picture:', 'picture' in updatePayload)
@@ -1109,7 +1108,7 @@ export default function ProfileCompletePage() {
         phone: hotelForm.phone,
         picture: hotelForm.picture,
       })
-      
+
       const updatedProfile = await hotelService.updateMyProfile(updatePayload)
       console.log('Backend response after update:', updatedProfile)
       console.log('Picture field in response:', updatedProfile?.picture)
@@ -1165,11 +1164,11 @@ export default function ProfileCompletePage() {
 
         // Upload listing images first (recommended flow)
         let imageUrls: string[] = []
-        
+
         // Get existing URLs (if any - from editing existing listings)
         const existingUrls = listing.images.filter((img) => !img.startsWith('data:'))
         imageUrls = [...existingUrls]
-        
+
         // Upload new image files if any
         if (listing.imageFiles && listing.imageFiles.length > 0) {
           try {
@@ -1216,7 +1215,7 @@ export default function ProfileCompletePage() {
       // Check if profile is now complete after successful update
       const isComplete = await isProfileComplete('hotel')
       console.log('Profile complete check result:', isComplete)
-      
+
       if (isComplete) {
         setProfileCompleted(true)
         // Update localStorage so warning banner disappears
@@ -1228,19 +1227,19 @@ export default function ProfileCompletePage() {
         // Reload status to show updated completion steps
         const updatedStatus = await loadProfileStatus('hotel', true)
         console.log('Profile status after update:', updatedStatus)
-        
+
         if (updatedStatus && !updatedStatus.profile_complete) {
           // Generate specific error message based on missing fields and completion steps
           const hotelStatus = updatedStatus as HotelProfileStatus
           const missingFields = hotelStatus.missing_fields || []
           const completionSteps = hotelStatus.completion_steps || []
-          
+
           console.log('Missing fields:', missingFields)
           console.log('Completion steps:', completionSteps)
           console.log('Has defaults:', (hotelStatus as any).has_defaults)
-          
+
           let errorMessage = 'Profile updated successfully, but some required information is still missing:\n\n'
-          
+
           if (completionSteps.length > 0) {
             errorMessage += completionSteps.slice(0, 5).map((step, idx) => `${idx + 1}. ${step}`).join('\n')
             if (completionSteps.length > 5) {
@@ -1251,7 +1250,7 @@ export default function ProfileCompletePage() {
           } else {
             errorMessage += 'Please review all sections and ensure all required fields are completed.'
           }
-          
+
           setError(errorMessage)
         } else {
           setError('Profile updated, but some fields may still be missing. Please check the requirements.')
@@ -1442,12 +1441,10 @@ export default function ProfileCompletePage() {
             <ArrowLeftIcon className="w-5 h-5" />
           </a>
           <div className="flex items-center gap-2">
-            <Image
-              src="/vayada-logo.svg"
-              alt="vayada logo"
-              width={32}
-              height={32}
-              className="w-8 h-8 rounded-lg"
+            <img
+              src="/vayada-logo.png"
+              alt="Vayada"
+              className="h-12"
             />
           </div>
         </div>
@@ -1868,169 +1865,168 @@ export default function ProfileCompletePage() {
                                       </button>
 
                                       {expandedPlatforms.has(actualIndex) && (
-                                  <div className="mt-4 space-y-4">
-                                    {/* Top Countries */}
-                                    <div className="space-y-2">
-                                      <div className="flex items-center justify-between">
-                                        <div>
-                                          <p className="text-sm font-semibold text-gray-800">Top Countries</p>
-                                          <p className="text-xs text-gray-500">Select up to 3 countries with their audience percentage</p>
-                                        </div>
-                                      </div>
-                                      <div className="space-y-3">
-                                        <div className="space-y-2">
-                                          <input
-                                            type="text"
-                                            value={platformCountryInputs[actualIndex] || ''}
-                                            onChange={(e) => handleCountryInputChange(actualIndex, e.target.value)}
-                                            onKeyDown={(e) => {
-                                              if (e.key === 'Enter') {
-                                                e.preventDefault()
-                                                addCountryFromInput(actualIndex)
-                                              }
-                                            }}
-                                            placeholder="Search countries..."
-                                            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
-                                          />
-                                          {/* Dropdown suggestions */}
-                                          {getAvailableCountries(actualIndex).length > 0 && (
-                                            <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                                              {getAvailableCountries(actualIndex).map((country) => (
-                                                <button
-                                                  key={country}
-                                                  type="button"
-                                                  onClick={() => addCountryFromInput(actualIndex, country)}
-                                                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
-                                                >
-                                                  {country}
-                                                </button>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </div>
-
-                                        {creatorPlatforms[actualIndex].top_countries?.length ? (
+                                        <div className="mt-4 space-y-4">
+                                          {/* Top Countries */}
                                           <div className="space-y-2">
-                                            {creatorPlatforms[actualIndex].top_countries!.map((country, countryIndex) => (
-                                              <div
-                                                key={`${country.country}-${countryIndex}`}
-                                                className="flex items-center gap-3 rounded-lg border border-gray-200 bg-primary-50/60 px-3 py-2"
-                                              >
-                                                <div className="flex-1 min-w-0">
-                                                  <p className="text-sm font-semibold text-gray-800 truncate">{country.country || 'Country'}</p>
-                                                  <p className="text-xs text-gray-500">Audience percentage</p>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                  <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
-                                                    <input
-                                                      type="text"
-                                                      inputMode="decimal"
-                                                      value={country.percentage && country.percentage > 0 ? country.percentage : ''}
-                                                      onChange={(e) => {
-                                                        const raw = e.target.value
-                                                        const parsed = raw === '' ? 0 : parseFloat(raw)
-                                                        updateTopCountry(actualIndex, countryIndex, 'percentage', parsed)
-                                                      }}
-                                                      placeholder="0"
-                                                      className="w-16 bg-transparent text-sm text-gray-800 outline-none"
-                                                    />
-                                                    <span className="text-sm text-gray-500">%</span>
-                                                  </div>
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => removeCountryTag(actualIndex, countryIndex)}
-                                                    className="p-1 text-gray-500 hover:text-primary-700"
-                                                    aria-label={`Remove ${country.country}`}
-                                                  >
-                                                    <XMarkIcon className="w-4 h-4" />
-                                                  </button>
-                                                </div>
+                                            <div className="flex items-center justify-between">
+                                              <div>
+                                                <p className="text-sm font-semibold text-gray-800">Top Countries</p>
+                                                <p className="text-xs text-gray-500">Select up to 3 countries with their audience percentage</p>
                                               </div>
-                                            ))}
+                                            </div>
+                                            <div className="space-y-3">
+                                              <div className="space-y-2">
+                                                <input
+                                                  type="text"
+                                                  value={platformCountryInputs[actualIndex] || ''}
+                                                  onChange={(e) => handleCountryInputChange(actualIndex, e.target.value)}
+                                                  onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                      e.preventDefault()
+                                                      addCountryFromInput(actualIndex)
+                                                    }
+                                                  }}
+                                                  placeholder="Search countries..."
+                                                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
+                                                />
+                                                {/* Dropdown suggestions */}
+                                                {getAvailableCountries(actualIndex).length > 0 && (
+                                                  <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                                                    {getAvailableCountries(actualIndex).map((country) => (
+                                                      <button
+                                                        key={country}
+                                                        type="button"
+                                                        onClick={() => addCountryFromInput(actualIndex, country)}
+                                                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
+                                                      >
+                                                        {country}
+                                                      </button>
+                                                    ))}
+                                                  </div>
+                                                )}
+                                              </div>
+
+                                              {creatorPlatforms[actualIndex].top_countries?.length ? (
+                                                <div className="space-y-2">
+                                                  {creatorPlatforms[actualIndex].top_countries!.map((country, countryIndex) => (
+                                                    <div
+                                                      key={`${country.country}-${countryIndex}`}
+                                                      className="flex items-center gap-3 rounded-lg border border-gray-200 bg-primary-50/60 px-3 py-2"
+                                                    >
+                                                      <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-semibold text-gray-800 truncate">{country.country || 'Country'}</p>
+                                                        <p className="text-xs text-gray-500">Audience percentage</p>
+                                                      </div>
+                                                      <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1">
+                                                          <input
+                                                            type="text"
+                                                            inputMode="decimal"
+                                                            value={country.percentage && country.percentage > 0 ? country.percentage : ''}
+                                                            onChange={(e) => {
+                                                              const raw = e.target.value
+                                                              const parsed = raw === '' ? 0 : parseFloat(raw)
+                                                              updateTopCountry(actualIndex, countryIndex, 'percentage', parsed)
+                                                            }}
+                                                            placeholder="0"
+                                                            className="w-16 bg-transparent text-sm text-gray-800 outline-none"
+                                                          />
+                                                          <span className="text-sm text-gray-500">%</span>
+                                                        </div>
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => removeCountryTag(actualIndex, countryIndex)}
+                                                          className="p-1 text-gray-500 hover:text-primary-700"
+                                                          aria-label={`Remove ${country.country}`}
+                                                        >
+                                                          <XMarkIcon className="w-4 h-4" />
+                                                        </button>
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              ) : (
+                                                <p className="text-xs text-gray-500">Add up to 3 countries and set the audience % for each.</p>
+                                              )}
+                                            </div>
                                           </div>
-                                        ) : (
-                                          <p className="text-xs text-gray-500">Add up to 3 countries and set the audience % for each.</p>
-                                        )}
-                                      </div>
-                                    </div>
 
-                                    {/* Top Age Groups */}
-                                    <div className="space-y-2">
-                                      <div>
-                                        <p className="text-sm font-semibold text-gray-800">Age Groups</p>
-                                        <p className="text-xs text-gray-500">Select up to 3 age groups with their audience percentage</p>
-                                      </div>
-                                      <div className="flex flex-wrap gap-2">
-                                        {AGE_GROUP_OPTIONS.map((range) => {
-                                          const isSelected = creatorPlatforms[actualIndex].top_age_groups?.some((a) => a.ageRange === range)
-                                          return (
-                                            <button
-                                              key={range}
-                                              type="button"
-                                              onClick={() => toggleAgeGroupTag(actualIndex, range)}
-                                              className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
-                                                isSelected
-                                                  ? 'bg-primary-50 text-primary-700 border-primary-200'
-                                                  : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700'
-                                              }`}
-                                            >
-                                              {range}
-                                            </button>
-                                          )
-                                        })}
-                                      </div>
-                                    </div>
+                                          {/* Top Age Groups */}
+                                          <div className="space-y-2">
+                                            <div>
+                                              <p className="text-sm font-semibold text-gray-800">Age Groups</p>
+                                              <p className="text-xs text-gray-500">Select up to 3 age groups with their audience percentage</p>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                              {AGE_GROUP_OPTIONS.map((range) => {
+                                                const isSelected = creatorPlatforms[actualIndex].top_age_groups?.some((a) => a.ageRange === range)
+                                                return (
+                                                  <button
+                                                    key={range}
+                                                    type="button"
+                                                    onClick={() => toggleAgeGroupTag(actualIndex, range)}
+                                                    className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${isSelected
+                                                        ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700'
+                                                      }`}
+                                                  >
+                                                    {range}
+                                                  </button>
+                                                )
+                                              })}
+                                            </div>
+                                          </div>
 
-                                    {/* Gender Split */}
-                                    <div className="space-y-2">
-                                      <p className="text-sm font-semibold text-gray-800">Gender Split</p>
-                                      <div className="grid grid-cols-2 gap-3">
-                                        <Input
-                                          label="Male %"
-                                          type="number"
-                                          value={creatorPlatforms[actualIndex].gender_split?.male && creatorPlatforms[actualIndex].gender_split!.male > 0 ? creatorPlatforms[actualIndex].gender_split!.male : ''}
-                                          onChange={(e) => {
-                                            const val = e.target.value
-                                            const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
-                                            updateGenderSplit(actualIndex, 'male', cleanVal)
-                                          }}
-                                          placeholder="45"
-                                          min={0}
-                                          max={100}
-                                          step="0.1"
-                                          className="bg-gray-50"
-                                        />
-                                        <Input
-                                          label="Female %"
-                                          type="number"
-                                          value={creatorPlatforms[actualIndex].gender_split?.female && creatorPlatforms[actualIndex].gender_split!.female > 0 ? creatorPlatforms[actualIndex].gender_split!.female : ''}
-                                          onChange={(e) => {
-                                            const val = e.target.value
-                                            const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
-                                            updateGenderSplit(actualIndex, 'female', cleanVal)
-                                          }}
-                                          placeholder="55"
-                                          min={0}
-                                          max={100}
-                                          step="0.1"
-                                          className="bg-gray-50"
-                                        />
-                                      </div>
-                                      {creatorPlatforms[actualIndex].gender_split && (creatorPlatforms[actualIndex].gender_split!.male + creatorPlatforms[actualIndex].gender_split!.female) > 100 && (
-                                        <p className="text-xs text-red-600 mt-1">⚠️ Total &gt; 100%</p>
+                                          {/* Gender Split */}
+                                          <div className="space-y-2">
+                                            <p className="text-sm font-semibold text-gray-800">Gender Split</p>
+                                            <div className="grid grid-cols-2 gap-3">
+                                              <Input
+                                                label="Male %"
+                                                type="number"
+                                                value={creatorPlatforms[actualIndex].gender_split?.male && creatorPlatforms[actualIndex].gender_split!.male > 0 ? creatorPlatforms[actualIndex].gender_split!.male : ''}
+                                                onChange={(e) => {
+                                                  const val = e.target.value
+                                                  const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
+                                                  updateGenderSplit(actualIndex, 'male', cleanVal)
+                                                }}
+                                                placeholder="45"
+                                                min={0}
+                                                max={100}
+                                                step="0.1"
+                                                className="bg-gray-50"
+                                              />
+                                              <Input
+                                                label="Female %"
+                                                type="number"
+                                                value={creatorPlatforms[actualIndex].gender_split?.female && creatorPlatforms[actualIndex].gender_split!.female > 0 ? creatorPlatforms[actualIndex].gender_split!.female : ''}
+                                                onChange={(e) => {
+                                                  const val = e.target.value
+                                                  const cleanVal = val === '' ? '' : val.replace(/^0+(?=\d)/, '') || val
+                                                  updateGenderSplit(actualIndex, 'female', cleanVal)
+                                                }}
+                                                placeholder="55"
+                                                min={0}
+                                                max={100}
+                                                step="0.1"
+                                                className="bg-gray-50"
+                                              />
+                                            </div>
+                                            {creatorPlatforms[actualIndex].gender_split && (creatorPlatforms[actualIndex].gender_split!.male + creatorPlatforms[actualIndex].gender_split!.female) > 100 && (
+                                              <p className="text-xs text-red-600 mt-1">⚠️ Total &gt; 100%</p>
+                                            )}
+                                          </div>
+                                        </div>
                                       )}
                                     </div>
                                   </div>
-                                )}
-                              </div>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
 
                   {/* Error Message */}
@@ -2107,7 +2103,7 @@ export default function ProfileCompletePage() {
               onSubmit={currentStep === totalSteps ? handleHotelSubmit : (e) => { e.preventDefault(); nextStep(); }}
               className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 space-y-6"
             >
-              
+
 
               {/* Step 1: Basic Information */}
               {currentStep === 1 && (
@@ -2198,800 +2194,791 @@ export default function ProfileCompletePage() {
                 </div>
               )}
 
-            {/* Step 2: Property Listings Section - REQUIRED */}
-            {currentStep === 2 && (
-              <div className="space-y-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <HotelBadgeIcon active />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-bold text-gray-900">Property Listings</h3>
-                      <span className="px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-xs font-semibold">
-                        {hotelListings.length} listing{hotelListings.length !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      Add at least one property listing <span className="font-semibold text-red-600">(required)</span>
-                    </p>
-                  </div>
-                </div>
-
-                {hotelListings.length === 0 && (
-                  <div className="border border-primary-200 rounded-xl p-6 text-center bg-white shadow-sm border-dashed">
-                  <div className="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center">
-                    <HotelBadgeIcon />
-                  </div>
-                    <p className="text-primary-800 font-semibold mb-1 text-sm">No listings added yet</p>
-                    <p className="text-xs text-gray-600">Add at least one property listing to complete your profile.</p>
-                  </div>
-                )}
-
-                {hotelListings.map((listing, index) => {
-                  // Check if listing is complete (has all required basic fields)
-                  const isComplete = listing.name.trim() &&
-                    listing.location.trim() &&
-                    listing.accommodation_type.trim() &&
-                    listing.description.trim() &&
-                    listing.collaborationTypes.length > 0 &&
-                    listing.availability.length > 0 &&
-                    listing.platforms.length > 0 &&
-                    listing.lookingForPlatforms.length > 0 &&
-                    listing.targetGroupCountries.length > 0
-
-                  return (
-                    <div
-                      key={index}
-                      className="border border-gray-200 rounded-2xl p-5 space-y-4 bg-white shadow-sm"
-                    >
+              {/* Step 2: Property Listings Section - REQUIRED */}
+              {currentStep === 2 && (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <HotelBadgeIcon active />
+                    <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={() => toggleListingCardCollapse(index)}
-                          className="flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity"
-                        >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-sm ${isComplete
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-[#EEF2FF] text-[#2F54EB]'
-                            }`}>
-                            {index + 1}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 text-base">
-                              {listing.name || `Property Listing ${index + 1}`}
-                            </h4>
-                            {collapsedListingCards.has(index) && listing.name && (
-                              <p className="text-xs text-gray-500 mt-0">
-                                {listing.location && `${listing.location}`} {listing.accommodation_type && `• ${listing.accommodation_type}`}
-                              </p>
+                        <h3 className="text-lg font-bold text-gray-900">Property Listings</h3>
+                        <span className="px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-xs font-semibold">
+                          {hotelListings.length} listing{hotelListings.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Add at least one property listing <span className="font-semibold text-red-600">(required)</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {hotelListings.length === 0 && (
+                    <div className="border border-primary-200 rounded-xl p-6 text-center bg-white shadow-sm border-dashed">
+                      <div className="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center">
+                        <HotelBadgeIcon />
+                      </div>
+                      <p className="text-primary-800 font-semibold mb-1 text-sm">No listings added yet</p>
+                      <p className="text-xs text-gray-600">Add at least one property listing to complete your profile.</p>
+                    </div>
+                  )}
+
+                  {hotelListings.map((listing, index) => {
+                    // Check if listing is complete (has all required basic fields)
+                    const isComplete = listing.name.trim() &&
+                      listing.location.trim() &&
+                      listing.accommodation_type.trim() &&
+                      listing.description.trim() &&
+                      listing.collaborationTypes.length > 0 &&
+                      listing.availability.length > 0 &&
+                      listing.platforms.length > 0 &&
+                      listing.lookingForPlatforms.length > 0 &&
+                      listing.targetGroupCountries.length > 0
+
+                    return (
+                      <div
+                        key={index}
+                        className="border border-gray-200 rounded-2xl p-5 space-y-4 bg-white shadow-sm"
+                      >
+                        <div className="flex items-center justify-between">
+                          <button
+                            type="button"
+                            onClick={() => toggleListingCardCollapse(index)}
+                            className="flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity"
+                          >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-sm ${isComplete
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-[#EEF2FF] text-[#2F54EB]'
+                              }`}>
+                              {index + 1}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 text-base">
+                                {listing.name || `Property Listing ${index + 1}`}
+                              </h4>
+                              {collapsedListingCards.has(index) && listing.name && (
+                                <p className="text-xs text-gray-500 mt-0">
+                                  {listing.location && `${listing.location}`} {listing.accommodation_type && `• ${listing.accommodation_type}`}
+                                </p>
+                              )}
+                            </div>
+                            {collapsedListingCards.has(index) ? (
+                              <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+                            ) : (
+                              <ChevronUpIcon className="w-4 h-4 text-gray-500" />
+                            )}
+                          </button>
+                          <div className="flex items-center gap-2">
+                            {hotelListings.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeListing(index)}
+                                className="p-1 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
+                                title="Remove listing"
+                              >
+                                <XMarkIcon className="w-3.5 h-3.5" />
+                              </button>
                             )}
                           </div>
-                          {collapsedListingCards.has(index) ? (
-                            <ChevronDownIcon className="w-4 h-4 text-gray-500" />
-                          ) : (
-                            <ChevronUpIcon className="w-4 h-4 text-gray-500" />
-                          )}
-                        </button>
-                        <div className="flex items-center gap-2">
-                          {hotelListings.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeListing(index)}
-                              className="p-1 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
-                              title="Remove listing"
-                            >
-                              <XMarkIcon className="w-3.5 h-3.5" />
-                            </button>
-                          )}
                         </div>
-                      </div>
 
-                      {!collapsedListingCards.has(index) && (
-                        <>
-                          {/* Basic Information */}
-                          <div className="space-y-4">
-                            <h5 className="text-base font-semibold text-gray-900">Basic Information</h5>
+                        {!collapsedListingCards.has(index) && (
+                          <>
+                            {/* Basic Information */}
+                            <div className="space-y-4">
+                              <h5 className="text-base font-semibold text-gray-900">Basic Information</h5>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <Input
-                                label="Listing Name"
-                                type="text"
-                                value={listing.name}
-                                onChange={(e) => updateListing(index, 'name', e.target.value)}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <Input
+                                  label="Listing Name"
+                                  type="text"
+                                  value={listing.name}
+                                  onChange={(e) => updateListing(index, 'name', e.target.value)}
+                                  required
+                                  placeholder="Luxury Beach Villa"
+                                  className="bg-gray-50 border-gray-200"
+                                />
+
+                                <Input
+                                  label="Location"
+                                  type="text"
+                                  value={listing.location}
+                                  onChange={(e) => updateListing(index, 'location', e.target.value)}
+                                  required
+                                  placeholder="Bali, Indonesia"
+                                  className="bg-gray-50 border-gray-200"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                  Accommodation Type <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                  value={listing.accommodation_type}
+                                  onChange={(e) => updateListing(index, 'accommodation_type', e.target.value)}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-gray-50 text-sm text-gray-900"
+                                >
+                                  <option value="">Select type</option>
+                                  {HOTEL_CATEGORIES.map((cat) => (
+                                    <option key={cat} value={cat}>
+                                      {cat}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <Textarea
+                                label="Description"
+                                value={listing.description}
+                                onChange={(e) => updateListing(index, 'description', e.target.value)}
                                 required
-                                placeholder="Luxury Beach Villa"
+                                rows={3}
+                                placeholder="A stunning beachfront villa with private pool and ocean views."
                                 className="bg-gray-50 border-gray-200"
                               />
 
-                              <Input
-                                label="Location"
-                                type="text"
-                                value={listing.location}
-                                onChange={(e) => updateListing(index, 'location', e.target.value)}
-                                required
-                                placeholder="Bali, Indonesia"
-                                className="bg-gray-50 border-gray-200"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                Accommodation Type <span className="text-red-500">*</span>
-                              </label>
-                              <select
-                                value={listing.accommodation_type}
-                                onChange={(e) => updateListing(index, 'accommodation_type', e.target.value)}
-                                required
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-gray-50 text-sm text-gray-900"
-                              >
-                                <option value="">Select type</option>
-                                {HOTEL_CATEGORIES.map((cat) => (
-                                  <option key={cat} value={cat}>
-                                    {cat}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <Textarea
-                              label="Description"
-                              value={listing.description}
-                              onChange={(e) => updateListing(index, 'description', e.target.value)}
-                              required
-                              rows={3}
-                              placeholder="A stunning beachfront villa with private pool and ocean views."
-                              className="bg-gray-50 border-gray-200"
-                            />
-
-                            {/* Images - Booking.com Style */}
-                            <div>
-                              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                Property Photos <span className="text-red-500">*</span>
-                              </label>
-                              {listing.images.length > 0 ? (
-                                <div className="space-y-2">
-                                  {/* Main Featured Image */}
-                                  <div className="relative group w-full h-64 md:h-80 rounded-xl overflow-hidden shadow-md">
-                                    <img
-                                      src={listing.images[0]}
-                                      alt={`${listing.name} - Main photo`}
-                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                      onError={(e) => {
-                                        e.currentTarget.style.display = 'none'
-                                      }}
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                                      <div className="absolute bottom-3 right-3">
-                                        <button
-                                          type="button"
-                                          onClick={() => removeListingImage(index, 0)}
-                                          className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center gap-1.5"
-                                        >
-                                          <XMarkIcon className="w-4 h-4" />
-                                          Remove
-                                        </button>
+                              {/* Images - Booking.com Style */}
+                              <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                  Property Photos <span className="text-red-500">*</span>
+                                </label>
+                                {listing.images.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {/* Main Featured Image */}
+                                    <div className="relative group w-full h-64 md:h-80 rounded-xl overflow-hidden shadow-md">
+                                      <img
+                                        src={listing.images[0]}
+                                        alt={`${listing.name} - Main photo`}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none'
+                                        }}
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="absolute bottom-3 right-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => removeListingImage(index, 0)}
+                                            className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center gap-1.5"
+                                          >
+                                            <XMarkIcon className="w-4 h-4" />
+                                            Remove
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                  
-                                  {/* Thumbnail Grid */}
-                                  {listing.images.length > 1 && (
-                                    <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
-                                      {listing.images.slice(1, 6).map((image, imageIndex) => (
-                                        <div key={imageIndex + 1} className="relative group aspect-square">
-                                          <img
-                                            src={image}
-                                            alt={`${listing.name} - Photo ${imageIndex + 2}`}
-                                            className="w-full h-full object-cover rounded-lg border-2 border-gray-200 shadow-sm group-hover:border-primary-400 group-hover:shadow-md transition-all cursor-pointer"
-                                            onError={(e) => {
-                                              e.currentTarget.style.display = 'none'
-                                            }}
-                                          />
-                                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg transition-all flex items-center justify-center">
-                                            <button
-                                              type="button"
-                                              onClick={() => removeListingImage(index, imageIndex + 1)}
-                                              className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg transform hover:scale-110"
-                                              title="Remove image"
-                                            >
-                                              <XMarkIcon className="w-3.5 h-3.5" />
-                                            </button>
+
+                                    {/* Thumbnail Grid */}
+                                    {listing.images.length > 1 && (
+                                      <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
+                                        {listing.images.slice(1, 6).map((image, imageIndex) => (
+                                          <div key={imageIndex + 1} className="relative group aspect-square">
+                                            <img
+                                              src={image}
+                                              alt={`${listing.name} - Photo ${imageIndex + 2}`}
+                                              className="w-full h-full object-cover rounded-lg border-2 border-gray-200 shadow-sm group-hover:border-primary-400 group-hover:shadow-md transition-all cursor-pointer"
+                                              onError={(e) => {
+                                                e.currentTarget.style.display = 'none'
+                                              }}
+                                            />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg transition-all flex items-center justify-center">
+                                              <button
+                                                type="button"
+                                                onClick={() => removeListingImage(index, imageIndex + 1)}
+                                                className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg transform hover:scale-110"
+                                                title="Remove image"
+                                              >
+                                                <XMarkIcon className="w-3.5 h-3.5" />
+                                              </button>
+                                            </div>
                                           </div>
-                                        </div>
-                                      ))}
-                                      
-                                      {/* Add More Button */}
-                                      {listing.images.length < 10 && (
+                                        ))}
+
+                                        {/* Add More Button */}
+                                        {listing.images.length < 10 && (
+                                          <button
+                                            type="button"
+                                            onClick={() => listingImageInputRefs.current[index]?.click()}
+                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-500 transition-all group cursor-pointer bg-gray-50"
+                                          >
+                                            <PlusIcon className="w-5 h-5 mb-1" />
+                                            <span className="text-[10px] font-medium">Add</span>
+                                          </button>
+                                        )}
+
+                                        {/* Show remaining count if more than 6 images */}
+                                        {listing.images.length > 6 && (
+                                          <div className="aspect-square rounded-lg bg-gray-800/80 flex items-center justify-center text-white text-xs font-semibold">
+                                            +{listing.images.length - 6}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Add First Image Button (if only one image) */}
+                                    {listing.images.length === 1 && listing.images.length < 10 && (
+                                      <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
                                         <button
                                           type="button"
                                           onClick={() => listingImageInputRefs.current[index]?.click()}
                                           className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-500 transition-all group cursor-pointer bg-gray-50"
                                         >
                                           <PlusIcon className="w-5 h-5 mb-1" />
-                                          <span className="text-[10px] font-medium">Add</span>
+                                          <span className="text-[10px] font-medium">Add More</span>
                                         </button>
-                                      )}
-                                      
-                                      {/* Show remaining count if more than 6 images */}
-                                      {listing.images.length > 6 && (
-                                        <div className="aspect-square rounded-lg bg-gray-800/80 flex items-center justify-center text-white text-xs font-semibold">
-                                          +{listing.images.length - 6}
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                  
-                                  {/* Add First Image Button (if only one image) */}
-                                  {listing.images.length === 1 && listing.images.length < 10 && (
-                                    <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => listingImageInputRefs.current[index]?.click()}
-                                        className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-500 transition-all group cursor-pointer bg-gray-50"
-                                      >
-                                        <PlusIcon className="w-5 h-5 mb-1" />
-                                        <span className="text-[10px] font-medium">Add More</span>
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                <div 
-                                  className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:border-primary-400 hover:bg-primary-50 transition-all group cursor-pointer"
-                                  onClick={() => listingImageInputRefs.current[index]?.click()}
-                                >
-                                  <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 group-hover:border-primary-400 flex items-center justify-center mb-4 transition-all shadow-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-400 group-hover:text-primary-500 transition-colors">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                                    </svg>
+                                      </div>
+                                    )}
                                   </div>
-                                  <p className="text-base font-semibold text-gray-700 group-hover:text-primary-600 transition-colors mb-1">Upload Property Photos</p>
-                                  <p className="text-sm text-gray-500">Showcase your property with high-quality images</p>
-                                  <p className="text-xs text-gray-400 mt-2">JPG, PNG, WEBP • Max 5MB per image</p>
-                                </div>
-                              )}
-                              <input
-                                ref={(el) => {
-                                  listingImageInputRefs.current[index] = el
-                                }}
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp"
-                                className="hidden"
-                                onChange={(e) => handleListingImageChange(index, e)}
-                                multiple
-                              />
-                            </div>
-                          </div>
-
-                          {/* Offerings Section */}
-                          <div className="pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="w-1.5 h-5 bg-primary-600 rounded-full"></div>
-                              <h5 className="text-lg font-semibold text-gray-900">Offerings</h5>
-                            </div>
-                            <div className="space-y-5 bg-gray-50 border border-gray-200 rounded-2xl p-4">
-                              {/* Collaboration Types */}
-                              <div>
-                                <label className="block text-base font-semibold text-gray-900 mb-3">
-                                  Collaboration Types <span className="text-red-500">*</span>
-                                </label>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                  {COLLABORATION_TYPES.map((type) => {
-                                    const isSelected = listing.collaborationTypes.includes(type)
-                                    const icons = {
-                                      'Free Stay': GiftIcon,
-                                      'Paid': CurrencyDollarIcon,
-                                      'Discount': TagIcon,
-                                    }
-                                    const Icon = icons[type as keyof typeof icons]
-
-                                    return (
-                                      <label
-                                        key={type}
-                                        className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${
-                                          isSelected
-                                            ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
-                                            : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
-                                        }`}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={isSelected}
-                                          onChange={(e) => {
-                                            if (e.target.checked) {
-                                              updateListing(index, 'collaborationTypes', [...listing.collaborationTypes, type])
-                                            } else {
-                                              updateListing(index, 'collaborationTypes', listing.collaborationTypes.filter((t) => t !== type))
-                                            }
-                                          }}
-                                          className="sr-only"
-                                        />
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                                          isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
-                                        }`}>
-                                          <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-700'}`} />
-                                        </div>
-                                        <div className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
-                                          {type}
-                                        </div>
-                                        {isSelected && (
-                                          <div className="flex items-center gap-1 text-xs font-medium text-[#2F54EB]">
-                                            <CheckCircleIcon className="w-3.5 h-3.5" />
-                                            <span>Selected</span>
-                                          </div>
-                                        )}
-                                      </label>
-                                    )
-                                  })}
-                                </div>
+                                ) : (
+                                  <div
+                                    className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:border-primary-400 hover:bg-primary-50 transition-all group cursor-pointer"
+                                    onClick={() => listingImageInputRefs.current[index]?.click()}
+                                  >
+                                    <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 group-hover:border-primary-400 flex items-center justify-center mb-4 transition-all shadow-sm">
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-400 group-hover:text-primary-500 transition-colors">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                                      </svg>
+                                    </div>
+                                    <p className="text-base font-semibold text-gray-700 group-hover:text-primary-600 transition-colors mb-1">Upload Property Photos</p>
+                                    <p className="text-sm text-gray-500">Showcase your property with high-quality images</p>
+                                    <p className="text-xs text-gray-400 mt-2">JPG, PNG, WEBP • Max 5MB per image</p>
+                                  </div>
+                                )}
+                                <input
+                                  ref={(el) => {
+                                    listingImageInputRefs.current[index] = el
+                                  }}
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/webp"
+                                  className="hidden"
+                                  onChange={(e) => handleListingImageChange(index, e)}
+                                  multiple
+                                />
                               </div>
+                            </div>
 
-                              {/* Free Stay Details */}
-                              {listing.collaborationTypes.includes('Free Stay') && (
-                                <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                                      <GiftIcon className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                      <h6 className="font-semibold text-gray-900 text-base">Free Stay Details</h6>
-                                      <p className="text-sm text-gray-600">Specify the night range for free stays</p>
-                                    </div>
-                                  </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <Input
-                                      label="Min. Nights"
-                                      type="number"
-                                      value={listing.freeStayMinNights || ''}
-                                      min={1}
-                                      onChange={(e) => {
-                                        const { value } = e.target
-                                        if (value === '') {
-                                          updateListing(index, 'freeStayMinNights', undefined)
-                                          return
-                                        }
-                                        const parsed = parseInt(value)
-                                        updateListing(index, 'freeStayMinNights', Number.isNaN(parsed) ? undefined : Math.max(1, parsed))
-                                      }}
-                                      placeholder="1"
-                                      required
-                                      className="bg-gray-50 border-gray-200"
-                                    />
-                                    <Input
-                                      label="Max. Nights"
-                                      type="number"
-                                      value={listing.freeStayMaxNights || ''}
-                                      min={1}
-                                      onChange={(e) => {
-                                        const { value } = e.target
-                                        if (value === '') {
-                                          updateListing(index, 'freeStayMaxNights', undefined)
-                                          return
-                                        }
-                                        const parsed = parseInt(value)
-                                        updateListing(index, 'freeStayMaxNights', Number.isNaN(parsed) ? undefined : Math.max(1, parsed))
-                                      }}
-                                      placeholder="5"
-                                      required
-                                      className="bg-gray-50 border-gray-200"
-                                    />
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Paid Details */}
-                              {listing.collaborationTypes.includes('Paid') && (
-                                <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                                      <CurrencyDollarIcon className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                      <h6 className="font-semibold text-gray-900 text-base">Paid Details</h6>
-                                      <p className="text-sm text-gray-600">Set the maximum payment amount</p>
-                                    </div>
-                                  </div>
-                                  <Input
-                                    label="Max. Amount ($)"
-                                    type="number"
-                                    value={listing.paidMaxAmount || ''}
-                                    onChange={(e) => updateListing(index, 'paidMaxAmount', parseInt(e.target.value) || undefined)}
-                                    placeholder="5000"
-                                    required
-                                    className="bg-gray-50 border-gray-200"
-                                  />
-                                </div>
-                              )}
-
-                              {/* Discount Details */}
-                              {listing.collaborationTypes.includes('Discount') && (
-                                <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                                      <TagIcon className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                      <h6 className="font-semibold text-gray-900 text-base">Discount Details</h6>
-                                      <p className="text-sm text-gray-600">Set the discount percentage</p>
-                                    </div>
-                                  </div>
-                                  <Input
-                                    label="Discount Percentage (%)"
-                                    type="number"
-                                    value={listing.discountPercentage || ''}
-                                    onChange={(e) => updateListing(index, 'discountPercentage', parseInt(e.target.value) || undefined)}
-                                    placeholder="20"
-                                    min={1}
-                                    max={100}
-                                    required
-                                    className="bg-gray-50 border-gray-200"
-                                  />
-                                </div>
-                              )}
-
-                              {/* Availability */}
-                              <div>
-                                <div className="flex items-center gap-2 mb-3">
-                                  <CalendarDaysIcon className="w-5 h-5 text-primary-600" />
-                                  <label className="block text-base font-semibold text-gray-900">
-                                    Availability <span className="text-red-500">*</span>
+                            {/* Offerings Section */}
+                            <div className="pt-2 border-t border-gray-100">
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="w-1.5 h-5 bg-primary-600 rounded-full"></div>
+                                <h5 className="text-lg font-semibold text-gray-900">Offerings</h5>
+                              </div>
+                              <div className="space-y-5 bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                                {/* Collaboration Types */}
+                                <div>
+                                  <label className="block text-base font-semibold text-gray-900 mb-3">
+                                    Collaboration Types <span className="text-red-500">*</span>
                                   </label>
-                                </div>
-                                <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
-                                  {/* All Year Button */}
-                                  <div className="mb-3">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const allMonthsSelected = MONTHS.every(month => listing.availability.includes(month))
-                                        if (allMonthsSelected) {
-                                          // If all selected, deselect all
-                                          updateListing(index, 'availability', [])
-                                        } else {
-                                          // Select all months
-                                          updateListing(index, 'availability', [...MONTHS])
-                                        }
-                                      }}
-                                      className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${
-                                        MONTHS.every(month => listing.availability.includes(month))
-                                          ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
-                                          : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
-                                      }`}
-                                    >
-                                      <span className="flex items-center justify-center gap-2">
-                                        <CalendarDaysIcon className="w-5 h-5" />
-                                        {MONTHS.every(month => listing.availability.includes(month)) ? 'All Year Selected' : 'Select All Year'}
-                                      </span>
-                                    </button>
-                                  </div>
-                                  <div className="grid grid-cols-6 gap-2">
-                                    {MONTHS.map((month) => {
-                                      const isSelected = listing.availability.includes(month)
-                                      const monthAbbr = month.substring(0, 3)
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    {COLLABORATION_TYPES.map((type) => {
+                                      const isSelected = listing.collaborationTypes.includes(type)
+                                      const icons = {
+                                        'Free Stay': GiftIcon,
+                                        'Paid': CurrencyDollarIcon,
+                                        'Discount': TagIcon,
+                                      }
+                                      const Icon = icons[type as keyof typeof icons]
 
                                       return (
                                         <label
-                                          key={month}
-                                          className={`relative flex flex-col items-center justify-center py-3 rounded-xl border cursor-pointer transition-all ${
-                                            isSelected
-                                              ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
-                                              : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
-                                          }`}
+                                          key={type}
+                                          className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${isSelected
+                                              ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
+                                              : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
+                                            }`}
                                         >
                                           <input
                                             type="checkbox"
                                             checked={isSelected}
                                             onChange={(e) => {
                                               if (e.target.checked) {
-                                                updateListing(index, 'availability', [...listing.availability, month])
+                                                updateListing(index, 'collaborationTypes', [...listing.collaborationTypes, type])
                                               } else {
-                                                updateListing(index, 'availability', listing.availability.filter((m) => m !== month))
+                                                updateListing(index, 'collaborationTypes', listing.collaborationTypes.filter((t) => t !== type))
                                               }
                                             }}
                                             className="sr-only"
                                           />
-                                          <div className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-700'}`}>{monthAbbr}</div>
+                                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
+                                            }`}>
+                                            <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-700'}`} />
+                                          </div>
+                                          <div className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
+                                            {type}
+                                          </div>
+                                          {isSelected && (
+                                            <div className="flex items-center gap-1 text-xs font-medium text-[#2F54EB]">
+                                              <CheckCircleIcon className="w-3.5 h-3.5" />
+                                              <span>Selected</span>
+                                            </div>
+                                          )}
+                                        </label>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+
+                                {/* Free Stay Details */}
+                                {listing.collaborationTypes.includes('Free Stay') && (
+                                  <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
+                                        <GiftIcon className="w-5 h-5" />
+                                      </div>
+                                      <div>
+                                        <h6 className="font-semibold text-gray-900 text-base">Free Stay Details</h6>
+                                        <p className="text-sm text-gray-600">Specify the night range for free stays</p>
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                      <Input
+                                        label="Min. Nights"
+                                        type="number"
+                                        value={listing.freeStayMinNights || ''}
+                                        min={1}
+                                        onChange={(e) => {
+                                          const { value } = e.target
+                                          if (value === '') {
+                                            updateListing(index, 'freeStayMinNights', undefined)
+                                            return
+                                          }
+                                          const parsed = parseInt(value)
+                                          updateListing(index, 'freeStayMinNights', Number.isNaN(parsed) ? undefined : Math.max(1, parsed))
+                                        }}
+                                        placeholder="1"
+                                        required
+                                        className="bg-gray-50 border-gray-200"
+                                      />
+                                      <Input
+                                        label="Max. Nights"
+                                        type="number"
+                                        value={listing.freeStayMaxNights || ''}
+                                        min={1}
+                                        onChange={(e) => {
+                                          const { value } = e.target
+                                          if (value === '') {
+                                            updateListing(index, 'freeStayMaxNights', undefined)
+                                            return
+                                          }
+                                          const parsed = parseInt(value)
+                                          updateListing(index, 'freeStayMaxNights', Number.isNaN(parsed) ? undefined : Math.max(1, parsed))
+                                        }}
+                                        placeholder="5"
+                                        required
+                                        className="bg-gray-50 border-gray-200"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Paid Details */}
+                                {listing.collaborationTypes.includes('Paid') && (
+                                  <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
+                                        <CurrencyDollarIcon className="w-5 h-5" />
+                                      </div>
+                                      <div>
+                                        <h6 className="font-semibold text-gray-900 text-base">Paid Details</h6>
+                                        <p className="text-sm text-gray-600">Set the maximum payment amount</p>
+                                      </div>
+                                    </div>
+                                    <Input
+                                      label="Max. Amount ($)"
+                                      type="number"
+                                      value={listing.paidMaxAmount || ''}
+                                      onChange={(e) => updateListing(index, 'paidMaxAmount', parseInt(e.target.value) || undefined)}
+                                      placeholder="5000"
+                                      required
+                                      className="bg-gray-50 border-gray-200"
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Discount Details */}
+                                {listing.collaborationTypes.includes('Discount') && (
+                                  <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
+                                        <TagIcon className="w-5 h-5" />
+                                      </div>
+                                      <div>
+                                        <h6 className="font-semibold text-gray-900 text-base">Discount Details</h6>
+                                        <p className="text-sm text-gray-600">Set the discount percentage</p>
+                                      </div>
+                                    </div>
+                                    <Input
+                                      label="Discount Percentage (%)"
+                                      type="number"
+                                      value={listing.discountPercentage || ''}
+                                      onChange={(e) => updateListing(index, 'discountPercentage', parseInt(e.target.value) || undefined)}
+                                      placeholder="20"
+                                      min={1}
+                                      max={100}
+                                      required
+                                      className="bg-gray-50 border-gray-200"
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Availability */}
+                                <div>
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <CalendarDaysIcon className="w-5 h-5 text-primary-600" />
+                                    <label className="block text-base font-semibold text-gray-900">
+                                      Availability <span className="text-red-500">*</span>
+                                    </label>
+                                  </div>
+                                  <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
+                                    {/* All Year Button */}
+                                    <div className="mb-3">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const allMonthsSelected = MONTHS.every(month => listing.availability.includes(month))
+                                          if (allMonthsSelected) {
+                                            // If all selected, deselect all
+                                            updateListing(index, 'availability', [])
+                                          } else {
+                                            // Select all months
+                                            updateListing(index, 'availability', [...MONTHS])
+                                          }
+                                        }}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${MONTHS.every(month => listing.availability.includes(month))
+                                            ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
+                                            : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
+                                          }`}
+                                      >
+                                        <span className="flex items-center justify-center gap-2">
+                                          <CalendarDaysIcon className="w-5 h-5" />
+                                          {MONTHS.every(month => listing.availability.includes(month)) ? 'All Year Selected' : 'Select All Year'}
+                                        </span>
+                                      </button>
+                                    </div>
+                                    <div className="grid grid-cols-6 gap-2">
+                                      {MONTHS.map((month) => {
+                                        const isSelected = listing.availability.includes(month)
+                                        const monthAbbr = month.substring(0, 3)
+
+                                        return (
+                                          <label
+                                            key={month}
+                                            className={`relative flex flex-col items-center justify-center py-3 rounded-xl border cursor-pointer transition-all ${isSelected
+                                                ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
+                                                : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                                              }`}
+                                          >
+                                            <input
+                                              type="checkbox"
+                                              checked={isSelected}
+                                              onChange={(e) => {
+                                                if (e.target.checked) {
+                                                  updateListing(index, 'availability', [...listing.availability, month])
+                                                } else {
+                                                  updateListing(index, 'availability', listing.availability.filter((m) => m !== month))
+                                                }
+                                              }}
+                                              className="sr-only"
+                                            />
+                                            <div className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-700'}`}>{monthAbbr}</div>
+                                          </label>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Platforms */}
+                                <div>
+                                  <label className="block text-base font-semibold text-gray-900 mb-1">Property posting platforms</label>
+                                  <p className="text-sm text-gray-600 mb-3">On which platforms  is your property active?</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {PLATFORM_OPTIONS.map((platform) => {
+                                      const isSelected = listing.platforms.includes(platform)
+                                      return (
+                                        <label
+                                          key={platform}
+                                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
+                                              ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                            }`}
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={isSelected}
+                                            onChange={(e) => {
+                                              if (e.target.checked) {
+                                                updateListing(index, 'platforms', [...listing.platforms, platform])
+                                              } else {
+                                                updateListing(index, 'platforms', listing.platforms.filter((p) => p !== platform))
+                                              }
+                                            }}
+                                            className="sr-only"
+                                          />
+                                          <span
+                                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                                ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                                : 'border-gray-400 bg-white'
+                                              }`}
+                                          >
+                                            {isSelected && (
+                                              <span className="w-2 h-2 rounded-full bg-white"></span>
+                                            )}
+                                          </span>
+                                          <span className={isSelected ? 'text-[#2F54EB]' : 'text-gray-700'}>
+                                            {platform}
+                                          </span>
                                         </label>
                                       )
                                     })}
                                   </div>
                                 </div>
                               </div>
-
-                              {/* Platforms */}
-                              <div>
-                                <label className="block text-base font-semibold text-gray-900 mb-1">Property posting platforms</label>
-                                <p className="text-sm text-gray-600 mb-3">On which platforms  is your property active?</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {PLATFORM_OPTIONS.map((platform) => {
-                                    const isSelected = listing.platforms.includes(platform)
-                                    return (
-                                      <label
-                                        key={platform}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
-                                          isSelected
-                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                                        }`}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={isSelected}
-                                          onChange={(e) => {
-                                            if (e.target.checked) {
-                                              updateListing(index, 'platforms', [...listing.platforms, platform])
-                                            } else {
-                                              updateListing(index, 'platforms', listing.platforms.filter((p) => p !== platform))
-                                            }
-                                          }}
-                                          className="sr-only"
-                                        />
-                                        <span
-                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                            isSelected
-                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                              : 'border-gray-400 bg-white'
-                                          }`}
-                                        >
-                                          {isSelected && (
-                                            <span className="w-2 h-2 rounded-full bg-white"></span>
-                                          )}
-                                        </span>
-                                        <span className={isSelected ? 'text-[#2F54EB]' : 'text-gray-700'}>
-                                          {platform}
-                                        </span>
-                                      </label>
-                                    )
-                                  })}
-                                </div>
-                              </div>
                             </div>
-                          </div>
 
-                          {/* Looking For Section */}
-                          <div className="pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="w-1.5 h-5 bg-orange-500 rounded-full"></div>
-                              <h5 className="text-lg font-semibold text-gray-900">Looking For</h5>
-                            </div>
-                            <div className="space-y-5 bg-gray-50 border border-gray-200 rounded-2xl p-4">
-                              {/* Platforms */}
-                              <div>
-                                <label className="block text-base font-semibold text-gray-900 mb-1">Creator's platforms</label>
-                                <p className="text-sm text-gray-600 mb-3">Which platforms should the creator have?</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {PLATFORM_OPTIONS.map((platform) => {
-                                    const isSelected = listing.lookingForPlatforms.includes(platform)
-                                    return (
-                                      <label
-                                        key={platform}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${
-                                          isSelected
-                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                                        }`}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={isSelected}
-                                          onChange={(e) => {
-                                            if (e.target.checked) {
-                                              updateListing(index, 'lookingForPlatforms', [...listing.lookingForPlatforms, platform])
-                                            } else {
-                                              updateListing(index, 'lookingForPlatforms', listing.lookingForPlatforms.filter((p) => p !== platform))
-                                            }
-                                          }}
-                                          className="sr-only"
-                                        />
-                                        <span
-                                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                            isSelected
-                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                              : 'border-gray-400 bg-white'
-                                          }`}
+                            {/* Looking For Section */}
+                            <div className="pt-2 border-t border-gray-100">
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="w-1.5 h-5 bg-orange-500 rounded-full"></div>
+                                <h5 className="text-lg font-semibold text-gray-900">Looking For</h5>
+                              </div>
+                              <div className="space-y-5 bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                                {/* Platforms */}
+                                <div>
+                                  <label className="block text-base font-semibold text-gray-900 mb-1">Creator's platforms</label>
+                                  <p className="text-sm text-gray-600 mb-3">Which platforms should the creator have?</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {PLATFORM_OPTIONS.map((platform) => {
+                                      const isSelected = listing.lookingForPlatforms.includes(platform)
+                                      return (
+                                        <label
+                                          key={platform}
+                                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
+                                              ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                            }`}
                                         >
-                                          {isSelected && (
-                                            <span className="w-2 h-2 rounded-full bg-white"></span>
-                                          )}
-                                        </span>
-                                        <span className={isSelected ? 'text-[#2F54EB]' : 'text-gray-700'}>
-                                          {platform}
-                                        </span>
-                                      </label>
-                                    )
-                                  })}
+                                          <input
+                                            type="checkbox"
+                                            checked={isSelected}
+                                            onChange={(e) => {
+                                              if (e.target.checked) {
+                                                updateListing(index, 'lookingForPlatforms', [...listing.lookingForPlatforms, platform])
+                                              } else {
+                                                updateListing(index, 'lookingForPlatforms', listing.lookingForPlatforms.filter((p) => p !== platform))
+                                              }
+                                            }}
+                                            className="sr-only"
+                                          />
+                                          <span
+                                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                                                ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                                : 'border-gray-400 bg-white'
+                                              }`}
+                                          >
+                                            {isSelected && (
+                                              <span className="w-2 h-2 rounded-full bg-white"></span>
+                                            )}
+                                          </span>
+                                          <span className={isSelected ? 'text-[#2F54EB]' : 'text-gray-700'}>
+                                            {platform}
+                                          </span>
+                                        </label>
+                                      )
+                                    })}
+                                  </div>
                                 </div>
-                              </div>
 
-                              {/* Min Followers */}
-                              <div>
-                                <label className="block text-base font-semibold text-gray-900 mb-2">Min. Followers (optional)</label>
-                                <Input
-                                  type="number"
-                                  value={listing.lookingForMinFollowers || ''}
-                                  onChange={(e) => updateListing(index, 'lookingForMinFollowers', parseInt(e.target.value) || undefined)}
-                                  placeholder="e.g., 50000"
-                                  className="bg-gray-50"
-                                />
-                              </div>
-
-                              {/* Top Countries */}
-                              <div>
-                                <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries</label>
-                                <p className="text-sm text-gray-600 mb-3">Select up to 3 countries your target audience is from</p>
-                                <div className="space-y-2">
-                                  <input
-                                    type="text"
-                                    value={listingCountryInputs[index] || ''}
-                                    onChange={(e) => {
-                                      setListingCountryInputs((prev) => ({ ...prev, [index]: e.target.value }))
-                                    }}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault()
-                                        const country = listingCountryInputs[index]?.trim()
-                                        if (country && COUNTRIES.includes(country) && !listing.targetGroupCountries.includes(country) && listing.targetGroupCountries.length < 3) {
-                                          updateListing(index, 'targetGroupCountries', [...listing.targetGroupCountries, country])
-                                          setListingCountryInputs((prev) => ({ ...prev, [index]: '' }))
-                                        }
-                                      }
-                                    }}
-                                    placeholder="Search countries..."
-                                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
+                                {/* Min Followers */}
+                                <div>
+                                  <label className="block text-base font-semibold text-gray-900 mb-2">Min. Followers (optional)</label>
+                                  <Input
+                                    type="number"
+                                    value={listing.lookingForMinFollowers || ''}
+                                    onChange={(e) => updateListing(index, 'lookingForMinFollowers', parseInt(e.target.value) || undefined)}
+                                    placeholder="e.g., 50000"
+                                    className="bg-gray-50"
                                   />
-                                  {/* Dropdown suggestions */}
-                                  {listingCountryInputs[index] && COUNTRIES.filter(c => 
-                                    c.toLowerCase().includes((listingCountryInputs[index] || '').toLowerCase()) &&
-                                    !listing.targetGroupCountries.includes(c)
-                                  ).length > 0 && (
-                                    <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-                                      {COUNTRIES.filter(c => 
-                                        c.toLowerCase().includes((listingCountryInputs[index] || '').toLowerCase()) &&
-                                        !listing.targetGroupCountries.includes(c)
-                                      ).map((country) => (
+                                </div>
+
+                                {/* Top Countries */}
+                                <div>
+                                  <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries</label>
+                                  <p className="text-sm text-gray-600 mb-3">Select up to 3 countries your target audience is from</p>
+                                  <div className="space-y-2">
+                                    <input
+                                      type="text"
+                                      value={listingCountryInputs[index] || ''}
+                                      onChange={(e) => {
+                                        setListingCountryInputs((prev) => ({ ...prev, [index]: e.target.value }))
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault()
+                                          const country = listingCountryInputs[index]?.trim()
+                                          if (country && COUNTRIES.includes(country) && !listing.targetGroupCountries.includes(country) && listing.targetGroupCountries.length < 3) {
+                                            updateListing(index, 'targetGroupCountries', [...listing.targetGroupCountries, country])
+                                            setListingCountryInputs((prev) => ({ ...prev, [index]: '' }))
+                                          }
+                                        }
+                                      }}
+                                      placeholder="Search countries..."
+                                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-200"
+                                    />
+                                    {/* Dropdown suggestions */}
+                                    {listingCountryInputs[index] && COUNTRIES.filter(c =>
+                                      c.toLowerCase().includes((listingCountryInputs[index] || '').toLowerCase()) &&
+                                      !listing.targetGroupCountries.includes(c)
+                                    ).length > 0 && (
+                                        <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                                          {COUNTRIES.filter(c =>
+                                            c.toLowerCase().includes((listingCountryInputs[index] || '').toLowerCase()) &&
+                                            !listing.targetGroupCountries.includes(c)
+                                          ).map((country) => (
+                                            <button
+                                              key={country}
+                                              type="button"
+                                              onClick={() => {
+                                                if (listing.targetGroupCountries.length < 3 && !listing.targetGroupCountries.includes(country)) {
+                                                  updateListing(index, 'targetGroupCountries', [...listing.targetGroupCountries, country])
+                                                  setListingCountryInputs((prev) => ({ ...prev, [index]: '' }))
+                                                }
+                                              }}
+                                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
+                                            >
+                                              {country}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    {listing.targetGroupCountries.length > 0 && (
+                                      <div className="flex flex-wrap gap-2">
+                                        {listing.targetGroupCountries.map((country, countryIndex) => (
+                                          <span key={countryIndex} className="inline-flex items-center gap-1 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold px-3 py-1 border border-primary-100">
+                                            {country}
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                updateListing(index, 'targetGroupCountries', listing.targetGroupCountries.filter((c) => c !== country))
+                                              }}
+                                              className="text-primary-500 hover:text-primary-700"
+                                            >
+                                              <XMarkIcon className="w-3 h-3" />
+                                            </button>
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Age Groups */}
+                                <div>
+                                  <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups</label>
+                                  <p className="text-sm text-gray-600 mb-3">Select up to 3 age groups you want to target</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {AGE_GROUP_OPTIONS.map((range) => {
+                                      const isSelected = listing.targetGroupAgeGroups?.includes(range) || false
+                                      return (
                                         <button
-                                          key={country}
+                                          key={range}
                                           type="button"
                                           onClick={() => {
-                                            if (listing.targetGroupCountries.length < 3 && !listing.targetGroupCountries.includes(country)) {
-                                              updateListing(index, 'targetGroupCountries', [...listing.targetGroupCountries, country])
-                                              setListingCountryInputs((prev) => ({ ...prev, [index]: '' }))
+                                            const currentGroups = listing.targetGroupAgeGroups || []
+                                            if (isSelected) {
+                                              updateListing(index, 'targetGroupAgeGroups', currentGroups.filter((g) => g !== range))
+                                            } else {
+                                              if (currentGroups.length < 3) {
+                                                updateListing(index, 'targetGroupAgeGroups', [...currentGroups, range])
+                                              }
                                             }
                                           }}
-                                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50"
+                                          disabled={!isSelected && (listing.targetGroupAgeGroups?.length || 0) >= 3}
+                                          className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${isSelected
+                                              ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                              : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                                            }`}
                                         >
-                                          {country}
+                                          {range}
                                         </button>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {listing.targetGroupCountries.length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
-                                      {listing.targetGroupCountries.map((country, countryIndex) => (
-                                        <span key={countryIndex} className="inline-flex items-center gap-1 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold px-3 py-1 border border-primary-100">
-                                          {country}
-                                          <button
-                                            type="button"
-                                            onClick={() => {
-                                              updateListing(index, 'targetGroupCountries', listing.targetGroupCountries.filter((c) => c !== country))
-                                            }}
-                                            className="text-primary-500 hover:text-primary-700"
-                                          >
-                                            <XMarkIcon className="w-3 h-3" />
-                                          </button>
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Age Groups */}
-                              <div>
-                                <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups</label>
-                                <p className="text-sm text-gray-600 mb-3">Select up to 3 age groups you want to target</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {AGE_GROUP_OPTIONS.map((range) => {
-                                    const isSelected = listing.targetGroupAgeGroups?.includes(range) || false
-                                    return (
-                                      <button
-                                        key={range}
-                                        type="button"
-                                        onClick={() => {
-                                          const currentGroups = listing.targetGroupAgeGroups || []
-                                          if (isSelected) {
-                                            updateListing(index, 'targetGroupAgeGroups', currentGroups.filter((g) => g !== range))
-                                          } else {
-                                            if (currentGroups.length < 3) {
-                                              updateListing(index, 'targetGroupAgeGroups', [...currentGroups, range])
-                                            }
-                                          }
-                                        }}
-                                        disabled={!isSelected && (listing.targetGroupAgeGroups?.length || 0) >= 3}
-                                        className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${
-                                          isSelected
-                                            ? 'bg-primary-50 text-primary-700 border-primary-200'
-                                            : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
-                                        }`}
-                                      >
-                                        {range}
-                                      </button>
-                                    )
-                                  })}
+                                      )
+                                    })}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )
-                })}
+                          </>
+                        )}
+                      </div>
+                    )
+                  })}
 
-                <button
-                  type="button"
-                  onClick={addListing}
-                  className="w-full py-3 border-2 border-dashed border-primary-200 rounded-lg text-primary-700 hover:border-primary-400 hover:bg-primary-50 transition-all flex items-center justify-center gap-2 font-semibold text-sm group"
-                >
-                  <PlusIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  Add Another Property Listing
-                </button>
+                  <button
+                    type="button"
+                    onClick={addListing}
+                    className="w-full py-3 border-2 border-dashed border-primary-200 rounded-lg text-primary-700 hover:border-primary-400 hover:bg-primary-50 transition-all flex items-center justify-center gap-2 font-semibold text-sm group"
+                  >
+                    <PlusIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    Add Another Property Listing
+                  </button>
 
-                <div className="mt-3 flex items-center gap-3 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-700">
-                  <InformationCircleIcon className="w-5 h-5 text-primary-600" />
-                  <p className="leading-snug">
-                    All property information will be verified by our team before your listings go live.
-                  </p>
+                  <div className="mt-3 flex items-center gap-3 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-700">
+                    <InformationCircleIcon className="w-5 h-5 text-primary-600" />
+                    <p className="leading-snug">
+                      All property information will be verified by our team before your listings go live.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
-                <XMarkIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800 font-medium whitespace-pre-line">{error}</p>
-              </div>
-            )}
-
-            {/* Navigation Buttons */}
-            <div className="pt-6 border-t border-gray-200 flex items-center justify-between gap-4">
-              {currentStep > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                  className="px-6 py-3"
-                >
-                  Previous
-                </Button>
               )}
-              <div className="flex-1" />
-              <Button
-                type="submit"
-                variant="primary"
-                className="px-8 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
-                disabled={submitting || (currentStep < totalSteps && !canProceedToNextStep())}
-              >
-                {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Saving...
-                  </span>
-                ) : currentStep === totalSteps ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <CheckCircleIcon className="w-5 h-5" />
-                    Complete Profile
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    Next
-                    <ChevronDownIcon className="w-5 h-5 rotate-[-90deg]" />
-                  </span>
+
+              {error && (
+                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
+                  <XMarkIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-800 font-medium whitespace-pre-line">{error}</p>
+                </div>
+              )}
+
+              {/* Navigation Buttons */}
+              <div className="pt-6 border-t border-gray-200 flex items-center justify-between gap-4">
+                {currentStep > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    className="px-6 py-3"
+                  >
+                    Previous
+                  </Button>
                 )}
-              </Button>
-            </div>
-          </form>
-            </div>
+                <div className="flex-1" />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="px-8 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                  disabled={submitting || (currentStep < totalSteps && !canProceedToNextStep())}
+                >
+                  {submitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Saving...
+                    </span>
+                  ) : currentStep === totalSteps ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <CheckCircleIcon className="w-5 h-5" />
+                      Complete Profile
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      Next
+                      <ChevronDownIcon className="w-5 h-5 rotate-[-90deg]" />
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
         )}
       </div>
     </div>

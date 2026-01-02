@@ -4,7 +4,46 @@
 
 import { apiClient } from './client'
 import type { Hotel, PaginatedResponse, HotelProfile, HotelListing, CollaborationOffering, CreatorRequirements, HotelProfileStatus } from '@/lib/types'
-import { transformHotelListingToHotel } from '@/lib/utils'
+import { transformHotelListingToHotel, transformListingMarketplaceResponse } from '@/lib/utils'
+
+// Backend API response type for marketplace endpoint (snake_case)
+interface ListingMarketplaceResponse {
+  id: string
+  hotel_profile_id: string
+  hotel_name: string
+  hotel_picture: string | null
+  name: string
+  location: string
+  description: string
+  accommodation_type: string | null
+  images: string[]
+  status: "pending" | "verified" | "rejected"
+  collaboration_offerings: Array<{
+    id: string
+    listing_id: string
+    collaboration_type: "Free Stay" | "Paid" | "Discount"
+    availability_months: string[]
+    platforms: ("Instagram" | "TikTok" | "YouTube" | "Facebook")[]
+    free_stay_min_nights: number | null
+    free_stay_max_nights: number | null
+    paid_max_amount: string | null // Backend returns as string (e.g., "2000.00")
+    discount_percentage: number | null
+    created_at: string
+    updated_at: string
+  }>
+  creator_requirements?: {
+    id: string
+    listing_id: string
+    platforms: ("Instagram" | "TikTok" | "YouTube" | "Facebook")[]
+    min_followers: number | null
+    target_countries: string[]
+    target_age_min: number | null
+    target_age_max: number | null
+    created_at: string
+    updated_at: string
+  }
+  created_at: string
+}
 
 // Request/Response types for hotel profile endpoints
 // Partial update for hotel profile (PUT /hotels/me)
@@ -55,7 +94,7 @@ export interface UploadImagesResponse {
 
 export const hotelService = {
   /**
-   * Get all hotels (public marketplace)
+   * Get all hotel listings (public marketplace endpoint - returns direct array)
    */
   getAll: async (params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Hotel>> => {
     const queryParams = new URLSearchParams()
@@ -63,12 +102,24 @@ export const hotelService = {
     if (params?.limit) queryParams.append('limit', params.limit.toString())
     
     const query = queryParams.toString()
-    const response = await apiClient.get<PaginatedResponse<HotelListing>>(`/hotels${query ? `?${query}` : ''}`)
+    // Backend returns direct array, not paginated response
+    const response = await apiClient.get<ListingMarketplaceResponse[]>(`/marketplace/listings${query ? `?${query}` : ''}`)
     
-    // Transform HotelListing[] to Hotel[]
+    // Log the raw response from backend
+    console.log('GET /marketplace/listings - Raw backend response:', JSON.stringify(response, null, 2))
+    
+    // Transform API response to frontend format
+    const hotels = response.map(transformListingMarketplaceResponse)
+    
+    // Return as paginated response for consistency with frontend expectations
     return {
-      ...response,
-      data: response.data.map(transformHotelListingToHotel),
+      data: hotels,
+      pagination: {
+        page: params?.page || 1,
+        limit: params?.limit || hotels.length,
+        total: hotels.length,
+        totalPages: 1,
+      },
     }
   },
 

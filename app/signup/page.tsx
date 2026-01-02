@@ -198,9 +198,9 @@ function SignUpForm() {
           {/* Logo */}
           <div className="mb-6">
             <img
-              src="/vayada-logo.svg"
+              src="/vayada-logo.png"
               alt="Vayada"
-              className="h-10 mb-4 rounded-lg"
+              className="h-10 mb-4"
             />
           </div>
 
@@ -281,9 +281,8 @@ function SignUpForm() {
                 required
                 placeholder="you@example.com"
                 autoComplete="email"
-                className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white text-gray-900 ${
-                  emailError ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white text-gray-900 ${emailError ? 'border-red-300' : 'border-gray-300'
+                  }`}
               />
               {emailError && (
                 <p className="mt-1 text-sm text-red-600">{emailError}</p>

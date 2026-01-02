@@ -156,9 +156,9 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="mb-8">
             <img
-              src="/vayada-logo.svg"
+              src="/vayada-logo.png"
               alt="Vayada"
-              className="h-12 mb-6 rounded-lg"
+              className="h-12 mb-6"
             />
           </div>
 

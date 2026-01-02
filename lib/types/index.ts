@@ -72,6 +72,7 @@ export interface Hotel {
   name: string
   location: string
   description: string
+  picture?: string
   images: string[]
   accommodationType?: string // Hotel, Boutiques Hotel, City Hotel, Luxury Hotel, Apartment, Villa, Lodge
   collaborationType?: 'Kostenlos' | 'Bezahlt' // Free, Paid
@@ -82,6 +83,8 @@ export interface Hotel {
   numberOfNights?: number // Maximum number of nights for free collaboration
   targetAudience?: string[] // Target audience regions: 'Asia', 'Africa', 'Middle East', 'Australia', 'North America', 'South America'
   minFollowers?: number // Minimum number of followers required (e.g., 10000)
+  targetAgeMin?: number // Minimum target age
+  targetAgeMax?: number // Maximum target age
   socialLinks?: {
     instagram?: string
     tiktok?: string
@@ -162,6 +165,7 @@ export interface Creator {
   name: string
   platforms: Platform[]
   audienceSize: number
+  avgEngagementRate?: number
   location: string
   portfolioLink?: string
   shortDescription?: string
@@ -201,6 +205,7 @@ export interface PlatformAgeGroup {
 export interface PlatformGenderSplit {
   male: number
   female: number
+  other?: number
 }
 
 export interface Platform {
@@ -213,18 +218,41 @@ export interface Platform {
   genderSplit?: PlatformGenderSplit
 }
 
+export interface PlatformDeliverable {
+  id: string
+  type: string
+  quantity: number
+  completed?: boolean
+  completed_at?: string | null
+}
+
+export interface PlatformDeliverablesItem {
+  platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+  deliverables: PlatformDeliverable[]
+}
+
 // Collaboration types
 export interface Collaboration {
   id: string
   hotelId: string
   creatorId: string
   status: CollaborationStatus
+  initiator_type: UserType
+  is_initiator: boolean
   hasRated?: boolean // Whether the hotel has rated this completed collaboration
+  whyGreatFit?: string
+  platformDeliverables?: PlatformDeliverablesItem[]
+  travelDateFrom?: string | null
+  travelDateTo?: string | null
+  preferredDateFrom?: string | null
+  preferredDateTo?: string | null
+  hotelAgreedAt?: Date | null
+  creatorAgreedAt?: Date | null
   createdAt: Date
   updatedAt: Date
 }
 
-export type CollaborationStatus = 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled'
+export type CollaborationStatus = 'pending' | 'negotiating' | 'accepted' | 'rejected' | 'completed' | 'cancelled'
 
 // API Response types
 export interface ApiResponse<T> {

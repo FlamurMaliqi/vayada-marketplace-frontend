@@ -4,23 +4,58 @@
 
 import { apiClient } from './client'
 import type { Creator, PaginatedResponse, CreatorProfileStatus } from '@/lib/types'
+import { transformCreatorMarketplaceResponse } from '@/lib/utils'
+
+// Backend API response type for marketplace endpoint (snake_case from backend)
+interface CreatorMarketplaceResponse {
+  id: string
+  name: string
+  location: string
+  short_description: string
+  portfolio_link: string | null
+  profile_picture: string | null
+  platforms: Array<{
+    id: string
+    name: "Instagram" | "TikTok" | "YouTube" | "Facebook"
+    handle: string
+    followers: number
+    engagement_rate: number
+    top_countries: Array<{ country: string; percentage: number }> | null
+    top_age_groups: Array<{ ageRange: string; percentage: number }> | null
+    gender_split: { male: number; female: number; other?: number } | null
+  }>
+  audience_size: number
+  average_rating: number
+  total_reviews: number
+  created_at: string
+}
 
 export const creatorService = {
   /**
-   * Get all creators
+   * Get all creators (marketplace endpoint - returns direct array)
+   * No query parameters supported - endpoint returns all verified creators with complete profiles
    */
-  getAll: async (params?: { 
-    page?: number
-    limit?: number
-    location?: string
-  }): Promise<PaginatedResponse<Creator>> => {
-    const queryParams = new URLSearchParams()
-    if (params?.page) queryParams.append('page', params.page.toString())
-    if (params?.limit) queryParams.append('limit', params.limit.toString())
-    if (params?.location) queryParams.append('location', params.location)
+  getAll: async (): Promise<PaginatedResponse<Creator>> => {
+    // Backend returns direct array, not paginated response
+    // No query parameters - endpoint automatically filters to verified creators with complete profiles
+    const response = await apiClient.get<CreatorMarketplaceResponse[]>('/marketplace/creators')
     
-    const query = queryParams.toString()
-    return apiClient.get<PaginatedResponse<Creator>>(`/creators${query ? `?${query}` : ''}`)
+    // Log the raw response from backend
+    console.log('GET /marketplace/creators - Raw backend response:', JSON.stringify(response, null, 2))
+    
+    // Transform API response to frontend format
+    const creators = response.map(transformCreatorMarketplaceResponse)
+    
+    // Return as paginated response for consistency with frontend expectations
+    return {
+      data: creators,
+      pagination: {
+        page: 1,
+        limit: creators.length,
+        total: creators.length,
+        totalPages: 1,
+      },
+    }
   },
 
   /**

@@ -31,7 +31,7 @@ function VerifyEmailForm() {
         if (response.verified) {
           setVerified(true)
           setEmail(response.email)
-          
+
           // Redirect to login after 3 seconds
           setTimeout(() => {
             router.push(ROUTES.LOGIN)
@@ -74,9 +74,9 @@ function VerifyEmailForm() {
           {/* Logo */}
           <div className="mb-6 text-center">
             <img
-              src="/vayada-logo.svg"
+              src="/vayada-logo.png"
               alt="Vayada"
-              className="h-10 mx-auto mb-4 rounded-lg"
+              className="h-10 mx-auto mb-4"
             />
           </div>
 
