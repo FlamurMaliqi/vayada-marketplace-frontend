@@ -375,6 +375,7 @@ export function transformCollaborationResponse(
       name: response.hotel_name,
       location: response.listing_location || '',
       description: '', // Not provided
+      picture: response.hotel_picture || undefined,
       images: [response.hotel_picture].filter(Boolean) as string[],
       status: 'verified',
       createdAt: new Date(response.created_at),

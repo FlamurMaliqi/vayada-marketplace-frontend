@@ -1,6 +1,7 @@
 'use client'
 
 import { Collaboration, Hotel, Creator, UserType } from '@/lib/types'
+import { DetailedCollaboration } from '@/services/api/collaborations'
 import { Button, StarRating } from '@/components/ui'
 import { XMarkIcon } from '@heroicons/react/24/solid'
 import { CheckBadgeIcon, MapPinIcon, StarIcon, ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
@@ -9,7 +10,7 @@ import { formatNumber } from '@/lib/utils'
 interface CollaborationRequestDetailModalProps {
   isOpen: boolean
   onClose: () => void
-  collaboration: (Collaboration & { hotel?: Hotel; creator?: Creator }) | null
+  collaboration: DetailedCollaboration | null
   currentUserType: UserType
   onAccept?: (id: string) => void
   onDecline?: (id: string) => void
@@ -186,20 +187,11 @@ export function CollaborationRequestDetailModal({
           {/* Profile Section */}
           <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex-shrink-0 overflow-hidden">
-              {(currentUserType === 'hotel' ? collaboration.creator?.profilePicture : (collaboration.hotel as any)?.picture) ? (
+              {(currentUserType === 'hotel' ? collaboration.creator?.profilePicture : collaboration.hotel?.picture) ? (
                 <img
-                  src={currentUserType === 'hotel' ? collaboration.creator?.profilePicture : (collaboration.hotel as any)?.picture}
+                  src={(currentUserType === 'hotel' ? collaboration.creator?.profilePicture : collaboration.hotel?.picture) || undefined}
                   alt={otherPartyName}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                    e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center', 'text-white', 'font-bold', 'text-2xl')
-                    if (e.currentTarget.parentElement) {
-                      const fallbackContent = document.createElement('span')
-                      fallbackContent.textContent = otherPartyName.charAt(0)
-                      e.currentTarget.parentElement.appendChild(fallbackContent)
-                    }
-                  }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white font-bold text-2xl">
@@ -257,18 +249,30 @@ export function CollaborationRequestDetailModal({
           </div>
 
           {/* Travel Dates */}
-          {currentUserType === 'hotel' && (
+          <div>
+            <h5 className="font-bold text-gray-900 mb-2">Collaboration Period</h5>
+            <p className="text-gray-700">{travelDateFrom} – {travelDateTo}</p>
+          </div>
+
+          {/* Offer Details */}
+          {collaboration.collaborationType && (
             <div>
-              <h5 className="font-bold text-gray-900 mb-2">Travel Dates</h5>
-              <p className="text-gray-700">{travelDateFrom} – {travelDateTo}</p>
+              <h5 className="font-bold text-gray-900 mb-2">Offer Details</h5>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <p className="text-gray-700 font-medium">
+                  {collaboration.collaborationType}
+                  {collaboration.collaborationType === 'Free Stay' && collaboration.freeStayMaxNights && ` • ${collaboration.freeStayMaxNights} Nights`}
+                  {collaboration.collaborationType === 'Paid' && collaboration.paidAmount && ` • $${collaboration.paidAmount}`}
+                  {collaboration.collaborationType === 'Discount' && collaboration.discountPercentage && ` • ${collaboration.discountPercentage}% Off`}
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Platforms I'll Post On */}
-          {/* Platforms I'll Post On */}
-          {currentUserType === 'hotel' && collaboration.platformDeliverables && collaboration.platformDeliverables.length > 0 && (
+          {/* Deliverables */}
+          {collaboration.platformDeliverables && collaboration.platformDeliverables.length > 0 && (
             <div>
-              <h5 className="font-bold text-gray-900 mb-3">Platforms I'll Post On</h5>
+              <h5 className="font-bold text-gray-900 mb-3">Deliverables</h5>
               <div className="space-y-4">
                 {collaboration.platformDeliverables.map((item, index) => (
                   <div key={index} className="flex flex-col gap-2">
@@ -278,9 +282,9 @@ export function CollaborationRequestDetailModal({
                       </div>
                       <span className="font-semibold text-gray-900">{item.platform}</span>
                     </div>
-                    <div className="ml-7 space-y-1">
+                    <div className="ml-7 flex flex-wrap gap-2">
                       {item.deliverables.map((deliverable, dIndex) => (
-                        <div key={dIndex} className="text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg inline-block w-fit">
+                        <div key={dIndex} className="text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                           {deliverable.quantity}x {deliverable.type}
                         </div>
                       ))}

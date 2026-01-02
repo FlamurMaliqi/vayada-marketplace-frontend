@@ -122,9 +122,7 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
                                             type="button"
                                             className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 hover:bg-gray-50 transition-colors"
                                             onClick={() => {
-                                                if (collaboration.listing_id) {
-                                                    window.open(`/listings/${collaboration.listing_id}`, '_blank')
-                                                }
+                                                onViewDetails(collaboration.id)
                                                 onClose()
                                             }}
                                         >
@@ -257,13 +255,7 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
                                     type="button"
                                     className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3.5 text-sm font-bold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 hover:bg-gray-50 transition-all active:scale-95"
                                     onClick={() => {
-                                        if (userType === 'creator') {
-                                            if (collaboration.listing_id) {
-                                                window.open(`/listings/${collaboration.listing_id}`, '_blank')
-                                            }
-                                        } else {
-                                            onViewDetails(collaboration.id)
-                                        }
+                                        onViewDetails(collaboration.id)
                                         onClose()
                                     }}
                                 >

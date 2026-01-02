@@ -42,7 +42,9 @@ function CalendarPageContent() {
 
     const handleViewDetails = async (id: string) => {
         try {
-            const detailResponse = await collaborationService.getHotelCollaborationDetails(id)
+            const detailResponse = userType === 'creator'
+                ? await collaborationService.getCreatorCollaborationDetails(id)
+                : await collaborationService.getHotelCollaborationDetails(id)
             const detailedCollaboration = transformCollaborationResponse(detailResponse)
             setDetailCollaboration(detailedCollaboration)
         } catch (error) {
