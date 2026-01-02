@@ -30,7 +30,13 @@ export interface CreateCreatorCollaborationRequest {
   travel_date_from?: string
   travel_date_to?: string
   preferred_months?: string[]
-  platform_deliverables: PlatformDeliverablesItem[]
+  platform_deliverables: Array<{
+    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+    deliverables: Array<{
+      type: string
+      quantity: number
+    }>
+  }>
 }
 
 export interface UpdateCollaborationTermsRequest {
@@ -64,7 +70,13 @@ export interface CreateHotelCollaborationRequest {
   preferred_date_from?: string
   preferred_date_to?: string
   preferred_months?: string[]
-  platform_deliverables: PlatformDeliverablesItem[]
+  platform_deliverables: Array<{
+    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+    deliverables: Array<{
+      type: string
+      quantity: number
+    }>
+  }>
   message?: string
 }
 

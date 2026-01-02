@@ -111,11 +111,11 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
         listing_id: hotel.id,
         creator_id: userInfo.userId,
         why_great_fit: data.whyGreatFit,
-        consent: data.consent,
+        consent: true,
         travel_date_from: data.travelDateFrom || undefined,
         travel_date_to: data.travelDateTo || undefined,
         preferred_months: data.preferredMonths.length > 0 ? data.preferredMonths : undefined,
-        platform_deliverables: data.platformDeliverables.map(pd => ({
+        platform_deliverables: (data.platformDeliverables || []).map(pd => ({
           platform: pd.platform as 'Instagram' | 'TikTok' | 'YouTube',
           deliverables: pd.deliverables.map(d => ({
             type: d.type,
@@ -232,8 +232,8 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
                       key={index}
                       onClick={() => goToImage(index)}
                       className={`h-2.5 rounded-full transition-all ${index === currentImageIndex
-                          ? 'w-8 bg-white'
-                          : 'w-2.5 bg-white/50 hover:bg-white/75'
+                        ? 'w-8 bg-white'
+                        : 'w-2.5 bg-white/50 hover:bg-white/75'
                         }`}
                       aria-label={`Go to image ${index + 1}`}
                     />

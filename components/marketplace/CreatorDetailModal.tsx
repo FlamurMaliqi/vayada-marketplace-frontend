@@ -186,7 +186,7 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
         preferred_date_from: data.preferredDateFrom || undefined,
         preferred_date_to: data.preferredDateTo || undefined,
         preferred_months: data.preferredMonths.length > 0 ? data.preferredMonths : undefined,
-        platform_deliverables: data.platformDeliverables.map(pd => ({
+        platform_deliverables: (data.platformDeliverables || []).map(pd => ({
           platform: pd.platform as 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook',
           deliverables: pd.deliverables.map(d => ({
             type: d.type,
