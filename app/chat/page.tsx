@@ -23,7 +23,9 @@ import {
     CheckCircleIcon,
     ArrowPathIcon,
     HandThumbUpIcon,
-    ExclamationCircleIcon
+    ExclamationCircleIcon,
+    BanknotesIcon,
+    TagIcon
 } from '@heroicons/react/24/outline'
 import { CollaborationRequestDetailModal } from '@/components/marketplace/CollaborationRequestDetailModal'
 import type { Collaboration, Hotel, Creator } from '@/lib/types'
@@ -178,6 +180,8 @@ function ChatPageContent() {
     const [hasMoreMessages, setHasMoreMessages] = useState(true)
     const [activeCollaboration, setActiveCollaboration] = useState<DetailedCollaboration | null>(null)
     const [isLoadingDetails, setIsLoadingDetails] = useState(false)
+    const [isEditingSidebar, setIsEditingSidebar] = useState(false)
+    const [localCollaboration, setLocalCollaboration] = useState<DetailedCollaboration | null>(null)
     const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
     const scrollToBottom = () => {
@@ -263,6 +267,10 @@ function ChatPageContent() {
 
     const fetchMessages = async (silent = false) => {
         if (!selectedChatId) return
+
+        // Reset edit state when switching or refreshing chats
+        setIsEditingSidebar(false)
+        setLocalCollaboration(null)
 
         if (!silent) {
             setIsLoadingMessages(true)
@@ -894,23 +902,58 @@ function ChatPageContent() {
                             <div className="flex-1 overflow-y-auto custom-scrollbar">
                                 <div className="p-6 space-y-8">
                                     {/* Header */}
-                                    <div>
-                                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Collaboration Details</h3>
-                                        <div className="flex items-center gap-3 mb-2">
-                                            {activeChat.partner_avatar ? (
-                                                <img src={activeChat.partner_avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Collaboration Details</h3>
+                                        <div className="flex items-center gap-2">
+                                            {isEditingSidebar ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            setIsEditingSidebar(false)
+                                                            setLocalCollaboration(null)
+                                                        }}
+                                                        className="text-[10px] font-bold text-gray-400 hover:text-gray-600 uppercase transition-colors"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (localCollaboration) setActiveCollaboration(localCollaboration)
+                                                            setIsEditingSidebar(false)
+                                                            setLocalCollaboration(null)
+                                                        }}
+                                                        className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase transition-colors"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                </>
                                             ) : (
-                                                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-lg font-bold">
-                                                    {getInitials(activeChat.partner_name)}
-                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        setLocalCollaboration(activeCollaboration)
+                                                        setIsEditingSidebar(true)
+                                                    }}
+                                                    className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase transition-all"
+                                                >
+                                                    <PencilSquareIcon className="w-3 h-3" /> Edit
+                                                </button>
                                             )}
-                                            <div>
-                                                <h2 className="font-bold text-gray-900">{activeChat.partner_name}</h2>
-                                            </div>
-                                            <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full font-medium capitalize ${getStatusColor(activeChat.collaboration_status)}`}>
-                                                {activeChat.collaboration_status}
-                                            </span>
                                         </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        {activeChat.partner_avatar ? (
+                                            <img src={activeChat.partner_avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-lg font-bold">
+                                                {getInitials(activeChat.partner_name)}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <h2 className="font-bold text-gray-900">{activeChat.partner_name}</h2>
+                                        </div>
+                                        <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full font-medium capitalize ${getStatusColor(activeChat.collaboration_status)}`}>
+                                            {activeChat.collaboration_status}
+                                        </span>
                                     </div>
 
                                     {/* Partner Stats - Show Hotel stats for creators, Creator stats for hotels */}
@@ -961,22 +1004,129 @@ function ChatPageContent() {
                                         </div>
                                     )}
 
+                                    {/* Collaboration Terms */}
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <BanknotesIcon className="w-4 h-4 text-gray-400" />
+                                            <h4 className="text-xs font-bold text-gray-900 uppercase">Collaboration Terms</h4>
+                                        </div>
+                                        {isEditingSidebar ? (
+                                            <div className="space-y-4 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Type</label>
+                                                    <select
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                                        value={localCollaboration?.collaborationType || ''}
+                                                        onChange={(e) => setLocalCollaboration(prev => prev ? { ...prev, collaborationType: e.target.value as any } : null)}
+                                                    >
+                                                        <option value="Free Stay">Free Stay</option>
+                                                        <option value="Paid">Paid</option>
+                                                        <option value="Discount">Discount</option>
+                                                    </select>
+                                                </div>
+                                                {localCollaboration?.collaborationType === 'Free Stay' && (
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Max Nights</label>
+                                                        <input
+                                                            type="number"
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium"
+                                                            value={localCollaboration?.freeStayMaxNights || ''}
+                                                            onChange={(e) => setLocalCollaboration(prev => prev ? { ...prev, freeStayMaxNights: parseInt(e.target.value) } : null)}
+                                                        />
+                                                    </div>
+                                                )}
+                                                {localCollaboration?.collaborationType === 'Paid' && (
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Amount ($)</label>
+                                                        <input
+                                                            type="number"
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium"
+                                                            value={localCollaboration?.paidAmount || ''}
+                                                            onChange={(e) => setLocalCollaboration(prev => prev ? { ...prev, paidAmount: parseInt(e.target.value) } : null)}
+                                                        />
+                                                    </div>
+                                                )}
+                                                {localCollaboration?.collaborationType === 'Discount' && (
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Discount (%)</label>
+                                                        <input
+                                                            type="number"
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium"
+                                                            value={localCollaboration?.discountPercentage || ''}
+                                                            onChange={(e) => setLocalCollaboration(prev => prev ? { ...prev, discountPercentage: parseInt(e.target.value) } : null)}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                                <div>
+                                                    <div className="text-[10px] text-gray-500 uppercase mb-1">Type</div>
+                                                    <div className="text-sm font-bold text-gray-900">{activeCollaboration.collaborationType || 'TBD'}</div>
+                                                </div>
+                                                <div>
+                                                    {activeCollaboration.collaborationType === 'Free Stay' && (
+                                                        <>
+                                                            <div className="text-[10px] text-gray-500 uppercase mb-1">Max Nights</div>
+                                                            <div className="text-sm font-bold text-gray-900">{activeCollaboration.freeStayMaxNights || 0}</div>
+                                                        </>
+                                                    )}
+                                                    {activeCollaboration.collaborationType === 'Paid' && (
+                                                        <>
+                                                            <div className="text-[10px] text-gray-500 uppercase mb-1">Amount</div>
+                                                            <div className="text-sm font-bold text-gray-900">${activeCollaboration.paidAmount || 0}</div>
+                                                        </>
+                                                    )}
+                                                    {activeCollaboration.collaborationType === 'Discount' && (
+                                                        <>
+                                                            <div className="text-[10px] text-gray-500 uppercase mb-1">Discount</div>
+                                                            <div className="text-sm font-bold text-gray-900">{activeCollaboration.discountPercentage || 0}%</div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
                                     {/* Stay Details */}
                                     <div>
                                         <div className="flex items-center gap-2 mb-3">
                                             <CalendarIcon className="w-4 h-4 text-gray-400" />
                                             <h4 className="text-xs font-bold text-gray-900 uppercase">Stay Details</h4>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <div className="text-[10px] text-gray-500 uppercase">Check-in</div>
-                                                <div className="text-sm font-bold text-gray-900">{stayDetails.checkIn}</div>
+                                        {isEditingSidebar ? (
+                                            <div className="grid grid-cols-1 gap-4 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Check-in</label>
+                                                    <input
+                                                        type="date"
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium"
+                                                        value={localCollaboration?.travelDateFrom || localCollaboration?.preferredDateFrom || ''}
+                                                        onChange={(e) => setLocalCollaboration(prev => prev ? { ...prev, travelDateFrom: e.target.value } : null)}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Check-out</label>
+                                                    <input
+                                                        type="date"
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium"
+                                                        value={localCollaboration?.travelDateTo || localCollaboration?.preferredDateTo || ''}
+                                                        onChange={(e) => setLocalCollaboration(prev => prev ? { ...prev, travelDateTo: e.target.value } : null)}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div className="text-[10px] text-gray-500 uppercase">Check-out</div>
-                                                <div className="text-sm font-bold text-gray-900">{stayDetails.checkOut}</div>
+                                        ) : (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <div className="text-[10px] text-gray-500 uppercase">Check-in</div>
+                                                    <div className="text-sm font-bold text-gray-900">{stayDetails.checkIn}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] text-gray-500 uppercase">Check-out</div>
+                                                    <div className="text-sm font-bold text-gray-900">{stayDetails.checkOut}</div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
 
                                     {/* Deliverables */}
@@ -1036,6 +1186,7 @@ function ChatPageContent() {
                                     </div>
                                 </div>
                             </div>
+
                             {/* Fixed Footer: Actions */}
                             <div className="p-4 bg-white border-t border-gray-100 flex-shrink-0 space-y-2">
                                 {['pending', 'negotiating'].includes(activeChat.collaboration_status.toLowerCase()) ? (
@@ -1093,7 +1244,7 @@ function ChatPageContent() {
                 )}
             </div>
 
-            {/* Suggest Changes Modal */}
+            {/* Modals outside main container but inside component */}
             {activeChat && activeCollaboration && (
                 <SuggestChangesModal
                     isOpen={isSuggestModalOpen}
@@ -1101,6 +1252,10 @@ function ChatPageContent() {
                     initialCheckIn={activeCollaboration.travelDateFrom || activeCollaboration.preferredDateFrom || ''}
                     initialCheckOut={activeCollaboration.travelDateTo || activeCollaboration.preferredDateTo || ''}
                     initialPlatformDeliverables={activeCollaboration.platformDeliverables || []}
+                    initialCollaborationType={activeCollaboration.collaborationType}
+                    initialFreeStayMaxNights={activeCollaboration.freeStayMaxNights}
+                    initialPaidAmount={activeCollaboration.paidAmount}
+                    initialDiscountPercentage={activeCollaboration.discountPercentage}
                     onSubmit={handleSuggestChanges}
                 />
             )}

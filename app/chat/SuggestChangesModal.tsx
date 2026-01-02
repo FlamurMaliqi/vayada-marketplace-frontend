@@ -5,7 +5,9 @@ import {
     DocumentTextIcon,
     PlusIcon,
     MinusIcon,
-    TrashIcon
+    TrashIcon,
+    BanknotesIcon,
+    TagIcon
 } from '@heroicons/react/24/outline'
 
 interface Deliverable {
@@ -25,7 +27,19 @@ interface SuggestChangesModalProps {
     initialCheckIn: string
     initialCheckOut: string
     initialPlatformDeliverables: PlatformDeliverables[]
-    onSubmit: (data: { travel_date_from: string, travel_date_to: string, platform_deliverables: PlatformDeliverables[] }) => void
+    initialCollaborationType?: 'Free Stay' | 'Paid' | 'Discount' | null
+    initialFreeStayMaxNights?: number | null
+    initialPaidAmount?: number | null
+    initialDiscountPercentage?: number | null
+    onSubmit: (data: {
+        travel_date_from: string,
+        travel_date_to: string,
+        platform_deliverables: any[],
+        collaboration_type?: string,
+        free_stay_max_nights?: number | null,
+        paid_amount?: number | null,
+        discount_percentage?: number | null
+    }) => void
 }
 
 const PLATFORMS = ['Instagram', 'TikTok', 'YouTube', 'Facebook'] as const
@@ -36,10 +50,18 @@ export default function SuggestChangesModal({
     initialCheckIn,
     initialCheckOut,
     initialPlatformDeliverables,
+    initialCollaborationType,
+    initialFreeStayMaxNights,
+    initialPaidAmount,
+    initialDiscountPercentage,
     onSubmit
 }: SuggestChangesModalProps) {
     const [checkIn, setCheckIn] = useState(initialCheckIn)
     const [checkOut, setCheckOut] = useState(initialCheckOut)
+    const [collaborationType, setCollaborationType] = useState(initialCollaborationType || 'Free Stay')
+    const [freeStayMaxNights, setFreeStayMaxNights] = useState(initialFreeStayMaxNights || 1)
+    const [paidAmount, setPaidAmount] = useState(initialPaidAmount || 0)
+    const [discountPercentage, setDiscountPercentage] = useState(initialDiscountPercentage || 0)
     const [platformDeliverables, setPlatformDeliverables] = useState<PlatformDeliverables[]>(
         initialPlatformDeliverables.length > 0
             ? JSON.parse(JSON.stringify(initialPlatformDeliverables)) // Deep clone for local editing
@@ -137,6 +159,64 @@ export default function SuggestChangesModal({
                         </div>
                     </div>
 
+                    {/* Collaboration Terms */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                <BanknotesIcon className="w-5 h-5" />
+                            </div>
+                            <h3 className="font-bold text-gray-900">Collaboration Terms</h3>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Offer Type</label>
+                                <select
+                                    value={collaborationType}
+                                    onChange={(e) => setCollaborationType(e.target.value as any)}
+                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Free Stay">Free Stay</option>
+                                    <option value="Paid">Paid</option>
+                                    <option value="Discount">Discount</option>
+                                </select>
+                            </div>
+
+                            {collaborationType === 'Free Stay' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Max Nights</label>
+                                    <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-2">
+                                        <button onClick={() => setFreeStayMaxNights(prev => Math.max(1, prev - 1))} className="text-gray-400 hover:text-gray-900"><MinusIcon className="w-5 h-5" /></button>
+                                        <span className="flex-1 text-center font-bold text-gray-900">{freeStayMaxNights}</span>
+                                        <button onClick={() => setFreeStayMaxNights(prev => prev + 1)} className="text-gray-400 hover:text-gray-900"><PlusIcon className="w-5 h-5" /></button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {collaborationType === 'Paid' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Paid Amount ($)</label>
+                                    <input
+                                        type="number"
+                                        value={paidAmount}
+                                        onChange={(e) => setPaidAmount(parseInt(e.target.value) || 0)}
+                                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
+                                    />
+                                </div>
+                            )}
+
+                            {collaborationType === 'Discount' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Discount Percentage (%)</label>
+                                    <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-2">
+                                        <button onClick={() => setDiscountPercentage(prev => Math.max(0, prev - 5))} className="text-gray-400 hover:text-gray-900"><MinusIcon className="w-5 h-5" /></button>
+                                        <span className="flex-1 text-center font-bold text-gray-900">{discountPercentage}%</span>
+                                        <button onClick={() => setDiscountPercentage(prev => Math.min(100, prev + 5))} className="text-gray-400 hover:text-gray-900"><PlusIcon className="w-5 h-5" /></button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Deliverables */}
                     <div>
                         <div className="flex items-center justify-between mb-4">
@@ -223,7 +303,18 @@ export default function SuggestChangesModal({
                         onClick={() => onSubmit({
                             travel_date_from: checkIn,
                             travel_date_to: checkOut,
-                            platform_deliverables: platformDeliverables
+                            platform_deliverables: platformDeliverables.map(pd => ({
+                                platform: pd.platform,
+                                deliverables: pd.deliverables.map(d => ({
+                                    id: d.id,
+                                    type: d.type,
+                                    quantity: d.quantity
+                                }))
+                            })),
+                            collaboration_type: collaborationType,
+                            free_stay_max_nights: collaborationType === 'Free Stay' ? freeStayMaxNights : null,
+                            paid_amount: collaborationType === 'Paid' ? paidAmount : null,
+                            discount_percentage: collaborationType === 'Discount' ? discountPercentage : null
                         })}
                         className="px-8 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md active:scale-95"
                     >

@@ -50,6 +50,10 @@ export interface UpdateCollaborationTermsRequest {
       quantity: number
     }>
   }>
+  collaboration_type?: string
+  free_stay_max_nights?: number | null
+  paid_amount?: number | null
+  discount_percentage?: number | null
 }
 
 export interface CollaborationResponseRequest {
