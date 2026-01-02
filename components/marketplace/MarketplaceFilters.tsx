@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { Input } from '@/components/ui'
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon, ChevronDownIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 interface MarketplaceFiltersProps {
   searchQuery: string
@@ -97,25 +97,27 @@ const CREATOR_PLATFORMS = [
   'Facebook',
 ]
 
-const COMMON_COUNTRIES = [
-  'USA',
-  'UK',
-  'Germany',
-  'France',
-  'Spain',
-  'Italy',
-  'Netherlands',
-  'Switzerland',
-  'Austria',
-  'Belgium',
-  'Canada',
-  'Australia',
-  'Japan',
-  'South Korea',
-  'Brazil',
-  'Mexico',
-  'India',
-  'China',
+const ALL_COUNTRIES = [
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria',
+  'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan',
+  'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia',
+  'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica',
+  'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt',
+  'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon',
+  'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana',
+  'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel',
+  'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan', 'Laos',
+  'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi',
+  'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova',
+  'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands',
+  'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau',
+  'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania',
+  'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal',
+  'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea',
+  'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan',
+  'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu',
+  'Uganda', 'Ukraine', 'United Arab Emirates', 'UK', 'USA', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela',
+  'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
 ]
 
 export function MarketplaceFilters({
@@ -138,6 +140,7 @@ export function MarketplaceFilters({
   const [isMinEngagementRateOpen, setIsMinEngagementRateOpen] = useState(false)
   const [minFollowersValue, setMinFollowersValue] = useState<number>(filters.minFollowers || 0)
   const [minEngagementRateValue, setMinEngagementRateValue] = useState<number>(filters.minEngagementRate || 0)
+  const [countrySearch, setCountrySearch] = useState('')
   const hotelTypeButtonRef = useRef<HTMLButtonElement>(null)
   const hotelTypeDropdownRef = useRef<HTMLDivElement>(null)
   const offeringButtonRef = useRef<HTMLButtonElement>(null)
@@ -240,6 +243,7 @@ export function MarketplaceFilters({
         !topCountriesButtonRef.current.contains(event.target as Node)
       ) {
         setIsTopCountriesOpen(false)
+        setCountrySearch('')
       }
       if (
         minFollowersDropdownRef.current &&
@@ -899,51 +903,135 @@ export function MarketplaceFilters({
               )}
             </div>
 
-            {/* Top Countries Filter - Multiselect */}
+            {/* Top Countries Filter - Premium Searchable Multiselect */}
             <div className="relative">
               <button
                 ref={topCountriesButtonRef}
                 onClick={() => setIsTopCountriesOpen(!isTopCountriesOpen)}
-                className="inline-block px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 cursor-pointer hover:border-gray-400 transition-colors"
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-xl transition-all duration-200 ${isTopCountriesOpen || selectedTopCountries.length > 0
+                  ? 'border-primary-500 bg-primary-50/30 text-primary-700 shadow-sm'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
               >
-                Top Countries
+                <span>Top Countries</span>
+                {selectedTopCountries.length > 0 && (
+                  <span className="flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-primary-600 text-white rounded-full">
+                    {selectedTopCountries.length}
+                  </span>
+                )}
+                <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${isTopCountriesOpen ? 'rotate-180' : ''}`} />
               </button>
+
               {isTopCountriesOpen && (
                 <div
                   ref={topCountriesDropdownRef}
-                  className="absolute top-full left-0 mt-1 bg-white rounded-b-xl shadow-xl z-50 min-w-[220px] max-h-96 overflow-hidden"
+                  className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-2xl z-50 min-w-[320px] border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
                 >
-                  <div className="px-5 py-2.5 text-gray-900 text-sm">
-                    Select Countries
-                  </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {COMMON_COUNTRIES.map((country) => {
-                      const isSelected = selectedTopCountries.includes(country)
-                      return (
-                        <label
-                          key={country}
-                          className="flex items-center px-5 py-0.5 hover:bg-gray-50 cursor-pointer transition-colors"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            handleTopCountryToggle(country)
-                          }}
+                  <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+                    <div className="relative">
+                      <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search for a country..."
+                        value={countrySearch}
+                        onChange={(e) => setCountrySearch(e.target.value)}
+                        className="w-full pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                        autoFocus
+                      />
+                      {countrySearch && (
+                        <button
+                          onClick={() => setCountrySearch('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-all"
                         >
-                          <div className="relative flex items-center justify-center">
-                            {isSelected ? (
-                              <div className="w-4 h-4 bg-primary-600 rounded flex items-center justify-center">
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                              </div>
-                            ) : (
-                              <div className="w-4 h-4 border-2 border-primary-400 rounded-full bg-white"></div>
-                            )}
-                          </div>
-                          <span className="ml-3 text-sm text-gray-900">{country}</span>
-                        </label>
-                      )
-                    })}
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
+
+                  <div className="max-h-72 overflow-y-auto py-2 custom-scrollbar">
+                    {/* Selected Countries Section (pinned to top when search is empty) */}
+                    {!countrySearch && selectedTopCountries.length > 0 && (
+                      <div className="px-4 pb-2 mb-2 border-b border-gray-100">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Selected</p>
+                        <div className="space-y-1">
+                          {selectedTopCountries.map((country) => (
+                            <div
+                              key={`selected-${country}`}
+                              onClick={() => handleTopCountryToggle(country)}
+                              className="flex items-center justify-between px-3 py-2 bg-primary-50 text-primary-700 rounded-lg cursor-pointer hover:bg-primary-100 transition-colors group"
+                            >
+                              <span className="text-sm font-semibold">{country}</span>
+                              <CheckIcon className="w-4 h-4" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* All/Filtered Countries */}
+                    <div className="px-2 space-y-0.5">
+                      {ALL_COUNTRIES.filter(c =>
+                        c.toLowerCase().includes(countrySearch.toLowerCase()) &&
+                        (countrySearch ? true : !selectedTopCountries.includes(c))
+                      ).map((country) => {
+                        const isSelected = selectedTopCountries.includes(country)
+                        return (
+                          <div
+                            key={country}
+                            onClick={() => handleTopCountryToggle(country)}
+                            className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all group ${isSelected
+                              ? 'bg-primary-50 text-primary-700'
+                              : 'hover:bg-gray-50 text-gray-700'
+                              }`}
+                          >
+                            <div className="relative flex items-center justify-center">
+                              <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${isSelected
+                                ? 'bg-primary-600 border-primary-600'
+                                : 'bg-white border-gray-200 group-hover:border-primary-300'
+                                }`}>
+                                {isSelected && <CheckIcon className="w-3.5 h-3.5 text-white stroke-[3]" />}
+                              </div>
+                            </div>
+                            <span className={`ml-3 text-sm transition-colors ${isSelected ? 'font-semibold' : 'group-hover:text-gray-900 font-medium'}`}>
+                              {country}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {ALL_COUNTRIES.filter(c =>
+                      c.toLowerCase().includes(countrySearch.toLowerCase())
+                    ).length === 0 && (
+                        <div className="px-4 py-12 text-center">
+                          <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <MagnifyingGlassIcon className="w-6 h-6 text-gray-300" />
+                          </div>
+                          <p className="text-sm font-medium text-gray-900">No results found</p>
+                          <p className="text-xs text-gray-500 mt-1">Try searching for another country</p>
+                        </div>
+                      )}
+                  </div>
+
+                  {selectedTopCountries.length > 0 && (
+                    <div className="p-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                        {selectedTopCountries.length} selected
+                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const nextFilters = { ...filters }
+                          delete nextFilters.topCountries
+                          onFiltersChange(nextFilters)
+                        }}
+                        className="text-[10px] font-bold text-primary-600 hover:text-primary-700 uppercase tracking-wider"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
