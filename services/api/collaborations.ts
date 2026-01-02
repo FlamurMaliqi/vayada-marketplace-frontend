@@ -75,7 +75,7 @@ export interface CollaborationResponse {
   id: string
   initiator_type: 'creator' | 'hotel'
   is_initiator: boolean
-  status: 'pending' | 'accepted' | 'declined' | 'completed' | 'cancelled'
+  status: 'pending' | 'negotiating' | 'accepted' | 'declined' | 'completed' | 'cancelled'
   creator_id: string
   creator_name: string
   creator_profile_picture: string | null
@@ -138,6 +138,8 @@ export interface CollaborationResponse {
   created_at: string
   cancelled_at: string | null
   completed_at: string | null
+  hotelProfilePicture?: string | null
+  listingImages?: string[]
   listing_images?: string[]
   creatorRequirements?: {
     platforms: string[]
@@ -262,6 +264,11 @@ export const collaborationService = {
    */
   getCreatorCollaborationDetails: async (id: string): Promise<CollaborationResponse> => {
     const response = await apiClient.get<CollaborationResponse>(`/creators/me/collaborations/${id}`)
+    console.log('GET /creators/me/collaborations/:id - Response:', {
+      hotelProfilePicture: response.hotelProfilePicture,
+      listingImages: response.listingImages,
+      listing_images: response.listing_images,
+    })
     return response
   },
 
@@ -399,8 +406,8 @@ export function transformCollaborationResponse(
       name: response.hotel_name,
       location: response.listing_location || '',
       description: '', // Not provided
-      picture: response.hotel_picture || undefined,
-      images: [response.hotel_picture].filter(Boolean) as string[],
+      picture: response.hotelProfilePicture || response.hotel_picture || undefined,
+      images: [response.hotelProfilePicture || response.hotel_picture].filter(Boolean) as string[],
       status: 'verified',
       createdAt: new Date(response.created_at),
       updatedAt: new Date(response.updated_at),
@@ -451,7 +458,7 @@ export function transformCollaborationResponse(
     }
     : undefined
 
-  return {
+  const result = {
     id: response.id,
     hotelId: response.hotel_id,
     creatorId: response.creator_id,
@@ -488,7 +495,7 @@ export function transformCollaborationResponse(
     respondedAt: response.responded_at,
     cancelledAt: response.cancelled_at,
     completedAt: response.completed_at,
-    listingImages: response.listing_images,
+    listingImages: response.listingImages || response.listing_images || [],
     creatorRequirements: response.creatorRequirements || (response.creator_requirements ? {
       platforms: response.creator_requirements.platforms,
       minFollowers: response.creator_requirements.min_followers,
@@ -497,4 +504,15 @@ export function transformCollaborationResponse(
       targetAgeMax: response.creator_requirements.target_age_max,
     } : undefined),
   } as DetailedCollaboration
+
+  console.log('transformCollaborationResponse - Images:', {
+    inputListingImages: response.listingImages,
+    inputListing_images: response.listing_images,
+    inputHotelProfilePicture: response.hotelProfilePicture,
+    inputHotel_picture: response.hotel_picture,
+    outputListingImages: result.listingImages,
+    outputHotelPicture: result.hotel?.picture,
+  })
+
+  return result
 }

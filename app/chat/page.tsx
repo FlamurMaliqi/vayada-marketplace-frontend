@@ -205,44 +205,46 @@ function ChatPageContent() {
                 : await collaborationService.getCreatorCollaborations() // Get all collaborations for creators
 
             // Map API response to UI format
-            const formattedRequests = requestsData.map(collab => {
-                // Check if received: current role is NOT the initiator
-                const isReceived = !collab.is_initiator
+            const formattedRequests = requestsData
+                .filter(collab => collab.status === 'pending') // Only show pending collaborations
+                .map(collab => {
+                    // Check if received: current role is NOT the initiator
+                    const isReceived = !collab.is_initiator
 
-                // Format offer details for creators viewing hotels
-                let offerDetails = ''
-                if (userType === 'creator' && collab.collaboration_type) {
-                    if (collab.collaboration_type === 'Free Stay' && collab.free_stay_max_nights) {
-                        offerDetails = `${collab.free_stay_max_nights} Nights`
-                    } else if (collab.collaboration_type === 'Paid' && collab.paid_amount) {
-                        offerDetails = `$${collab.paid_amount}`
-                    } else if (collab.collaboration_type === 'Discount' && collab.discount_percentage) {
-                        offerDetails = `${collab.discount_percentage}% Off`
-                    } else {
-                        offerDetails = collab.collaboration_type
+                    // Format offer details for creators viewing hotels
+                    let offerDetails = ''
+                    if (userType === 'creator' && collab.collaboration_type) {
+                        if (collab.collaboration_type === 'Free Stay' && collab.free_stay_max_nights) {
+                            offerDetails = `${collab.free_stay_max_nights} Nights`
+                        } else if (collab.collaboration_type === 'Paid' && collab.paid_amount) {
+                            offerDetails = `$${collab.paid_amount}`
+                        } else if (collab.collaboration_type === 'Discount' && collab.discount_percentage) {
+                            offerDetails = `${collab.discount_percentage}% Off`
+                        } else {
+                            offerDetails = collab.collaboration_type
+                        }
                     }
-                }
 
-                return {
-                    id: collab.id,
-                    name: userType === 'hotel' ? collab.creator_name : (collab.hotel_name || 'Hotel'),
-                    time: new Date(collab.created_at).toLocaleDateString(),
-                    // Creator metrics (for hotels viewing creators)
-                    followers: formatNumber(collab.total_followers),
-                    followersPlatform: (collab.active_platform || 'instagram').toLowerCase(),
-                    engagement: (collab.avg_engagement_rate || 0).toFixed(1) + '%',
-                    engagementPlatform: (collab.active_platform || 'instagram').toLowerCase(),
-                    // Hotel info (for creators viewing hotels)
-                    location: collab.listing_location || collab.hotel_location || '',
-                    collaborationType: collab.collaboration_type || '',
-                    offerDetails: offerDetails,
-                    avatarColor: 'bg-blue-100 text-blue-600',
-                    avatarUrl: userType === 'hotel' ? collab.creator_profile_picture : collab.hotel_picture,
-                    initials: getInitials(userType === 'hotel' ? collab.creator_name : (collab.hotel_name || 'Hotel')),
-                    isReceived,
-                    status: collab.status // Keep the status for filtering
-                }
-            })
+                    return {
+                        id: collab.id,
+                        name: userType === 'hotel' ? collab.creator_name : (collab.hotel_name || 'Hotel'),
+                        time: new Date(collab.created_at).toLocaleDateString(),
+                        // Creator metrics (for hotels viewing creators)
+                        followers: formatNumber(collab.total_followers),
+                        followersPlatform: (collab.active_platform || 'instagram').toLowerCase(),
+                        engagement: (collab.avg_engagement_rate || 0).toFixed(1) + '%',
+                        engagementPlatform: (collab.active_platform || 'instagram').toLowerCase(),
+                        // Hotel info (for creators viewing hotels)
+                        location: collab.listing_location || collab.hotel_location || '',
+                        collaborationType: collab.collaboration_type || '',
+                        offerDetails: offerDetails,
+                        avatarColor: 'bg-blue-100 text-blue-600',
+                        avatarUrl: userType === 'hotel' ? collab.creator_profile_picture : collab.hotel_picture,
+                        initials: getInitials(userType === 'hotel' ? collab.creator_name : (collab.hotel_name || 'Hotel')),
+                        isReceived,
+                        status: collab.status // Keep the status for filtering
+                    }
+                })
             setPendingRequests(formattedRequests)
 
             // Fetch conversations
@@ -414,9 +416,12 @@ function ChatPageContent() {
 
     const getStatusColor = (status: string) => {
         const s = status.toLowerCase()
-        if (s === 'negotiating') return 'bg-gray-100 text-gray-700'
-        if (s === 'staying' || s === 'accepted') return 'bg-blue-100 text-blue-700'
-        if (s === 'completed') return 'bg-emerald-100 text-emerald-700'
+        if (s === 'pending') return 'bg-yellow-100 text-yellow-700'
+        if (s === 'negotiating') return 'bg-blue-100 text-blue-700'
+        if (s === 'accepted') return 'bg-emerald-100 text-emerald-700'
+        if (s === 'staying') return 'bg-purple-100 text-purple-700'
+        if (s === 'completed') return 'bg-green-100 text-green-700'
+        if (s === 'declined' || s === 'cancelled') return 'bg-red-100 text-red-700'
         return 'bg-gray-100 text-gray-600'
     }
 

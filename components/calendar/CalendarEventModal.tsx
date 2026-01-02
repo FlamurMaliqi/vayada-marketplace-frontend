@@ -68,39 +68,6 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
                         <div className="p-6">
                             {userType === 'creator' ? (
                                 <>
-                                    {/* Listing Images */}
-                                    {(collaboration.listing_images || (collaboration as any).listingImages) &&
-                                        ((collaboration.listing_images || (collaboration as any).listingImages).length > 0) && (
-                                            <div className="relative -mx-6 -mt-6 mb-6">
-                                                <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-1">
-                                                    {(collaboration.listing_images || (collaboration as any).listingImages).map((img: string, idx: number) => (
-                                                        <div key={idx} className="flex-none w-full snap-center aspect-[4/3] bg-gray-100">
-                                                            <img
-                                                                src={img}
-                                                                alt={`Listing ${idx + 1}`}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                {/* Image counter badge */}
-                                                {(collaboration.listing_images || (collaboration as any).listingImages).length > 1 && (
-                                                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
-                                                        {(collaboration.listing_images || (collaboration as any).listingImages).length} Photos
-                                                    </div>
-                                                )}
-                                                {/* Scroll hint */}
-                                                {(collaboration.listing_images || (collaboration as any).listingImages).length > 1 && (
-                                                    <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <polyline points="9 18 15 12 9 6"></polyline>
-                                                        </svg>
-                                                        Swipe
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
                                     {/* Mockup Header Style */}
                                     <div className="mb-6">
                                         <div className="flex items-center gap-3 mb-3">
@@ -297,7 +264,7 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
                                         <div className="ounded-2xl p-4">
                                             <p className="text-[13px] font-medium text-gray-400 mb-1.5 tracking-wide">Reach</p>
                                             <div className="flex items-center gap-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users h-4 w-4 text-primary"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users h-4 w-4 text-primary"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                                                 <span className="text-l font-bold text-gray-900">{formatNumber(collaboration.total_followers)}</span>
                                             </div>
                                         </div>
