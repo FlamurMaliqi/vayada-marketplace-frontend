@@ -215,6 +215,11 @@ function ChatPageContent() {
                     // Check if received: current role is NOT the initiator
                     const isReceived = !collab.is_initiator
 
+                    // Extract unique platforms from deliverables if platforms array is missing
+                    const derivedPlatforms = collab.platforms || (collab.platform_deliverables?.map(pd => ({
+                        name: pd.platform.toLowerCase()
+                    }))) || []
+
                     // Format offer details for creators viewing hotels
                     let offerDetails = ''
                     if (userType === 'creator' && collab.collaboration_type) {
@@ -238,6 +243,7 @@ function ChatPageContent() {
                         followersPlatform: (collab.active_platform || 'instagram').toLowerCase(),
                         engagement: (collab.avg_engagement_rate || 0).toFixed(1) + '%',
                         engagementPlatform: (collab.active_platform || 'instagram').toLowerCase(),
+                        platforms: derivedPlatforms,
                         // Hotel info (for creators viewing hotels)
                         location: collab.listing_location || collab.hotel_location || '',
                         collaborationType: collab.collaboration_type || '',
@@ -628,8 +634,17 @@ function ChatPageContent() {
                                                             <div className="flex items-center gap-2 text-xs text-gray-500 font-medium leading-none">
                                                                 <span>{request.followers}</span><span>•</span><span>{request.engagement}</span>
                                                                 <div className="flex items-center gap-1">
-                                                                    <PlatformIcon platform={request.followersPlatform} className="w-3 h-3 text-gray-400" />
-                                                                    <PlatformIcon platform={request.engagementPlatform} className="w-3 h-3 text-gray-400" />
+                                                                    {request.platforms && request.platforms.length > 0 ? (
+                                                                        request.platforms.map((p: any) => (
+                                                                            <PlatformIcon
+                                                                                key={p.name}
+                                                                                platform={(p.name || p.platform || '').toLowerCase()}
+                                                                                className="w-3 h-3 text-gray-400"
+                                                                            />
+                                                                        ))
+                                                                    ) : (
+                                                                        <PlatformIcon platform={request.followersPlatform} className="w-3 h-3 text-gray-400" />
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         ) : (
