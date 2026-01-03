@@ -251,14 +251,34 @@ export function HotelCard({ hotel }: HotelCardProps) {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs text-gray-700 font-medium">Available:</span>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  {hotel.availability.map((month, index) => (
-                    <span
-                      key={index}
-                      className="inline-block px-2 py-1 bg-gray-800 text-white rounded text-xs font-medium"
-                    >
-                      {getMonthAbbr(month)}
+                  {hotel.availability.length === 12 ? (
+                    <span className="inline-block px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium">
+                      All Year
                     </span>
-                  ))}
+                  ) : hotel.availability.length > 4 ? (
+                    <>
+                      {hotel.availability.slice(0, 4).map((month, index) => (
+                        <span
+                          key={index}
+                          className="inline-block px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium"
+                        >
+                          {getMonthAbbr(month)}
+                        </span>
+                      ))}
+                      <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">
+                        +{hotel.availability.length - 4}
+                      </span>
+                    </>
+                  ) : (
+                    hotel.availability.map((month, index) => (
+                      <span
+                        key={index}
+                        className="inline-block px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium"
+                      >
+                        {getMonthAbbr(month)}
+                      </span>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

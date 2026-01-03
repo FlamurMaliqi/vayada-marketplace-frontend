@@ -360,14 +360,20 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
                   <div className="flex-1">
                     <div className="text-sm text-gray-500 mb-2">Availability</div>
                     <div className="flex flex-wrap gap-2">
-                      {hotel.availability.map((month, index) => (
-                        <span
-                          key={index}
-                          className="inline-block px-3 py-1.5 bg-primary-100 text-primary-700 rounded-full text-sm font-medium"
-                        >
-                          {getMonthAbbr(month)}
+                      {hotel.availability.length === 12 ? (
+                        <span className="inline-block px-3 py-1.5 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
+                          All Year
                         </span>
-                      ))}
+                      ) : (
+                        hotel.availability.map((month, index) => (
+                          <span
+                            key={index}
+                            className="inline-block px-3 py-1.5 bg-primary-100 text-primary-700 rounded-full text-sm font-medium"
+                          >
+                            {getMonthAbbr(month)}
+                          </span>
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
