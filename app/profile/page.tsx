@@ -82,6 +82,7 @@ interface HotelListing {
   targetGroupCountries: string[]
   targetGroupAgeMin?: number
   targetGroupAgeMax?: number
+  targetGroupAgeGroups?: string[]
   status: 'verified' | 'pending' | 'rejected'
 }
 
@@ -366,7 +367,7 @@ export default function ProfilePage() {
       })
     }
 
-    return {
+    const result = {
       name: listingData.name,
       location: listingData.location,
       description: listingData.description,
@@ -377,10 +378,40 @@ export default function ProfilePage() {
         platforms: listingData.lookingForPlatforms,
         min_followers: listingData.lookingForMinFollowers || undefined,
         target_countries: listingData.targetGroupCountries,
-        target_age_min: listingData.targetGroupAgeMin || undefined,
-        target_age_max: listingData.targetGroupAgeMax || undefined,
+        target_age_min: undefined as number | null | undefined,
+        target_age_max: undefined as number | null | undefined,
+        target_age_groups: listingData.targetGroupAgeGroups || [],
       },
     }
+
+    // If we have age groups selected, calculate min/max and override
+    if (listingData.targetGroupAgeGroups && listingData.targetGroupAgeGroups.length > 0) {
+      let min = Infinity
+      let max = -Infinity
+
+      listingData.targetGroupAgeGroups.forEach(g => {
+        if (g === '18-24') { min = Math.min(min, 18); max = Math.max(max, 24); }
+        else if (g === '25-34') { min = Math.min(min, 25); max = Math.max(max, 34); }
+        else if (g === '35-44') { min = Math.min(min, 35); max = Math.max(max, 44); }
+        else if (g === '45-54') { min = Math.min(min, 45); max = Math.max(max, 54); }
+        else if (g === '55+') { min = Math.min(min, 55); max = Math.max(max, 100); }
+      })
+
+      if (min !== Infinity) result.creator_requirements.target_age_min = min
+      if (max !== -Infinity && max !== 100) {
+        result.creator_requirements.target_age_max = max
+      } else {
+        result.creator_requirements.target_age_max = null
+      }
+    } else {
+      // Use explicit min/max if provided (fallback) or nullify
+      result.creator_requirements.target_age_min = listingData.targetGroupAgeMin ?? null
+      result.creator_requirements.target_age_max = listingData.targetGroupAgeMax ?? null
+    }
+
+    console.log('Listing transform - Input:', listingData.targetGroupAgeGroups)
+    console.log('Listing transform - Output Reqs:', result.creator_requirements)
+    return result
   }
 
   /**
@@ -540,8 +571,13 @@ export default function ProfilePage() {
           lookingForPlatforms: creatorReqs.platforms || [],
           lookingForMinFollowers: creatorReqs.min_followers ?? undefined,
           targetGroupCountries: creatorReqs.target_countries || [],
-          targetGroupAgeMin: creatorReqs.target_age_min ?? undefined,
-          targetGroupAgeMax: creatorReqs.target_age_max ?? undefined,
+          targetGroupAgeMin: (creatorReqs as any).target_age_min ?? (creatorReqs as any).targetAgeMin ?? undefined,
+          targetGroupAgeMax: (creatorReqs as any).target_age_max ?? (creatorReqs as any).targetAgeMax ?? undefined,
+          targetGroupAgeGroups: (() => {
+            const groups = (creatorReqs as any).target_age_groups ?? (creatorReqs as any).targetAgeGroups ?? []
+            console.log('Hotel Profile Transform - Direct Age Groups from API:', groups)
+            return groups
+          })(),
           status:
             apiListing.status === 'verified' || apiListing.status === 'pending' || apiListing.status === 'rejected'
               ? apiListing.status
@@ -659,41 +695,20 @@ export default function ProfilePage() {
       } else if (userType === 'hotel') {
         try {
           const apiProfile = await hotelService.getMyProfile()
-          // Transform API response to local HotelProfile format
-          const profile: HotelProfile = {
-            id: apiProfile.id,
+
+          console.log('Hotel Profile API Data (Direct):', JSON.stringify({
             name: apiProfile.name,
-            email: apiProfile.email,
-            phone: apiProfile.phone || undefined,
-            location: apiProfile.location,
-            website: apiProfile.website || undefined,
-            about: apiProfile.about || undefined,
-            picture: (apiProfile.picture && apiProfile.picture.trim() !== '') ? apiProfile.picture : undefined,
-            status: (apiProfile.status === 'verified' || apiProfile.status === 'pending' || apiProfile.status === 'rejected')
-              ? apiProfile.status
-              : 'pending',
-            listings: (apiProfile.listings || []).map((listing: any) => ({
-              id: listing.id,
-              name: listing.name,
-              location: listing.location,
-              description: listing.description,
-              images: listing.images || [],
-              accommodationType: listing.accommodationType || listing.accommodation_type || undefined,
-              collaborationTypes: (listing.collaborationOfferings || listing.collaboration_offerings || []).map((offering: any) => offering.collaborationType || offering.collaboration_type),
-              availability: (listing.collaborationOfferings?.[0]?.availabilityMonths || listing.collaboration_offerings?.[0]?.availability_months || []),
-              platforms: (listing.collaborationOfferings?.[0]?.platforms || listing.collaboration_offerings?.[0]?.platforms || []),
-              freeStayMinNights: listing.collaborationOfferings?.[0]?.freeStayMinNights || listing.collaboration_offerings?.[0]?.free_stay_min_nights || undefined,
-              freeStayMaxNights: listing.collaborationOfferings?.[0]?.freeStayMaxNights || listing.collaboration_offerings?.[0]?.free_stay_max_nights || undefined,
-              paidMaxAmount: listing.collaborationOfferings?.[0]?.paidMaxAmount || listing.collaboration_offerings?.[0]?.paid_max_amount || undefined,
-              discountPercentage: listing.collaborationOfferings?.[0]?.discountPercentage || listing.collaboration_offerings?.[0]?.discount_percentage || undefined,
-              lookingForPlatforms: listing.creatorRequirements?.platforms || listing.creator_requirements?.platforms || [],
-              lookingForMinFollowers: listing.creatorRequirements?.minFollowers || listing.creator_requirements?.min_followers || undefined,
-              targetGroupCountries: listing.creatorRequirements?.targetCountries || listing.creator_requirements?.target_countries || [],
-              targetGroupAgeMin: listing.creatorRequirements?.targetAgeMin || listing.creator_requirements?.target_age_min || undefined,
-              targetGroupAgeMax: listing.creatorRequirements?.targetAgeMax || listing.creator_requirements?.target_age_max || undefined,
-              status: listing.status || 'pending',
-            })),
-          }
+            listingsCount: apiProfile.listings?.length,
+            firstListingReqs: apiProfile.listings?.[0]?.creator_requirements || apiProfile.listings?.[0]?.creatorRequirements
+          }, null, 2))
+
+          const profile = transformHotelProfile(apiProfile as any)
+
+          console.log('Transformed Hotel Profile (Full):', JSON.stringify({
+            name: profile.name,
+            firstListingAgeGroups: profile.listings?.[0]?.targetGroupAgeGroups
+          }, null, 2))
+
           setHotelProfile(profile)
         } catch (error) {
           // Check if it's a 405 (Method Not Allowed) - endpoint not implemented yet
@@ -1417,7 +1432,7 @@ export default function ProfilePage() {
       targetGroupCountries: listing.targetGroupCountries || [],
       targetGroupAgeMin: listing.targetGroupAgeMin,
       targetGroupAgeMax: listing.targetGroupAgeMax,
-      targetGroupAgeGroups: [],
+      targetGroupAgeGroups: listing.targetGroupAgeGroups || [],
     })
     setEditingListingId(listing.id)
     setListingImagePreview(null)
@@ -1440,8 +1455,8 @@ export default function ProfilePage() {
       return
     }
 
-    if (!listingFormData.lookingForPlatforms.length || !listingFormData.targetGroupCountries.length) {
-      showError('Validation Error', 'Please specify platforms and target countries for creator requirements.')
+    if (!listingFormData.lookingForPlatforms.length) {
+      showError('Validation Error', 'Please specify platforms for creator requirements.')
       return
     }
 
@@ -2950,8 +2965,7 @@ export default function ProfilePage() {
                                   className="border border-gray-200 rounded-2xl p-5 bg-white shadow-sm"
                                 >
                                   <div className="flex items-center justify-between">
-                                    <button
-                                      type="button"
+                                    <div
                                       onClick={() => {
                                         const newCollapsed = new Set(collapsedListingCards)
                                         if (isCollapsed) {
@@ -2961,7 +2975,7 @@ export default function ProfilePage() {
                                         }
                                         setCollapsedListingCards(newCollapsed)
                                       }}
-                                      className="flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity"
+                                      className="flex items-center gap-3 flex-1 text-left cursor-pointer hover:opacity-80 transition-opacity"
                                     >
                                       <HotelBadgeIcon active={isComplete} />
                                       <div className="flex-1">
@@ -3000,7 +3014,7 @@ export default function ProfilePage() {
                                           <ChevronUpIcon className="w-4 h-4 text-gray-500" />
                                         )}
                                       </div>
-                                    </button>
+                                    </div>
                                   </div>
 
                                   {!isCollapsed && (
@@ -3443,7 +3457,7 @@ export default function ProfilePage() {
                                                         <span
                                                           className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
                                                             ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                            : 'border-gray-400 bg-white'
+                                                            : 'border-gray-300 bg-white'
                                                             }`}
                                                         >
                                                           {isSelected && (
@@ -3504,7 +3518,7 @@ export default function ProfilePage() {
                                                         <span
                                                           className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
                                                             ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                            : 'border-gray-400 bg-white'
+                                                            : 'border-gray-300 bg-white'
                                                             }`}
                                                         >
                                                           {isSelected && (
@@ -3537,7 +3551,7 @@ export default function ProfilePage() {
 
                                               {/* Top Countries */}
                                               <div>
-                                                <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries</label>
+                                                <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries (optional)</label>
                                                 <p className="text-sm text-gray-600 mb-3">Select up to 3 countries your target audience is from</p>
                                                 <div className="space-y-2">
                                                   <input
@@ -3685,83 +3699,52 @@ export default function ProfilePage() {
                                             </div>
                                             <div className="space-y-4">
                                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                <Input
-                                                  label="Listing Name"
-                                                  value={listing.name || ''}
-                                                  onChange={() => { }}
-                                                  disabled
-                                                  placeholder="Luxury Beach Villa"
-                                                  className="bg-gray-50 border-gray-200"
-                                                />
-                                                <Input
-                                                  label="Location"
-                                                  value={listing.location || ''}
-                                                  onChange={() => { }}
-                                                  disabled
-                                                  placeholder="Bali, Indonesia"
-                                                  className="bg-gray-50 border-gray-200"
-                                                />
+                                                <div>
+                                                  <label className="block text-base font-medium text-gray-900 mb-2">Listing Name</label>
+                                                  <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base text-gray-900">
+                                                    {listing.name || '-'}
+                                                  </div>
+                                                </div>
+                                                <div>
+                                                  <label className="block text-base font-medium text-gray-900 mb-2">Location</label>
+                                                  <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base text-gray-900">
+                                                    {listing.location || '-'}
+                                                  </div>
+                                                </div>
                                               </div>
                                               <div>
-                                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                                <label className="block text-base font-medium text-gray-900 mb-2">
                                                   Accommodation Type
                                                 </label>
-                                                <select
-                                                  value={listing.accommodationType || ''}
-                                                  onChange={() => { }}
-                                                  disabled
-                                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900 cursor-not-allowed opacity-60"
-                                                >
-                                                  <option value="">Select type</option>
-                                                  {HOTEL_CATEGORIES.map((cat) => (
-                                                    <option key={cat} value={cat}>
-                                                      {cat}
-                                                    </option>
-                                                  ))}
-                                                </select>
+                                                <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base text-gray-900">
+                                                  {listing.accommodationType || 'Not specified'}
+                                                </div>
                                               </div>
-                                              <Textarea
-                                                label="Description"
-                                                value={listing.description || ''}
-                                                onChange={() => { }}
-                                                disabled
-                                                rows={3}
-                                                placeholder="A stunning beachfront villa with private pool and ocean views."
-                                                className="bg-gray-50 border-gray-200"
-                                              />
+                                              <div>
+                                                <label className="block text-base font-medium text-gray-900 mb-2">Description</label>
+                                                <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base text-gray-900 whitespace-pre-wrap min-h-[100px]">
+                                                  {listing.description || '-'}
+                                                </div>
+                                              </div>
                                               {/* Images */}
                                               <div>
                                                 <label className="block text-sm font-semibold text-gray-700 mb-3">
                                                   Property Photos
                                                 </label>
                                                 {listing.images && listing.images.length > 0 ? (
-                                                  <div className="space-y-2">
-                                                    <div className="relative group w-full h-48 rounded-xl overflow-hidden shadow-md">
-                                                      <img
-                                                        src={listing.images[0]}
-                                                        alt={`${listing.name || 'Listing'} - Main photo`}
-                                                        className="w-full h-full object-cover"
-                                                        onError={(e) => {
-                                                          e.currentTarget.style.display = 'none'
-                                                        }}
-                                                      />
-                                                    </div>
-                                                    {listing.images.length > 1 && (
-                                                      <div className="grid grid-cols-4 gap-2">
-                                                        {listing.images.slice(1, 5).map((image, imageIndex) => (
-                                                          <div key={imageIndex + 1} className="relative group aspect-square">
-                                                            <img
-                                                              src={image}
-                                                              alt={`Photo ${imageIndex + 2}`}
-                                                              className="w-full h-full object-cover rounded-lg border-2 border-gray-200"
-                                                              onError={(e) => {
-                                                                e.currentTarget.style.display = 'none'
-                                                              }}
-                                                            />
-                                                          </div>
-                                                        ))}
+                                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                    {listing.images.map((image, imageIndex) => (
+                                                      <div key={imageIndex} className="relative aspect-video rounded-xl overflow-hidden shadow-sm">
+                                                        <img
+                                                          src={image}
+                                                          alt={`Property ${imageIndex + 1}`}
+                                                          className="w-full h-full object-cover"
+                                                          onError={(e) => {
+                                                            e.currentTarget.style.display = 'none'
+                                                          }}
+                                                        />
                                                       </div>
-                                                    )}
+                                                    ))}
                                                   </div>
                                                 ) : (
                                                   <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
@@ -3799,7 +3782,7 @@ export default function ProfilePage() {
                                                         key={type}
                                                         className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all text-center ${isSelected
                                                           ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
-                                                          : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 opacity-50'
+                                                          : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800'
                                                           }`}
                                                       >
                                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
@@ -3834,24 +3817,18 @@ export default function ProfilePage() {
                                                     </div>
                                                   </div>
                                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                    <Input
-                                                      label="Min. Nights"
-                                                      type="number"
-                                                      value={listing.freeStayMinNights || ''}
-                                                      onChange={() => { }}
-                                                      disabled
-                                                      placeholder="1"
-                                                      className="bg-gray-50 border-gray-200"
-                                                    />
-                                                    <Input
-                                                      label="Max. Nights"
-                                                      type="number"
-                                                      value={listing.freeStayMaxNights || ''}
-                                                      onChange={() => { }}
-                                                      disabled
-                                                      placeholder="5"
-                                                      className="bg-gray-50 border-gray-200"
-                                                    />
+                                                    <div>
+                                                      <label className="block text-xs font-semibold text-gray-700 mb-1">Min. Nights</label>
+                                                      <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
+                                                        {listing.freeStayMinNights || '-'}
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <label className="block text-xs font-semibold text-gray-700 mb-1">Max. Nights</label>
+                                                      <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
+                                                        {listing.freeStayMaxNights || '-'}
+                                                      </div>
+                                                    </div>
                                                   </div>
                                                 </div>
                                               )}
@@ -3868,15 +3845,12 @@ export default function ProfilePage() {
                                                       <p className="text-sm text-gray-600">Set the maximum payment amount</p>
                                                     </div>
                                                   </div>
-                                                  <Input
-                                                    label="Max. Amount ($)"
-                                                    type="number"
-                                                    value={listing.paidMaxAmount || ''}
-                                                    onChange={() => { }}
-                                                    disabled
-                                                    placeholder="5000"
-                                                    className="bg-gray-50 border-gray-200"
-                                                  />
+                                                  <div>
+                                                    <label className="block text-xs font-semibold text-gray-700 mb-1">Max. Amount ($)</label>
+                                                    <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
+                                                      ${listing.paidMaxAmount || '0'}
+                                                    </div>
+                                                  </div>
                                                 </div>
                                               )}
 
@@ -3892,15 +3866,12 @@ export default function ProfilePage() {
                                                       <p className="text-sm text-gray-600">Set the discount percentage</p>
                                                     </div>
                                                   </div>
-                                                  <Input
-                                                    label="Discount Percentage (%)"
-                                                    type="number"
-                                                    value={listing.discountPercentage || ''}
-                                                    onChange={() => { }}
-                                                    disabled
-                                                    placeholder="20"
-                                                    className="bg-gray-50 border-gray-200"
-                                                  />
+                                                  <div>
+                                                    <label className="block text-xs font-semibold text-gray-700 mb-1">Discount Percentage (%)</label>
+                                                    <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
+                                                      {listing.discountPercentage || '0'}%
+                                                    </div>
+                                                  </div>
                                                 </div>
                                               )}
 
@@ -3923,7 +3894,7 @@ export default function ProfilePage() {
                                                           key={month}
                                                           className={`relative flex flex-col items-center justify-center py-2 rounded-xl border transition-all text-xs ${isSelected
                                                             ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
-                                                            : 'bg-gray-100 border-gray-200 text-gray-700 opacity-50'
+                                                            : 'bg-gray-100 border-gray-200 text-gray-700'
                                                             }`}
                                                         >
                                                           <div className={`font-semibold ${isSelected ? 'text-white' : 'text-gray-700'}`}>{monthAbbr}</div>
@@ -3946,13 +3917,13 @@ export default function ProfilePage() {
                                                         key={platform}
                                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${isSelected
                                                           ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                                          : 'border-gray-200 bg-white text-gray-700 opacity-50'
+                                                          : 'border-gray-200 bg-white text-gray-700'
                                                           }`}
                                                       >
                                                         <span
                                                           className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
                                                             ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                            : 'border-gray-400 bg-white'
+                                                            : 'border-gray-300 bg-white'
                                                             }`}
                                                         >
                                                           {isSelected && (
@@ -3989,13 +3960,13 @@ export default function ProfilePage() {
                                                         key={platform}
                                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${isSelected
                                                           ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                                          : 'border-gray-200 bg-white text-gray-700 opacity-50'
+                                                          : 'border-gray-200 bg-white text-gray-700'
                                                           }`}
                                                       >
                                                         <span
                                                           className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
                                                             ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                            : 'border-gray-400 bg-white'
+                                                            : 'border-gray-300 bg-white'
                                                             }`}
                                                         >
                                                           {isSelected && (
@@ -4014,14 +3985,9 @@ export default function ProfilePage() {
                                               {/* Min Followers */}
                                               <div>
                                                 <label className="block text-base font-semibold text-gray-900 mb-2">Min. Followers (optional)</label>
-                                                <Input
-                                                  type="number"
-                                                  value={listing.lookingForMinFollowers || ''}
-                                                  onChange={() => { }}
-                                                  disabled
-                                                  placeholder="e.g., 50000"
-                                                  className="bg-gray-50"
-                                                />
+                                                <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base text-gray-900">
+                                                  {listing.lookingForMinFollowers ? formatNumber(listing.lookingForMinFollowers) : '-'}
+                                                </div>
                                               </div>
 
                                               {/* Top Countries */}
@@ -4031,42 +3997,39 @@ export default function ProfilePage() {
                                                 {listing.targetGroupCountries && listing.targetGroupCountries.length > 0 ? (
                                                   <div className="flex flex-wrap gap-2">
                                                     {listing.targetGroupCountries.map((country, countryIndex) => (
-                                                      <span key={countryIndex} className="inline-flex items-center gap-1 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold px-3 py-1 border border-primary-100">
+                                                      <span key={countryIndex} className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 text-sm font-bold px-4 py-2 border border-blue-200 shadow-sm">
                                                         {country}
                                                       </span>
                                                     ))}
                                                   </div>
                                                 ) : (
-                                                  <p className="text-sm text-gray-500">No countries selected</p>
+                                                  <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base text-gray-900">
+                                                    No countries selected
+                                                  </div>
                                                 )}
                                               </div>
 
-                                              {/* Age Range */}
-                                              {(listing.targetGroupAgeMin || listing.targetGroupAgeMax) && (
-                                                <div>
-                                                  <label className="block text-base font-semibold text-gray-900 mb-1">Age Range</label>
-                                                  <p className="text-sm text-gray-600 mb-3">Target age range for creators</p>
-                                                  <div className="flex items-center gap-2">
-                                                    <Input
-                                                      type="number"
-                                                      value={listing.targetGroupAgeMin || ''}
-                                                      onChange={() => { }}
-                                                      disabled
-                                                      placeholder="Min"
-                                                      className="bg-gray-50 w-24"
-                                                    />
-                                                    <span className="text-gray-500">-</span>
-                                                    <Input
-                                                      type="number"
-                                                      value={listing.targetGroupAgeMax || ''}
-                                                      onChange={() => { }}
-                                                      disabled
-                                                      placeholder="Max"
-                                                      className="bg-gray-50 w-24"
-                                                    />
-                                                  </div>
+                                              {/* Age Groups */}
+                                              <div>
+                                                <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups</label>
+                                                <p className="text-sm text-gray-600 mb-3">Select up to 3 age groups you want to target</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                  {AGE_GROUP_OPTIONS.map((range) => {
+                                                    const isSelected = listing.targetGroupAgeGroups?.includes(range) || false
+                                                    return (
+                                                      <div
+                                                        key={range}
+                                                        className={`px-4 py-2 rounded-full border text-sm font-bold transition-all ${isSelected
+                                                          ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
+                                                          : 'bg-white text-gray-400 border-gray-200'
+                                                          }`}
+                                                      >
+                                                        {range}
+                                                      </div>
+                                                    )
+                                                  })}
                                                 </div>
-                                              )}
+                                              </div>
                                             </div>
                                           </div>
 
@@ -4552,7 +4515,7 @@ export default function ProfilePage() {
                                             <span
                                               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
                                                 ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                : 'border-gray-400 bg-white'
+                                                : 'border-gray-300 bg-white'
                                                 }`}
                                             >
                                               {isSelected && (
@@ -4613,7 +4576,7 @@ export default function ProfilePage() {
                                             <span
                                               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
                                                 ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                : 'border-gray-400 bg-white'
+                                                : 'border-gray-300 bg-white'
                                                 }`}
                                             >
                                               {isSelected && (
@@ -5568,7 +5531,7 @@ export default function ProfilePage() {
                             <span
                               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
                                 ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                : 'border-gray-400 bg-white'
+                                : 'border-gray-300 bg-white'
                                 }`}
                             >
                               {isSelected && (
@@ -5630,7 +5593,7 @@ export default function ProfilePage() {
                             <span
                               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
                                 ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                : 'border-gray-400 bg-white'
+                                : 'border-gray-300 bg-white'
                                 }`}
                             >
                               {isSelected && (

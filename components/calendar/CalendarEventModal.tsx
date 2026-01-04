@@ -187,7 +187,7 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
                                                     {(((collaboration as any).creatorRequirements?.targetCountries || (collaboration as any).creator_requirements?.target_countries)) &&
                                                         (((collaboration as any).creatorRequirements?.targetCountries || (collaboration as any).creator_requirements?.target_countries)).length > 0 && (
                                                             <div>
-                                                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Target Countries</p>
+                                                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Top Countries</p>
                                                                 <p className="text-sm font-medium text-gray-900">{((collaboration as any).creatorRequirements?.targetCountries || (collaboration as any).creator_requirements?.target_countries).join(', ')}</p>
                                                             </div>
                                                         )}

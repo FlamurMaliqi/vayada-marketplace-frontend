@@ -120,6 +120,7 @@ export interface CreatorRequirements {
   target_countries: string[]
   target_age_min?: number | null
   target_age_max?: number | null
+  target_age_groups?: string[] | null
   created_at: string
   updated_at: string
 }

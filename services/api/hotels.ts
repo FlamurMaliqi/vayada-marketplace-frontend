@@ -39,6 +39,7 @@ interface ListingMarketplaceResponse {
     target_countries: string[]
     target_age_min: number | null
     target_age_max: number | null
+    target_age_groups?: string[] | null
     created_at: string
     updated_at: string
   }
@@ -75,14 +76,15 @@ export interface CreateListingRequest {
   }>
   creator_requirements: {
     platforms: string[]
-    min_followers?: number
+    min_followers?: number | null
     target_countries: string[]
-    target_age_min?: number
-    target_age_max?: number
+    target_age_min?: number | null
+    target_age_max?: number | null
+    target_age_groups?: string[] | null
   }
 }
 
-export interface UpdateListingRequest extends Partial<CreateListingRequest> {}
+export interface UpdateListingRequest extends Partial<CreateListingRequest> { }
 
 export interface UploadPictureResponse {
   url: string
@@ -100,17 +102,17 @@ export const hotelService = {
     const queryParams = new URLSearchParams()
     if (params?.page) queryParams.append('page', params.page.toString())
     if (params?.limit) queryParams.append('limit', params.limit.toString())
-    
+
     const query = queryParams.toString()
     // Backend returns direct array, not paginated response
     const response = await apiClient.get<ListingMarketplaceResponse[]>(`/marketplace/listings${query ? `?${query}` : ''}`)
-    
+
     // Log the raw response from backend
     console.log('GET /marketplace/listings - Raw backend response:', JSON.stringify(response, null, 2))
-    
+
     // Transform API response to frontend format
     const hotels = response.map(transformListingMarketplaceResponse)
-    
+
     // Return as paginated response for consistency with frontend expectations
     return {
       data: hotels,

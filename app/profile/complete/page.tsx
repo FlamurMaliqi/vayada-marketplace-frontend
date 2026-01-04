@@ -180,8 +180,8 @@ export default function ProfileCompletePage() {
   const HotelBadgeIcon = ({ active }: { active?: boolean }) => (
     <div
       className={`w-10 h-10 rounded-xl flex items-center justify-center border ${active
-          ? 'bg-[#2F54EB] text-white border-[#2F54EB]'
-          : 'bg-[#EEF2FF] text-[#2F54EB] border-[#E0E7FF]'
+        ? 'bg-[#2F54EB] text-white border-[#2F54EB]'
+        : 'bg-[#EEF2FF] text-[#2F54EB] border-[#E0E7FF]'
         }`}
     >
       <BuildingOffice2Icon className="w-5 h-5" />
@@ -633,10 +633,7 @@ export default function ProfileCompletePage() {
         setError(`Listing ${i + 1}: At least one platform in "Looking For" is required`)
         return false
       }
-      if (listing.targetGroupCountries.length === 0) {
-        setError(`Listing ${i + 1}: At least one target country is required`)
-        return false
-      }
+      // targetGroupCountries is now optional
       // Validate Free Stay details if selected
       if (listing.collaborationTypes.includes('Free Stay')) {
         if (!listing.freeStayMinNights || listing.freeStayMinNights <= 0) {
@@ -1206,8 +1203,36 @@ export default function ProfileCompletePage() {
             platforms: listing.lookingForPlatforms,
             min_followers: listing.lookingForMinFollowers || undefined,
             target_countries: listing.targetGroupCountries,
-            target_age_min: listing.targetGroupAgeMin || undefined,
-            target_age_max: listing.targetGroupAgeMax || undefined,
+            target_age_min: (() => {
+              if (listing.targetGroupAgeGroups && listing.targetGroupAgeGroups.length > 0) {
+                let min = Infinity
+                listing.targetGroupAgeGroups.forEach(g => {
+                  if (g === '18-24') min = Math.min(min, 18)
+                  else if (g === '25-34') min = Math.min(min, 25)
+                  else if (g === '35-44') min = Math.min(min, 35)
+                  else if (g === '45-54') min = Math.min(min, 45)
+                  else if (g === '55+') min = Math.min(min, 55)
+                })
+                return min === Infinity ? undefined : min
+              }
+              return listing.targetGroupAgeMin || undefined
+            })(),
+            target_age_max: (() => {
+              if (listing.targetGroupAgeGroups && listing.targetGroupAgeGroups.length > 0) {
+                let max = -Infinity
+                let has55Plus = false
+                listing.targetGroupAgeGroups.forEach(g => {
+                  if (g === '18-24') max = Math.max(max, 24)
+                  else if (g === '25-34') max = Math.max(max, 34)
+                  else if (g === '35-44') max = Math.max(max, 44)
+                  else if (g === '45-54') max = Math.max(max, 54)
+                  else if (g === '55+') has55Plus = true
+                })
+                if (has55Plus) return undefined // 55+ means no upper limit
+                return max === -Infinity ? undefined : max
+              }
+              return listing.targetGroupAgeMax || undefined
+            })(),
           },
         })
       }
@@ -1966,8 +1991,8 @@ export default function ProfileCompletePage() {
                                                     type="button"
                                                     onClick={() => toggleAgeGroupTag(actualIndex, range)}
                                                     className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${isSelected
-                                                        ? 'bg-primary-50 text-primary-700 border-primary-200'
-                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700'
+                                                      ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                                      : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700'
                                                       }`}
                                                   >
                                                     {range}
@@ -2231,8 +2256,7 @@ export default function ProfileCompletePage() {
                       listing.collaborationTypes.length > 0 &&
                       listing.availability.length > 0 &&
                       listing.platforms.length > 0 &&
-                      listing.lookingForPlatforms.length > 0 &&
-                      listing.targetGroupCountries.length > 0
+                      listing.lookingForPlatforms.length > 0
 
                     return (
                       <div
@@ -2485,8 +2509,8 @@ export default function ProfileCompletePage() {
                                         <label
                                           key={type}
                                           className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border cursor-pointer transition-all text-center ${isSelected
-                                              ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
-                                              : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
+                                            ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
+                                            : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800 hover:border-primary-200'
                                             }`}
                                         >
                                           <input
@@ -2647,8 +2671,8 @@ export default function ProfileCompletePage() {
                                           }
                                         }}
                                         className={`w-full px-4 py-3 rounded-xl border-2 text-base font-bold transition-all shadow-sm ${MONTHS.every(month => listing.availability.includes(month))
-                                            ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
-                                            : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
+                                          ? 'bg-gradient-to-r from-[#2F54EB] to-[#1e3a8a] border-[#2F54EB] text-white shadow-md'
+                                          : 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-300 text-primary-700 hover:from-primary-100 hover:to-primary-200 hover:border-primary-400 hover:shadow-md'
                                           }`}
                                       >
                                         <span className="flex items-center justify-center gap-2">
@@ -2666,8 +2690,8 @@ export default function ProfileCompletePage() {
                                           <label
                                             key={month}
                                             className={`relative flex flex-col items-center justify-center py-3 rounded-xl border cursor-pointer transition-all ${isSelected
-                                                ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
-                                                : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
+                                              ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
+                                              : 'bg-gray-100 border-gray-200 text-gray-700 hover:border-gray-300'
                                               }`}
                                           >
                                             <input
@@ -2701,8 +2725,8 @@ export default function ProfileCompletePage() {
                                         <label
                                           key={platform}
                                           className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
-                                              ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                                             }`}
                                         >
                                           <input
@@ -2719,8 +2743,8 @@ export default function ProfileCompletePage() {
                                           />
                                           <span
                                             className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
-                                                ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                : 'border-gray-400 bg-white'
+                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                              : 'border-gray-400 bg-white'
                                               }`}
                                           >
                                             {isSelected && (
@@ -2756,8 +2780,8 @@ export default function ProfileCompletePage() {
                                         <label
                                           key={platform}
                                           className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
-                                              ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                                             }`}
                                         >
                                           <input
@@ -2774,8 +2798,8 @@ export default function ProfileCompletePage() {
                                           />
                                           <span
                                             className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
-                                                ? 'border-[#2F54EB] bg-[#2F54EB]'
-                                                : 'border-gray-400 bg-white'
+                                              ? 'border-[#2F54EB] bg-[#2F54EB]'
+                                              : 'border-gray-400 bg-white'
                                               }`}
                                           >
                                             {isSelected && (
@@ -2805,7 +2829,7 @@ export default function ProfileCompletePage() {
 
                                 {/* Top Countries */}
                                 <div>
-                                  <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries</label>
+                                  <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries (optional)</label>
                                   <p className="text-sm text-gray-600 mb-3">Select up to 3 countries your target audience is from</p>
                                   <div className="space-y-2">
                                     <input
@@ -2897,8 +2921,8 @@ export default function ProfileCompletePage() {
                                           }}
                                           disabled={!isSelected && (listing.targetGroupAgeGroups?.length || 0) >= 3}
                                           className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors ${isSelected
-                                              ? 'bg-primary-50 text-primary-700 border-primary-200'
-                                              : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                                            ? 'bg-primary-50 text-primary-700 border-primary-200'
+                                            : 'bg-white text-gray-700 border-gray-200 hover:border-primary-200 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
                                             }`}
                                         >
                                           {range}
