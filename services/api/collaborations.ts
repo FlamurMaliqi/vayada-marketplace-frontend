@@ -16,9 +16,11 @@ export interface PlatformDeliverable {
 }
 
 export interface PlatformDeliverablesItem {
-  platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+  platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook' | 'Content Package' | 'Custom' | string
   deliverables: PlatformDeliverable[]
 }
+
+
 
 // Creator application request
 export interface CreateCreatorCollaborationRequest {
@@ -31,7 +33,7 @@ export interface CreateCreatorCollaborationRequest {
   travel_date_to?: string
   preferred_months?: string[]
   platform_deliverables: Array<{
-    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook' | 'Content Package' | 'Custom' | string
     deliverables: Array<{
       type: string
       quantity: number
@@ -39,17 +41,19 @@ export interface CreateCreatorCollaborationRequest {
   }>
 }
 
+
 export interface UpdateCollaborationTermsRequest {
   travel_date_from?: string
   travel_date_to?: string
   platform_deliverables?: Array<{
-    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook' | 'Content Package' | 'Custom' | string
     deliverables: Array<{
       id?: string
       type: string
       quantity: number
     }>
   }>
+
   collaboration_type?: string
   free_stay_max_nights?: number | null
   paid_amount?: number | null
@@ -75,12 +79,13 @@ export interface CreateHotelCollaborationRequest {
   preferred_date_to?: string
   preferred_months?: string[]
   platform_deliverables: Array<{
-    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook' | 'Content Package' | 'Custom' | string
     deliverables: Array<{
       type: string
       quantity: number
     }>
   }>
+
   message?: string
 }
 
@@ -102,7 +107,7 @@ export interface CollaborationResponse {
   creator_portfolio_link?: string | null
   portfolio_link?: string | null
   platforms?: Array<{
-    name: "Instagram" | "TikTok" | "YouTube" | "Facebook"
+    name: "Instagram" | "TikTok" | "YouTube" | "Facebook" | string
     handle: string
     followers: number
     engagement_rate: number

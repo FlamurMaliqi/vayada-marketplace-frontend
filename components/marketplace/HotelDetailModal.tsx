@@ -127,7 +127,7 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
         travel_date_to: data.travelDateTo || undefined,
         preferred_months: data.preferredMonths.length > 0 ? data.preferredMonths : undefined,
         platform_deliverables: (data.platformDeliverables || []).map(pd => ({
-          platform: pd.platform as 'Instagram' | 'TikTok' | 'YouTube',
+          platform: pd.platform,
           deliverables: pd.deliverables.map(d => ({
             type: d.type,
             quantity: d.quantity,

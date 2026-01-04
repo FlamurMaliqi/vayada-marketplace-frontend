@@ -227,7 +227,7 @@ export interface PlatformDeliverable {
 }
 
 export interface PlatformDeliverablesItem {
-  platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+  platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook' | 'Content Package' | 'Custom' | string
   deliverables: PlatformDeliverable[]
 }
 

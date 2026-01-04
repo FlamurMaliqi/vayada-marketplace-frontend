@@ -17,7 +17,7 @@ interface Deliverable {
 }
 
 interface PlatformDeliverables {
-    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+    platform: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook' | 'Content Package' | 'Custom' | string
     deliverables: Deliverable[]
 }
 
@@ -42,7 +42,7 @@ interface SuggestChangesModalProps {
     }) => void
 }
 
-const PLATFORMS = ['Instagram', 'TikTok', 'YouTube', 'Facebook'] as const
+const PLATFORMS = ['Instagram', 'TikTok', 'YouTube', 'Facebook', 'Content Package', 'Custom'] as const
 
 export default function SuggestChangesModal({
     isOpen,
