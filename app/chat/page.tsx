@@ -910,13 +910,17 @@ function ChatPageContent() {
                             {/* Fixed Footer: Message Input */}
                             <div className="p-4 bg-white border-t border-gray-100 flex-shrink-0">
                                 <form onSubmit={handleSendMessage} className="flex items-center gap-3">
+                                    {/* Comment clip and picture out until we implement this functionality 
                                     <div className="flex gap-2 text-gray-400">
                                         <button type="button" className="p-2 hover:bg-gray-50 rounded-full transition-colors"><PaperClipIcon className="w-5 h-5" /></button>
                                         <button type="button" className="p-2 hover:bg-gray-50 rounded-full transition-colors"><PhotoIcon className="w-5 h-5" /></button>
                                     </div>
+                                    */}
                                     <div className="flex-1 relative">
                                         <input type="text" placeholder="Type a message..." value={messageInput} onChange={(e) => setMessageInput(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-full pl-4 pr-10 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
-                                        <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 rounded-full transition-colors"><FaceSmileIcon className="w-5 h-5" /></button>
+                                        {/* Comment icons out until we implement this functionality 
+                                            <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 rounded-full transition-colors"><FaceSmileIcon className="w-5 h-5" /></button>
+                                        */}
                                     </div>
                                     <button type="submit" disabled={!messageInput.trim()} className="p-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors shadow-sm"><PaperAirplaneIcon className="w-5 h-5" /></button>
                                 </form>
