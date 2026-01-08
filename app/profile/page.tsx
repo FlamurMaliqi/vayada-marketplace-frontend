@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { countries } from 'countries-list'
 import { useRouter } from 'next/navigation'
 import { AuthenticatedNavigation, ProfileWarningBanner } from '@/components/layout'
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
@@ -107,7 +108,7 @@ const HOTEL_CATEGORIES = ['Hotel', 'Boutiques Hotel', 'City Hotel', 'Luxury Hote
 const PLATFORM_OPTIONS = ['Instagram', 'TikTok', 'YouTube', 'Facebook']
 const COLLABORATION_TYPES = ['Free Stay', 'Paid', 'Discount'] as const
 const AGE_GROUP_OPTIONS = ['18-24', '25-34', '35-44', '45-54', '55+']
-const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherlands', 'Switzerland', 'Austria', 'Belgium', 'Canada', 'Australia', 'Japan', 'South Korea', 'Singapore', 'Thailand', 'Indonesia', 'Malaysia', 'Philippines', 'India', 'Brazil', 'Mexico', 'Argentina', 'Chile', 'South Africa', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Egypt']
+const COUNTRIES = Object.values(countries).map(country => country.name).sort()
 
 const HotelBadgeIcon = ({ active }: { active?: boolean }) => (
   <div

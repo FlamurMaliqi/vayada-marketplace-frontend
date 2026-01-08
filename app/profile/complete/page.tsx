@@ -36,6 +36,8 @@ import {
   InformationCircleIcon,
 } from '@heroicons/react/24/outline'
 
+import { countries } from 'countries-list'
+
 const HOTEL_CATEGORIES = [
   'Hotel',
   'Boutiques Hotel',
@@ -50,19 +52,7 @@ const PLATFORM_OPTIONS = ['Instagram', 'TikTok', 'YouTube', 'Facebook']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const COLLABORATION_TYPES = ['Free Stay', 'Paid', 'Discount'] as const
 const AGE_GROUP_OPTIONS = ['18-24', '25-34', '35-44', '45-54', '55+']
-const COUNTRIES = ['USA', 'Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherlands', 'Switzerland', 'Austria', 'Belgium', 'Canada', 'Australia', 'Japan', 'South Korea', 'Singapore', 'Thailand', 'Indonesia', 'Malaysia', 'Philippines', 'India', 'Brazil', 'Mexico', 'Argentina', 'Chile', 'South Africa', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Egypt']
-
-// Group countries by continent
-const COUNTRIES_BY_CONTINENT: Record<string, string[]> = {
-  'North America': ['USA', 'Canada', 'Mexico'],
-  'Europe': ['Germany', 'UK', 'France', 'Italy', 'Spain', 'Netherlands', 'Switzerland', 'Austria', 'Belgium'],
-  'Asia': ['Japan', 'South Korea', 'Singapore', 'Thailand', 'Indonesia', 'Malaysia', 'Philippines', 'India', 'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait'],
-  'Oceania': ['Australia'],
-  'South America': ['Brazil', 'Argentina', 'Chile'],
-  'Africa': ['South Africa', 'Egypt'],
-}
-
-const CONTINENT_ORDER = ['North America', 'Europe', 'Asia', 'Oceania', 'South America', 'Africa']
+const COUNTRIES = Object.values(countries).map(country => country.name).sort()
 
 interface PlatformFormData {
   name: string
