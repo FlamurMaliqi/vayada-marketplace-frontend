@@ -2182,7 +2182,6 @@ export default function ProfileCompletePage() {
 
                   <div className="space-y-2">
                     <p className="text-sm font-semibold text-gray-900">Contact Information</p>
-                    <p className="text-xs text-gray-500">Your website & phone for direct communication with creators</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Input
                         label="Website"
