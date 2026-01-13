@@ -654,7 +654,7 @@ export function CollaborationRequestDetailModal({
                         variant="primary"
                         onClick={handleAccept}
                       >
-                        Accept
+                        Start Negotiating
                       </Button>
                     </>
                   ) : (
