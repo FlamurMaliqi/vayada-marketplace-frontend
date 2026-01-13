@@ -3649,7 +3649,7 @@ export default function ProfilePage() {
 
                                               {/* Age Groups */}
                                               <div>
-                                                <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups</label>
+                                                <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups (optional)</label>
                                                 <p className="text-sm text-gray-600 mb-3">Select up to 3 age groups you want to target</p>
                                                 <div className="flex flex-wrap gap-2">
                                                   {AGE_GROUP_OPTIONS.map((range) => {
@@ -4030,7 +4030,7 @@ export default function ProfilePage() {
 
                                               {/* Age Groups */}
                                               <div>
-                                                <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups</label>
+                                                <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups (optional)</label>
                                                 <p className="text-sm text-gray-600 mb-3">Select up to 3 age groups you want to target</p>
                                                 <div className="flex flex-wrap gap-2">
                                                   {AGE_GROUP_OPTIONS.map((range) => {
@@ -4705,7 +4705,7 @@ export default function ProfilePage() {
 
                                   {/* Age Groups */}
                                   <div>
-                                    <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups</label>
+                                    <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups (optional)</label>
                                     <p className="text-sm text-gray-600 mb-3">Select up to 3 age groups you want to target</p>
                                     <div className="flex flex-wrap gap-2">
                                       {AGE_GROUP_OPTIONS.map((range) => {
@@ -5708,7 +5708,7 @@ export default function ProfilePage() {
 
                   {/* Age Groups */}
                   <div>
-                    <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups</label>
+                    <label className="block text-base font-semibold text-gray-900 mb-1">Age Groups (optional)</label>
                     <p className="text-sm text-gray-600 mb-3">Select up to 3 age groups you want to target</p>
                     <div className="flex flex-wrap gap-2">
                       {AGE_GROUP_OPTIONS.map((range) => {
