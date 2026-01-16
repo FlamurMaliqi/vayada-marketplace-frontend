@@ -9,11 +9,10 @@ import { Button, Input } from '@/components/ui'
 import { ROUTES } from '@/lib/constants/routes'
 import type { Collaboration, CollaborationStatus, Hotel, Creator, UserType } from '@/lib/types'
 import { collaborationService, transformCollaborationResponse } from '@/services/api/collaborations'
-import { toBackendStatus } from '@/lib/utils/statusMapping'
 import { ApiErrorResponse } from '@/services/api/client'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 
-type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected'
+type StatusFilter = 'all' | 'pending' | 'accepted' | 'declined'
 type SortOption = 'newest' | 'a-z'
 
 function CollaborationsPageContent() {
@@ -74,8 +73,7 @@ function CollaborationsPageContent() {
 
     setLoading(true)
     try {
-      // Map frontend status filter to backend status
-      const backendStatus = statusFilter === 'all' ? undefined : toBackendStatus(statusFilter)
+      const backendStatus = statusFilter === 'all' ? undefined : statusFilter
 
       // Use new endpoints based on user type
       let response
@@ -110,11 +108,10 @@ function CollaborationsPageContent() {
   const handleStatusUpdate = async (id: string, newStatus: CollaborationStatus) => {
     setUpdatingId(id)
     try {
-      const backendStatus = toBackendStatus(newStatus)
-      if (newStatus === 'accepted' || newStatus === 'rejected') {
-        await collaborationService.respondToCollaboration(id, { status: backendStatus as 'accepted' | 'declined' })
+      if (newStatus === 'accepted' || newStatus === 'declined') {
+        await collaborationService.respondToCollaboration(id, { status: newStatus })
       } else {
-        await collaborationService.updateStatus(id, backendStatus)
+        await collaborationService.updateStatus(id, newStatus)
       }
       // Reload collaborations after status update
       await loadCollaborations()
@@ -147,7 +144,7 @@ function CollaborationsPageContent() {
   }
 
   const handleDeclineFromModal = (id: string) => {
-    handleStatusUpdate(id, 'rejected')
+    handleStatusUpdate(id, 'declined')
   }
 
   const handleRatingSubmit = async (id: string, rating: number, comment: string) => {
@@ -168,7 +165,7 @@ function CollaborationsPageContent() {
     { value: 'all', label: 'All' },
     { value: 'pending', label: 'Pending' },
     { value: 'accepted', label: 'Accepted' },
-    { value: 'rejected', label: 'Declined' },
+    { value: 'declined', label: 'Declined' },
   ]
 
   const filteredAndSortedCollaborations = useMemo(() => {

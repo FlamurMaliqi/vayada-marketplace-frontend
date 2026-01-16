@@ -254,7 +254,7 @@ export interface Collaboration {
   updatedAt: Date
 }
 
-export type CollaborationStatus = 'pending' | 'negotiating' | 'accepted' | 'rejected' | 'completed' | 'cancelled'
+export type CollaborationStatus = 'pending' | 'negotiating' | 'accepted' | 'declined' | 'completed' | 'cancelled'
 
 // API Response types
 export interface ApiResponse<T> {

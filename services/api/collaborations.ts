@@ -5,7 +5,6 @@
 import { apiClient } from './client'
 import type { Collaboration, PaginatedResponse } from '@/lib/types'
 import type { Hotel, Creator } from '@/lib/types'
-import { BACKEND_TO_FRONTEND_STATUS } from '@/lib/utils/statusMapping'
 
 // Platform deliverable types
 export interface PlatformDeliverable {
@@ -487,7 +486,7 @@ export function transformCollaborationResponse(
     id: response.id,
     hotelId: response.hotel_id,
     creatorId: response.creator_id,
-    status: BACKEND_TO_FRONTEND_STATUS[response.status] || 'pending',
+    status: response.status || 'pending',
     createdAt: new Date(response.created_at),
     updatedAt: new Date(response.updated_at),
     hotel,

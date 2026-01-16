@@ -27,7 +27,7 @@ const statusConfig: Record<CollaborationStatus, { label: string; color: string; 
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: ClockIcon },
   negotiating: { label: 'Negotiating', color: 'bg-blue-100 text-blue-800', icon: ArrowPathIcon },
   accepted: { label: 'Accepted', color: 'bg-blue-100 text-blue-800', icon: CheckCircleIcon },
-  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800', icon: XCircleIcon },
+  declined: { label: 'Declined', color: 'bg-red-100 text-red-800', icon: XCircleIcon },
   completed: { label: 'Completed', color: 'bg-green-100 text-green-800', icon: CheckCircleIcon },
   cancelled: { label: 'Cancelled', color: 'bg-gray-100 text-gray-800', icon: XCircleIcon },
 }
@@ -227,7 +227,7 @@ export function CollaborationCard({
                   className="min-w-[100px]"
                   onClick={(e) => {
                     e.stopPropagation()
-                    onStatusUpdate(collaboration.id, 'rejected')
+                    onStatusUpdate(collaboration.id, 'declined')
                   }}
                 >
                   Decline

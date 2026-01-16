@@ -3,7 +3,6 @@
  */
 
 export * from './profileStatus'
-export * from './statusMapping'
 
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'

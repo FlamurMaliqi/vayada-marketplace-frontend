@@ -762,7 +762,7 @@ function ChatPageContent() {
                         {/* Chats List */}
                         <div className="divide-y divide-gray-50">
                             {(() => {
-                                const archivedStatuses = ['completed', 'cancelled', 'declined', 'rejected']
+                                const archivedStatuses = ['completed', 'cancelled', 'declined']
                                 const filteredConversations = conversations.filter(chat => {
                                     const isArchived = archivedStatuses.includes(chat.collaboration_status.toLowerCase())
                                     return activeTab === 'Archived' ? isArchived : !isArchived
