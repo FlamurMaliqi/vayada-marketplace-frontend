@@ -53,16 +53,35 @@ export function debounce<T extends (...args: any[]) => any>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
-  
+
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
       timeout = null
       func(...args)
     }
-    
+
     if (timeout) clearTimeout(timeout)
     timeout = setTimeout(later, wait)
   }
+}
+
+/**
+ * Build query string from params object
+ * Filters out undefined/null values and converts numbers to strings
+ * @param params - Object with key-value pairs
+ * @returns Query string with '?' prefix if params exist, empty string otherwise
+ */
+export function buildQueryString(params: Record<string, string | number | boolean | undefined | null>): string {
+  const searchParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, String(value))
+    }
+  }
+
+  const query = searchParams.toString()
+  return query ? `?${query}` : ''
 }
 
 /**

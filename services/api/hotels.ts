@@ -4,7 +4,7 @@
 
 import { apiClient } from './client'
 import type { Hotel, PaginatedResponse, HotelProfile, HotelListing, CollaborationOffering, CreatorRequirements, HotelProfileStatus } from '@/lib/types'
-import { transformHotelListingToHotel, transformListingMarketplaceResponse } from '@/lib/utils'
+import { transformHotelListingToHotel, transformListingMarketplaceResponse, buildQueryString } from '@/lib/utils'
 
 // Backend API response type for marketplace endpoint (snake_case)
 interface ListingMarketplaceResponse {
@@ -99,13 +99,12 @@ export const hotelService = {
    * Get all hotel listings (public marketplace endpoint - returns direct array)
    */
   getAll: async (params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Hotel>> => {
-    const queryParams = new URLSearchParams()
-    if (params?.page) queryParams.append('page', params.page.toString())
-    if (params?.limit) queryParams.append('limit', params.limit.toString())
-
-    const query = queryParams.toString()
+    const query = buildQueryString({
+      page: params?.page,
+      limit: params?.limit,
+    })
     // Backend returns direct array, not paginated response
-    const response = await apiClient.get<ListingMarketplaceResponse[]>(`/marketplace/listings${query ? `?${query}` : ''}`)
+    const response = await apiClient.get<ListingMarketplaceResponse[]>(`/marketplace/listings${query}`)
 
     // Transform API response to frontend format
     const hotels = response.map(transformListingMarketplaceResponse)

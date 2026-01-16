@@ -5,6 +5,7 @@
 import { apiClient } from './client'
 import type { Collaboration, PaginatedResponse } from '@/lib/types'
 import type { Hotel, Creator } from '@/lib/types'
+import { buildQueryString } from '@/lib/utils'
 
 // Platform deliverable types
 export interface PlatformDeliverable {
@@ -241,12 +242,11 @@ export const collaborationService = {
     status?: string
     initiated_by?: string
   }): Promise<CollaborationResponse[]> => {
-    const queryParams = new URLSearchParams()
-    if (params?.status) queryParams.append('status', params.status)
-    if (params?.initiated_by) queryParams.append('initiated_by', params.initiated_by)
-
-    const query = queryParams.toString()
-    const response = await apiClient.get<CollaborationResponse[]>(`/creators/me/collaborations${query ? `?${query}` : ''}`)
+    const query = buildQueryString({
+      status: params?.status,
+      initiated_by: params?.initiated_by,
+    })
+    const response = await apiClient.get<CollaborationResponse[]>(`/creators/me/collaborations${query}`)
 
     return response
   },
@@ -259,13 +259,12 @@ export const collaborationService = {
     status?: string
     initiated_by?: string
   }): Promise<CollaborationResponse[]> => {
-    const queryParams = new URLSearchParams()
-    if (params?.listing_id) queryParams.append('listing_id', params.listing_id)
-    if (params?.status) queryParams.append('status', params.status)
-    if (params?.initiated_by) queryParams.append('initiated_by', params.initiated_by)
-
-    const query = queryParams.toString()
-    const response = await apiClient.get<CollaborationResponse[]>(`/hotels/me/collaborations${query ? `?${query}` : ''}`)
+    const query = buildQueryString({
+      listing_id: params?.listing_id,
+      status: params?.status,
+      initiated_by: params?.initiated_by,
+    })
+    const response = await apiClient.get<CollaborationResponse[]>(`/hotels/me/collaborations${query}`)
 
     return response
   },
@@ -293,15 +292,14 @@ export const collaborationService = {
     hotelId?: string
     creatorId?: string
   }): Promise<PaginatedResponse<Collaboration>> => {
-    const queryParams = new URLSearchParams()
-    if (params?.page) queryParams.append('page', params.page.toString())
-    if (params?.limit) queryParams.append('limit', params.limit.toString())
-    if (params?.status) queryParams.append('status', params.status)
-    if (params?.hotelId) queryParams.append('hotelId', params.hotelId)
-    if (params?.creatorId) queryParams.append('creatorId', params.creatorId)
-
-    const query = queryParams.toString()
-    return apiClient.get<PaginatedResponse<Collaboration>>(`/collaborations${query ? `?${query}` : ''}`)
+    const query = buildQueryString({
+      page: params?.page,
+      limit: params?.limit,
+      status: params?.status,
+      hotelId: params?.hotelId,
+      creatorId: params?.creatorId,
+    })
+    return apiClient.get<PaginatedResponse<Collaboration>>(`/collaborations${query}`)
   },
 
   /**
@@ -350,10 +348,8 @@ export const collaborationService = {
    * Get messages for a collaboration
    */
   getMessages: async (collaborationId: string, before?: string): Promise<MessageResponse[]> => {
-    const queryParams = new URLSearchParams()
-    if (before) queryParams.append('before', before)
-    const query = queryParams.toString()
-    return apiClient.get<MessageResponse[]>(`/collaborations/${collaborationId}/messages${query ? `?${query}` : ''}`)
+    const query = buildQueryString({ before })
+    return apiClient.get<MessageResponse[]>(`/collaborations/${collaborationId}/messages${query}`)
   },
 
   /**
