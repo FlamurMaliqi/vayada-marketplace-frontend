@@ -6,7 +6,7 @@ import { AuthenticatedNavigation, ProfileWarningBanner } from '@/components/layo
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
 import { CollaborationCard, CollaborationRejectedModal, CollaborationRequestDetailModal } from '@/components/marketplace'
 import { Button, Input } from '@/components/ui'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES, STORAGE_KEYS } from '@/lib/constants'
 import type { Collaboration, CollaborationStatus, Hotel, Creator, UserType } from '@/lib/types'
 import { collaborationService, transformCollaborationResponse } from '@/services/api/collaborations'
 import { ApiErrorResponse } from '@/services/api/client'
@@ -46,7 +46,7 @@ function CollaborationsPageContent() {
   // Update userType from localStorage after hydration (client-only)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedUserType = localStorage.getItem('userType') as UserType | null
+      const storedUserType = localStorage.getItem(STORAGE_KEYS.USER_TYPE) as UserType | null
       const urlType = searchParams.get('type') as UserType | null
 
       // Priority: URL param > localStorage > default
@@ -56,7 +56,7 @@ function CollaborationsPageContent() {
         setUserType(storedUserType)
       }
 
-      const userId = localStorage.getItem('userId')
+      const userId = localStorage.getItem(STORAGE_KEYS.USER_ID)
       setCurrentUserId(userId)
     }
   }, [searchParams])

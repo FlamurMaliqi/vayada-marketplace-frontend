@@ -31,6 +31,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { CollaborationRequestDetailModal } from '@/components/marketplace/CollaborationRequestDetailModal'
 import type { Collaboration, Hotel, Creator } from '@/lib/types'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 // Helper for formatting numbers (e.g. 125000 -> 125.0K)
 const formatNumber = (num: number | undefined) => {
@@ -202,7 +203,7 @@ function ChatPageContent() {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const storedUserType = localStorage.getItem('userType') || 'hotel' // Default to hotel if nothing stored, but after mount
+            const storedUserType = localStorage.getItem(STORAGE_KEYS.USER_TYPE) || 'hotel' // Default to hotel if nothing stored, but after mount
             setUserType(storedUserType)
         }
     }, [])

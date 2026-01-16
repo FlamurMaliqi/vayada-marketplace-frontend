@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { AuthenticatedNavigation, ProfileWarningBanner } from '@/components/layout'
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
 import { ROUTES } from '@/lib/constants/routes'
-import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES } from '@/lib/constants'
+import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES, STORAGE_KEYS } from '@/lib/constants'
 import { Button, Input, Textarea, StarRating, ErrorModal } from '@/components/ui'
 import { MapPinIcon, CheckBadgeIcon, StarIcon, PencilIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { TrashIcon, ChevronDownIcon, ChevronUpIcon, ChevronLeftIcon, ChevronRightIcon, InformationCircleIcon, EnvelopeIcon, PhoneIcon, LinkIcon, UserIcon, BuildingOfficeIcon, BuildingOffice2Icon, GlobeAltIcon, GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, CheckCircleIcon, PhotoIcon } from '@heroicons/react/24/outline'
@@ -145,7 +145,7 @@ export default function ProfilePage() {
   // Initialize userType from localStorage if available, otherwise default to 'creator'
   const [userType, setUserType] = useState<UserType>(() => {
     if (typeof window !== 'undefined') {
-      const storedUserType = localStorage.getItem('userType') as UserType | null
+      const storedUserType = localStorage.getItem(STORAGE_KEYS.USER_TYPE) as UserType | null
       if (storedUserType && (storedUserType === 'creator' || storedUserType === 'hotel')) {
         return storedUserType
       }
@@ -269,7 +269,7 @@ export default function ProfilePage() {
 
   // Load user type from localStorage on mount
   useEffect(() => {
-    const storedUserType = localStorage.getItem('userType') as UserType | null
+    const storedUserType = localStorage.getItem(STORAGE_KEYS.USER_TYPE) as UserType | null
     if (storedUserType && (storedUserType === 'creator' || storedUserType === 'hotel')) {
       setUserType(storedUserType)
     }
@@ -1174,7 +1174,7 @@ export default function ProfilePage() {
         }
 
         // Include email if it changed
-        const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
+        const userEmail = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.USER_EMAIL) : null
         if (userEmail && userEmail !== hotelProfile.email) {
           formData.append('email', userEmail)
         }
@@ -1212,7 +1212,7 @@ export default function ProfilePage() {
         }
 
         // Include email if it changed (get from localStorage)
-        const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
+        const userEmail = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.USER_EMAIL) : null
         if (userEmail && userEmail !== hotelProfile.email) {
           payload.email = userEmail
         }
@@ -2095,7 +2095,7 @@ export default function ProfilePage() {
                             <Input
                               label="Email"
                               type="email"
-                              value={typeof window !== 'undefined' ? localStorage.getItem('userEmail') || email : email}
+                              value={typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.USER_EMAIL) || email : email}
                               disabled
                               required
                               leadingIcon={<EnvelopeIcon className="w-5 h-5 text-gray-400" />}

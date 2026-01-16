@@ -6,7 +6,7 @@ import type { UserType } from '@/lib/types'
 import Link from 'next/link'
 import { AuthenticatedNavigation, Footer } from '@/components/layout'
 import { Button, Input, Textarea } from '@/components/ui'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES, STORAGE_KEYS } from '@/lib/constants'
 import type { Hotel } from '@/lib/types'
 import { hotelService } from '@/services/api/hotels'
 import { ApiErrorResponse } from '@/services/api/client'
@@ -40,7 +40,7 @@ export default function HotelDetailPage() {
   useEffect(() => {
     // Get user type from localStorage
     const storedUserType = typeof window !== 'undefined'
-      ? (localStorage.getItem('userType') as UserType) || 'creator'
+      ? (localStorage.getItem(STORAGE_KEYS.USER_TYPE) as UserType) || 'creator'
       : 'creator'
     setUserType(storedUserType)
   }, [])

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Button, Input, Textarea } from '@/components/ui'
 import { ROUTES } from '@/lib/constants/routes'
-import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES } from '@/lib/constants'
+import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES, STORAGE_KEYS } from '@/lib/constants'
 import { checkProfileStatus, isProfileComplete } from '@/lib/utils'
 import type { UserType, CreatorProfileStatus, HotelProfileStatus } from '@/lib/types'
 import { creatorService } from '@/services/api/creators'
@@ -222,11 +222,11 @@ export default function ProfileCompletePage() {
   useEffect(() => {
     // Get user type from localStorage
     if (typeof window !== 'undefined') {
-      const storedUserType = localStorage.getItem('userType') as UserType | null
+      const storedUserType = localStorage.getItem(STORAGE_KEYS.USER_TYPE) as UserType | null
       setUserType(storedUserType)
 
       // Pre-fill forms with user data
-      const userName = localStorage.getItem('userName') || ''
+      const userName = localStorage.getItem(STORAGE_KEYS.USER_NAME) || ''
 
       if (storedUserType === 'hotel') {
         setHotelForm(prev => ({
@@ -974,7 +974,7 @@ export default function ProfileCompletePage() {
         setProfileCompleted(true)
         // Update localStorage so warning banner disappears
         if (typeof window !== 'undefined') {
-          localStorage.setItem('profileComplete', 'true')
+          localStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETE, 'true')
         }
         await loadProfileStatus('creator', true) // Skip redirect, show completion message
       } else {
@@ -1027,7 +1027,7 @@ export default function ProfileCompletePage() {
     setSubmitting(true)
     try {
       // Get email from localStorage (stored during login) - backend requires it
-      const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null
+      const userEmail = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.USER_EMAIL) : null
 
       if (!userEmail) {
         setError('Email is required. Please log in again.')
@@ -1199,7 +1199,7 @@ export default function ProfileCompletePage() {
         setProfileCompleted(true)
         // Update localStorage so warning banner disappears
         if (typeof window !== 'undefined') {
-          localStorage.setItem('profileComplete', 'true')
+          localStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETE, 'true')
         }
         await loadProfileStatus('hotel', true) // Skip redirect, show completion message
       } else {
@@ -1620,7 +1620,7 @@ export default function ProfileCompletePage() {
                     <Input
                       label="Email"
                       type="email"
-                      value={typeof window !== 'undefined' ? localStorage.getItem('userEmail') || '' : ''}
+                      value={typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.USER_EMAIL) || '' : ''}
                       disabled
                       required
                       leadingIcon={<EnvelopeIcon className="w-5 h-5 text-gray-400" />}

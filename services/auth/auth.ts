@@ -4,6 +4,7 @@
 
 import { apiClient, ApiErrorResponse } from '../api/client'
 import type { RegisterRequest, RegisterResponse, LoginRequest, LoginResponse } from '@/lib/types'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 const TOKEN_KEY = 'access_token'
 const EXPIRES_AT_KEY = 'token_expires_at'
@@ -24,16 +25,16 @@ function storeToken(token: string, expiresIn: number): void {
  */
 function storeUserData(data: { id: string; email: string; name: string; type: string; status: string }): void {
   if (typeof window === 'undefined') return
-  
-  localStorage.setItem('isLoggedIn', 'true')
-  localStorage.setItem('userId', data.id)
-  localStorage.setItem('userEmail', data.email)
-  localStorage.setItem('userName', data.name)
-  localStorage.setItem('userType', data.type)
-  localStorage.setItem('userStatus', data.status)
-  
+
+  localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'true')
+  localStorage.setItem(STORAGE_KEYS.USER_ID, data.id)
+  localStorage.setItem(STORAGE_KEYS.USER_EMAIL, data.email)
+  localStorage.setItem(STORAGE_KEYS.USER_NAME, data.name)
+  localStorage.setItem(STORAGE_KEYS.USER_TYPE, data.type)
+  localStorage.setItem(STORAGE_KEYS.USER_STATUS, data.status)
+
   // Store full user object for easy access
-  localStorage.setItem('user', JSON.stringify({
+  localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify({
     id: data.id,
     email: data.email,
     name: data.name,
@@ -47,18 +48,18 @@ function storeUserData(data: { id: string; email: string; name: string; type: st
  */
 function clearAuthData(): void {
   if (typeof window === 'undefined') return
-  
+
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(EXPIRES_AT_KEY)
-  localStorage.removeItem('userId')
-  localStorage.removeItem('userEmail')
-  localStorage.removeItem('userName')
-  localStorage.removeItem('userType')
-  localStorage.removeItem('userStatus')
-  localStorage.removeItem('user')
-  localStorage.setItem('isLoggedIn', 'false')
-  localStorage.setItem('profileComplete', 'false')
-  localStorage.setItem('hasProfile', 'false')
+  localStorage.removeItem(STORAGE_KEYS.USER_ID)
+  localStorage.removeItem(STORAGE_KEYS.USER_EMAIL)
+  localStorage.removeItem(STORAGE_KEYS.USER_NAME)
+  localStorage.removeItem(STORAGE_KEYS.USER_TYPE)
+  localStorage.removeItem(STORAGE_KEYS.USER_STATUS)
+  localStorage.removeItem(STORAGE_KEYS.USER)
+  localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'false')
+  localStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETE, 'false')
+  localStorage.setItem(STORAGE_KEYS.HAS_PROFILE, 'false')
 }
 
 /**

@@ -7,6 +7,7 @@ import { YearlyCalendar } from '@/components/calendar/YearlyCalendar'
 import { collaborationService, transformCollaborationResponse, type CollaborationResponse } from '@/services/api/collaborations'
 import { CollaborationRequestDetailModal } from '@/components/marketplace/CollaborationRequestDetailModal'
 import type { Collaboration, Hotel, Creator } from '@/lib/types'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 function CalendarPageContent() {
     const { isCollapsed } = useSidebar()
@@ -16,7 +17,7 @@ function CalendarPageContent() {
     const [userType, setUserType] = useState<'hotel' | 'creator'>('hotel')
 
     useEffect(() => {
-        const storedUserType = localStorage.getItem('userType') as 'hotel' | 'creator'
+        const storedUserType = localStorage.getItem(STORAGE_KEYS.USER_TYPE) as 'hotel' | 'creator'
         if (storedUserType) {
             setUserType(storedUserType)
         }

@@ -8,7 +8,7 @@ import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters'
 import { HotelCard } from '@/components/marketplace/HotelCard'
 import { CreatorCard } from '@/components/marketplace/CreatorCard'
 import { Button } from '@/components/ui'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES, STORAGE_KEYS } from '@/lib/constants'
 import type { Hotel, Creator, UserType } from '@/lib/types'
 import { hotelService } from '@/services/api/hotels'
 import { creatorService } from '@/services/api/creators'
@@ -36,7 +36,7 @@ export default function MarketplacePage() {
   // Get userType from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedUserType = localStorage.getItem('userType') as UserType | null
+      const storedUserType = localStorage.getItem(STORAGE_KEYS.USER_TYPE) as UserType | null
       setUserType(storedUserType)
     }
   }, [])

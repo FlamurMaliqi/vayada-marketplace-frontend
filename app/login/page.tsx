@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES, STORAGE_KEYS } from '@/lib/constants'
 import { Button, Input } from '@/components/ui'
 import { authService } from '@/services/auth'
 import { ApiErrorResponse } from '@/services/api/client'
@@ -80,10 +80,10 @@ export default function LoginPage() {
           const profileStatus = await checkProfileStatus(userType)
           if (profileStatus && profileStatus.profile_complete) {
             // Profile is complete, update localStorage so warning banner doesn't show
-            localStorage.setItem('profileComplete', 'true')
+            localStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETE, 'true')
           } else if (profileStatus && !profileStatus.profile_complete) {
             // Profile is incomplete, set to false and redirect to profile completion page
-            localStorage.setItem('profileComplete', 'false')
+            localStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETE, 'false')
             router.push(ROUTES.PROFILE_COMPLETE)
             return
           }

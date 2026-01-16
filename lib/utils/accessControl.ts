@@ -3,6 +3,7 @@
  */
 
 import type { UserType } from '@/lib/types'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 /**
  * List of allowed emails for testing purposes (e.g., cofounder)
@@ -25,8 +26,8 @@ const ALLOWED_TEST_EMAILS: string[] = [
 export function hasRestrictedFeatureAccess(): boolean {
   if (typeof window === 'undefined') return false
 
-  const userType = localStorage.getItem('userType') as UserType | null
-  const userEmail = localStorage.getItem('userEmail')
+  const userType = localStorage.getItem(STORAGE_KEYS.USER_TYPE) as UserType | null
+  const userEmail = localStorage.getItem(STORAGE_KEYS.USER_EMAIL)
 
   // Admin users always have access
   if (userType === 'admin') {
@@ -61,9 +62,9 @@ export function getCurrentUserInfo(): {
   }
 
   return {
-    userType: localStorage.getItem('userType') as UserType | null,
-    userEmail: localStorage.getItem('userEmail'),
-    userId: localStorage.getItem('userId'),
+    userType: localStorage.getItem(STORAGE_KEYS.USER_TYPE) as UserType | null,
+    userEmail: localStorage.getItem(STORAGE_KEYS.USER_EMAIL),
+    userId: localStorage.getItem(STORAGE_KEYS.USER_ID),
   }
 }
 

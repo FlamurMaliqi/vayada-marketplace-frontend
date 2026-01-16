@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES, STORAGE_KEYS } from '@/lib/constants'
 import { authService } from '@/services/auth'
 import {
   ArrowRightOnRectangleIcon,
@@ -107,7 +107,7 @@ export default function AuthenticatedNavigation() {
 
   // Load collapsed state from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('sidebarCollapsed')
+    const saved = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED)
     if (saved !== null) {
       setIsCollapsed(JSON.parse(saved))
     } else {
@@ -118,7 +118,7 @@ export default function AuthenticatedNavigation() {
 
   // Save collapsed state to localStorage
   useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(isCollapsed))
+    localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, JSON.stringify(isCollapsed))
   }, [isCollapsed])
 
   const toggleSidebar = () => {

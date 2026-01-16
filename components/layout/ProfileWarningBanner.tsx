@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { STORAGE_KEYS } from '@/lib/constants'
 
 export function ProfileWarningBanner() {
   const [isVisible, setIsVisible] = useState(false)
@@ -9,8 +10,8 @@ export function ProfileWarningBanner() {
 
   useEffect(() => {
     // Check if profile is complete
-    const profileComplete = typeof window !== 'undefined' 
-      ? localStorage.getItem('profileComplete') === 'true'
+    const profileComplete = typeof window !== 'undefined'
+      ? localStorage.getItem(STORAGE_KEYS.PROFILE_COMPLETE) === 'true'
       : false
     
     // Check if banner was dismissed for this session
