@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { collaborationService, PlatformDeliverablesItem, PlatformDeliverable, transformCollaborationResponse, DetailedCollaboration } from '@/services/api/collaborations'
+import { collaborationService, PlatformDeliverablesItem, PlatformDeliverable, transformCollaborationResponse, DetailedCollaboration, CollaborationResponse, MessageResponse, UpdateCollaborationTermsRequest, ConversationResponse } from '@/services/api/collaborations'
 import { AuthenticatedNavigation } from '@/components/layout'
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
 import SuggestChangesModal from './SuggestChangesModal'
@@ -66,7 +66,29 @@ const getInitials = (name: string) => {
 }
 
 // Types
+interface PlatformInfo {
+    name: string
+    platform?: string
+}
 
+interface PendingRequest {
+    id: string
+    name: string
+    time: string
+    followers: string
+    followersPlatform: string
+    engagement: string
+    engagementPlatform: string
+    platforms: PlatformInfo[]
+    location: string
+    collaborationType: string
+    offerDetails: string
+    avatarColor: string
+    avatarUrl: string | null | undefined
+    initials: string
+    isReceived: boolean
+    status: string
+}
 
 const SystemMessage = ({ content }: { content: string }) => {
     const isNegotiation = content.toLowerCase().includes('counter-offer') || content.toLowerCase().includes('suggested')
@@ -172,12 +194,12 @@ function ChatPageContent() {
 
     // State for pending applications and conversations
     const [userType, setUserType] = useState<string | null>(null)
-    const [pendingRequests, setPendingRequests] = useState<any[]>([])
+    const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([])
     const [applicationsTab, setApplicationsTab] = useState<'received' | 'sent'>('received')
-    const [conversations, setConversations] = useState<any[]>([])
+    const [conversations, setConversations] = useState<ConversationResponse[]>([])
     const [isLoadingConversations, setIsLoadingConversations] = useState(true)
 
-    const [realMessages, setRealMessages] = useState<any[]>([])
+    const [realMessages, setRealMessages] = useState<MessageResponse[]>([])
     const [isLoadingMessages, setIsLoadingMessages] = useState(false)
     const [isLoadingMore, setIsLoadingMore] = useState(false)
     const [hasMoreMessages, setHasMoreMessages] = useState(true)
@@ -480,7 +502,7 @@ function ChatPageContent() {
         }
     }
 
-    const handleSuggestChanges = async (data: any) => {
+    const handleSuggestChanges = async (data: UpdateCollaborationTermsRequest) => {
         if (!selectedChatId) return
 
         try {
@@ -556,7 +578,7 @@ function ChatPageContent() {
                 sender_name: 'Me',
                 sender_avatar: null,
                 content: content,
-                content_type: 'text',
+                content_type: 'text' as const,
                 metadata: null,
                 created_at: new Date().toISOString()
             }
@@ -680,7 +702,7 @@ function ChatPageContent() {
                                                                 <span>{request.followers}</span><span>•</span><span>{request.engagement}</span>
                                                                 <div className="flex items-center gap-1">
                                                                     {request.platforms && request.platforms.length > 0 ? (
-                                                                        request.platforms.map((p: any) => (
+                                                                        request.platforms.map((p: PlatformInfo) => (
                                                                             <PlatformIcon
                                                                                 key={p.name}
                                                                                 platform={(p.name || p.platform || '').toLowerCase()}
@@ -1143,7 +1165,7 @@ function ChatPageContent() {
                                                     <select
                                                         className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                                         value={localCollaboration?.collaborationType || ''}
-                                                        onChange={(e) => setLocalCollaboration(prev => prev ? { ...prev, collaborationType: e.target.value as any } : null)}
+                                                        onChange={(e) => setLocalCollaboration(prev => prev ? { ...prev, collaborationType: e.target.value as 'Free Stay' | 'Paid' | 'Discount' } : null)}
                                                     >
                                                         <option value="Free Stay">Free Stay</option>
                                                         <option value="Paid">Paid</option>

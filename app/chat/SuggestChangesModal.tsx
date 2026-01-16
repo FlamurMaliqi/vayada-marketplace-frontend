@@ -35,7 +35,7 @@ interface SuggestChangesModalProps {
     onSubmit: (data: {
         travel_date_from: string,
         travel_date_to: string,
-        platform_deliverables: any[],
+        platform_deliverables: PlatformDeliverables[],
         collaboration_type?: string,
         free_stay_max_nights?: number | null,
         paid_amount?: number | null,
@@ -70,16 +70,20 @@ export default function SuggestChangesModal({
 
     if (!isOpen) return null
 
-    const handlePlatformChange = (index: number, platform: any) => {
+    const handlePlatformChange = (index: number, platform: PlatformDeliverables['platform']) => {
         const next = [...platformDeliverables]
         next[index].platform = platform
         setPlatformDeliverables(next)
     }
 
-    const handleDeliverableChange = (pIndex: number, dIndex: number, field: keyof Deliverable, value: any) => {
+    const handleDeliverableChange = (pIndex: number, dIndex: number, field: keyof Deliverable, value: string | number) => {
         const next = [...platformDeliverables]
-        const deliverable = next[pIndex].deliverables[dIndex] as any
-        deliverable[field] = value
+        const deliverable = next[pIndex].deliverables[dIndex]
+        if (field === 'type') {
+            deliverable.type = value as string
+        } else if (field === 'quantity') {
+            deliverable.quantity = value as number
+        }
         setPlatformDeliverables(next)
     }
 
@@ -173,7 +177,7 @@ export default function SuggestChangesModal({
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Offer Type</label>
                                 <select
                                     value={collaborationType}
-                                    onChange={(e) => setCollaborationType(e.target.value as any)}
+                                    onChange={(e) => setCollaborationType(e.target.value as 'Free Stay' | 'Paid' | 'Discount')}
                                     className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
                                 >
                                     <option value="Free Stay">Free Stay</option>
