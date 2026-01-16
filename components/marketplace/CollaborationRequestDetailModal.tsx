@@ -99,6 +99,8 @@ export function CollaborationRequestDetailModal({
   onApprove,
   onRequestCancel,
 }: CollaborationRequestDetailModalProps) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
   if (!isOpen || !collaboration) return null
 
   const getTotalFollowers = () => {
@@ -150,8 +152,6 @@ export function CollaborationRequestDetailModal({
   const portfolioLink = currentUserType === 'hotel'
     ? collaboration.creator?.portfolioLink
     : undefined
-
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const listingImages = collaboration.listingImages || []
   const hasListingImages = listingImages.length > 0

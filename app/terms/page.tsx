@@ -17,7 +17,7 @@ export default function TermsPage() {
 
           <div className="prose prose-lg max-w-none space-y-8 text-gray-700">
             <p className="text-lg leading-relaxed">
-              These Terms of Service ("Terms") constitute a legally binding agreement between vayada UG (haftungsbeschränkt) ("vayada," "we," "us," or "our") and any user ("User," "you," or "your") accessing or using the vayada marketplace platform and Services.
+              These Terms of Service (&quot;Terms&quot;) constitute a legally binding agreement between vayada UG (haftungsbeschränkt) (&quot;vayada,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) and any user (&quot;User,&quot; &quot;you,&quot; or &quot;your&quot;) accessing or using the vayada marketplace platform and Services.
             </p>
             <p className="text-lg leading-relaxed">
               By registering for an account, accessing, or using the Services, you acknowledge that you have read, understood, and agree to be bound by these Terms.
@@ -64,7 +64,7 @@ export default function TermsPage() {
                     <strong>Accurate Information:</strong> Users must provide accurate, complete, and current information during registration, including all required verification data.
                   </p>
                   <p>
-                    <strong>Verification:</strong> All Users are subject to a mandatory verification process ("Verified Community"). vayada reserves the right to deny registration or suspend an account if the verification process is incomplete or if information is found to be false or misleading.
+                    <strong>Verification:</strong> All Users are subject to a mandatory verification process (&quot;Verified Community&quot;). vayada reserves the right to deny registration or suspend an account if the verification process is incomplete or if information is found to be false or misleading.
                   </p>
                   <p>
                     <strong>Security:</strong> You are responsible for maintaining the confidentiality of your account login information and for all activities that occur under your account.
@@ -77,7 +77,7 @@ export default function TermsPage() {
               <h2 className="text-2xl font-bold text-primary-800 mb-4">3. Platform Services and Roles</h2>
               
               <div className="mt-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">3.1 vayada's Role</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">3.1 vayada&apos;s Role</h3>
                 <p>
                   vayada operates solely as a transparent marketplace and connection tool. We facilitate the direct meeting and communication between Hotel Users and Creator Users. vayada is not an agency, employer, or contract party to the Collaboration agreement between the Hotel and the Creator.
                 </p>
@@ -156,7 +156,7 @@ export default function TermsPage() {
               <div className="mt-6">
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">7.1 No Warranty</h3>
                 <p>
-                  The Services are provided on an "as is" and "as available" basis. vayada makes no warranties, expressed or implied, regarding the success, quality, or legality of any Collaboration facilitated through the Platform.
+                  The Services are provided on an &quot;as is&quot; and &quot;as available&quot; basis. vayada makes no warranties, expressed or implied, regarding the success, quality, or legality of any Collaboration facilitated through the Platform.
                 </p>
               </div>
 

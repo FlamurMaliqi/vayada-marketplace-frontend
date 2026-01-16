@@ -49,7 +49,7 @@ export function FeatureUnavailableModal({
 
           {/* Description */}
           <p className="text-gray-600 mb-6">
-            We're working hard to bring you this feature. Please check back soon!
+            We&apos;re working hard to bring you this feature. Please check back soon!
           </p>
 
           {/* Button */}

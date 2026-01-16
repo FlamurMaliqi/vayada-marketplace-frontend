@@ -521,7 +521,7 @@ export function CollaborationApplicationModal({
             <div className="mt-6 p-6 border border-gray-300 bg-gray-50/30 rounded-2xl">
               <div className="mb-4">
                 <h4 className="text-lg font-bold text-gray-900">Custom Deliverables</h4>
-                <p className="text-sm text-gray-500">Add any other content you'd like to offer</p>
+                <p className="text-sm text-gray-500">Add any other content you&apos;d like to offer</p>
               </div>
 
               <div className="flex gap-2 mb-4">
