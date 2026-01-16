@@ -233,8 +233,6 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
         message: data.message || undefined,
       }
 
-      console.log('Submitting Collaboration Request:', JSON.stringify(request, null, 2))
-
       await collaborationService.create(request)
       setShowInvitationModal(false)
       setShowSuccessModal(true)

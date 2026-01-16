@@ -411,8 +411,6 @@ export default function ProfilePage() {
       result.creator_requirements.target_age_max = listingData.targetGroupAgeMax ?? null
     }
 
-    console.log('Listing transform - Input:', listingData.targetGroupAgeGroups)
-    console.log('Listing transform - Output Reqs:', result.creator_requirements)
     return result
   }
 
@@ -575,11 +573,7 @@ export default function ProfilePage() {
           targetGroupCountries: creatorReqs.target_countries || [],
           targetGroupAgeMin: (creatorReqs as any).target_age_min ?? (creatorReqs as any).targetAgeMin ?? undefined,
           targetGroupAgeMax: (creatorReqs as any).target_age_max ?? (creatorReqs as any).targetAgeMax ?? undefined,
-          targetGroupAgeGroups: (() => {
-            const groups = (creatorReqs as any).target_age_groups ?? (creatorReqs as any).targetAgeGroups ?? []
-            console.log('Hotel Profile Transform - Direct Age Groups from API:', groups)
-            return groups
-          })(),
+          targetGroupAgeGroups: (creatorReqs as any).target_age_groups ?? (creatorReqs as any).targetAgeGroups ?? [],
           status:
             apiListing.status === 'verified' || apiListing.status === 'pending' || apiListing.status === 'rejected'
               ? apiListing.status
@@ -677,11 +671,6 @@ export default function ProfilePage() {
       if (userType === 'creator') {
         try {
           const apiProfile = await creatorService.getMyProfile()
-          // Debug: inspect how backend returns country percentages per platform
-          console.log('Creator profile (backend response)', apiProfile?.platforms?.map?.((p: any) => ({
-            name: p?.name,
-            topCountries: p?.topCountries || p?.top_countries,
-          })))
           const profile = transformCreatorProfile(apiProfile)
           setCreatorProfile(profile)
         } catch (error) {
@@ -697,20 +686,7 @@ export default function ProfilePage() {
       } else if (userType === 'hotel') {
         try {
           const apiProfile = await hotelService.getMyProfile()
-
-          console.log('Hotel Profile API Data (Direct):', JSON.stringify({
-            name: apiProfile.name,
-            listingsCount: apiProfile.listings?.length,
-            firstListingReqs: apiProfile.listings?.[0]?.creator_requirements || (apiProfile.listings?.[0] as any)?.creatorRequirements
-          }, null, 2))
-
           const profile = transformHotelProfile(apiProfile as any)
-
-          console.log('Transformed Hotel Profile (Full):', JSON.stringify({
-            name: profile.name,
-            firstListingAgeGroups: profile.listings?.[0]?.targetGroupAgeGroups
-          }, null, 2))
-
           setHotelProfile(profile)
         } catch (error) {
           // Check if it's a 405 (Method Not Allowed) - endpoint not implemented yet
@@ -1039,12 +1015,6 @@ export default function ProfilePage() {
           profilePicture: profilePictureUrl,
         }),
       }
-
-      // Debug: inspect payload we send (check country percentages)
-      console.log('Creator update payload (profile page):', updatePayload.platforms?.map((p: any) => ({
-        name: p?.name,
-        topCountries: p?.topCountries,
-      })))
 
       // Update creator profile (replaces all platforms)
       const updatedProfile = await creatorService.updateMyProfile(updatePayload as any)

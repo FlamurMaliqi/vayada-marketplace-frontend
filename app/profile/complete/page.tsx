@@ -955,12 +955,6 @@ export default function ProfileCompletePage() {
         }),
       }
 
-      // Debug: inspect payload being sent (focus on country percentages)
-      console.log('Creator update payload (complete page):', updatePayload.platforms?.map((p) => ({
-        name: p?.name,
-        topCountries: p?.topCountries,
-      })))
-
       const updatedProfile = await creatorService.updateMyProfile(updatePayload as any)
 
       // Update profile picture immediately from response if available
@@ -1043,19 +1037,10 @@ export default function ProfileCompletePage() {
 
       // Upload profile picture first if there's a file (recommended flow)
       let profilePictureUrl: string | undefined = undefined
-      console.log('Checking for hotel profile picture file:', hotelProfilePictureFile)
       if (hotelProfilePictureFile) {
         try {
-          console.log('Uploading hotel profile picture...', {
-            fileName: hotelProfilePictureFile.name,
-            fileSize: hotelProfilePictureFile.size,
-            fileType: hotelProfilePictureFile.type
-          })
           const uploadResponse = await hotelService.uploadProfileImage(hotelProfilePictureFile)
-          console.log('Full upload response:', uploadResponse)
           profilePictureUrl = uploadResponse.url
-          console.log('Profile picture uploaded successfully, URL:', profilePictureUrl)
-          console.log('Extracted URL type:', typeof profilePictureUrl, 'Value:', profilePictureUrl)
         } catch (error) {
           console.error('Failed to upload profile picture:', error)
           if (error instanceof ApiErrorResponse) {
@@ -1066,8 +1051,6 @@ export default function ProfileCompletePage() {
           setSubmitting(false)
           return
         }
-      } else {
-        console.log('No hotel profile picture file to upload')
       }
 
       // Update hotel profile
@@ -1082,21 +1065,7 @@ export default function ProfileCompletePage() {
         ...(profilePictureUrl && { picture: profilePictureUrl }),
       }
 
-      console.log('Sending hotel profile update to backend:', updatePayload)
-      console.log('Profile picture URL to include:', profilePictureUrl)
-      console.log('Update payload includes picture:', 'picture' in updatePayload)
-      console.log('Raw form values before trimming:', {
-        name: hotelForm.name,
-        location: hotelForm.location,
-        about: hotelForm.about,
-        website: hotelForm.website,
-        phone: hotelForm.phone,
-        picture: hotelForm.picture,
-      })
-
       const updatedProfile = await hotelService.updateMyProfile(updatePayload)
-      console.log('Backend response after update:', updatedProfile)
-      console.log('Picture field in response:', updatedProfile?.picture)
 
       // Update profile picture in form state if available
       if (updatedProfile && updatedProfile.picture) {
@@ -1157,11 +1126,9 @@ export default function ProfileCompletePage() {
         // Upload new image files if any
         if (listing.imageFiles && listing.imageFiles.length > 0) {
           try {
-            console.log(`Uploading ${listing.imageFiles.length} image(s) for listing "${listing.name}"...`)
             const uploadResponse = await hotelService.uploadListingImages(listing.imageFiles)
             const uploadedUrls = uploadResponse.images.map((img) => img.url)
             imageUrls = [...imageUrls, ...uploadedUrls]
-            console.log(`Successfully uploaded ${uploadedUrls.length} image(s), total URLs: ${imageUrls.length}`)
           } catch (error) {
             console.error('Failed to upload listing images:', error)
             if (error instanceof ApiErrorResponse) {
@@ -1227,7 +1194,6 @@ export default function ProfileCompletePage() {
 
       // Check if profile is now complete after successful update
       const isComplete = await isProfileComplete('hotel')
-      console.log('Profile complete check result:', isComplete)
 
       if (isComplete) {
         setProfileCompleted(true)
@@ -1239,17 +1205,12 @@ export default function ProfileCompletePage() {
       } else {
         // Reload status to show updated completion steps
         const updatedStatus = await loadProfileStatus('hotel', true)
-        console.log('Profile status after update:', updatedStatus)
 
         if (updatedStatus && !updatedStatus.profile_complete) {
           // Generate specific error message based on missing fields and completion steps
           const hotelStatus = updatedStatus as HotelProfileStatus
           const missingFields = hotelStatus.missing_fields || []
           const completionSteps = hotelStatus.completion_steps || []
-
-          console.log('Missing fields:', missingFields)
-          console.log('Completion steps:', completionSteps)
-          console.log('Has defaults:', (hotelStatus as any).has_defaults)
 
           let errorMessage = 'Profile updated successfully, but some required information is still missing:\n\n'
 

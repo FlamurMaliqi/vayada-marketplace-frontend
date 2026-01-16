@@ -248,9 +248,6 @@ export const collaborationService = {
     const query = queryParams.toString()
     const response = await apiClient.get<CollaborationResponse[]>(`/creators/me/collaborations${query ? `?${query}` : ''}`)
 
-    // Log the raw backend response
-    console.log('GET /creators/me/collaborations - Raw backend response:', JSON.stringify(response, null, 2))
-
     return response
   },
 
@@ -270,9 +267,6 @@ export const collaborationService = {
     const query = queryParams.toString()
     const response = await apiClient.get<CollaborationResponse[]>(`/hotels/me/collaborations${query ? `?${query}` : ''}`)
 
-    // Log the raw backend response
-    console.log('GET /hotels/me/collaborations - Raw backend response:', JSON.stringify(response, null, 2))
-
     return response
   },
 
@@ -286,11 +280,6 @@ export const collaborationService = {
    */
   getCreatorCollaborationDetails: async (id: string): Promise<CollaborationResponse> => {
     const response = await apiClient.get<CollaborationResponse>(`/creators/me/collaborations/${id}`)
-    console.log('GET /creators/me/collaborations/:id - Response:', {
-      hotelProfilePicture: response.hotelProfilePicture,
-      listingImages: response.listingImages,
-      listing_images: response.listing_images,
-    })
     return response
   },
 
@@ -528,15 +517,6 @@ export function transformCollaborationResponse(
       targetAgeMax: response.creator_requirements.target_age_max,
     } : undefined),
   } as DetailedCollaboration
-
-  console.log('transformCollaborationResponse - Images:', {
-    inputListingImages: response.listingImages,
-    inputListing_images: response.listing_images,
-    inputHotelProfilePicture: response.hotelProfilePicture,
-    inputHotel_picture: response.hotel_picture,
-    outputListingImages: result.listingImages,
-    outputHotelPicture: result.hotel?.picture,
-  })
 
   return result
 }

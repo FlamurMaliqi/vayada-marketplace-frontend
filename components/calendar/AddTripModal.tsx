@@ -48,7 +48,6 @@ export function AddTripModal({ isOpen, onClose }: AddTripModalProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        console.log('Trip data:', { ...formData, collaborations })
         onClose()
     }
 

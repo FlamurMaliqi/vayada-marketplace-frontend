@@ -39,10 +39,7 @@ export const creatorService = {
     // Backend returns direct array, not paginated response
     // No query parameters - endpoint automatically filters to verified creators with complete profiles
     const response = await apiClient.get<CreatorMarketplaceResponse[]>('/marketplace/creators')
-    
-    // Log the raw response from backend
-    console.log('GET /marketplace/creators - Raw backend response:', JSON.stringify(response, null, 2))
-    
+
     // Transform API response to frontend format
     const creators = response.map(transformCreatorMarketplaceResponse)
     

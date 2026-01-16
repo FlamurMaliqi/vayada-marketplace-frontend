@@ -25,7 +25,6 @@ export function AddCollaborationModal({ isOpen, onClose }: AddCollaborationModal
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         // API call will be implemented later
-        console.log('Form data:', formData)
         onClose()
     }
 

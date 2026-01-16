@@ -157,7 +157,6 @@ function CollaborationsPageContent() {
         )
       )
       // TODO: In production, submit rating to API
-      console.log('Rating submitted:', { id, rating, comment })
     }, 500)
   }
 

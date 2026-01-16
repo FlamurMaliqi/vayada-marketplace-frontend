@@ -107,9 +107,6 @@ export const hotelService = {
     // Backend returns direct array, not paginated response
     const response = await apiClient.get<ListingMarketplaceResponse[]>(`/marketplace/listings${query ? `?${query}` : ''}`)
 
-    // Log the raw response from backend
-    console.log('GET /marketplace/listings - Raw backend response:', JSON.stringify(response, null, 2))
-
     // Transform API response to frontend format
     const hotels = response.map(transformListingMarketplaceResponse)
 
