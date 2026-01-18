@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
       // Always shows success for security (don't reveal if email exists)
       await authService.forgotPassword(email)
       setIsSuccess(true)
-    } catch (err: any) {
+    } catch {
       // Even on error, show success message for security
       // This prevents email enumeration attacks
       setIsSuccess(true)

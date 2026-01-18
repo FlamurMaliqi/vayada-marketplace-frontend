@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Button, Input, Textarea } from '@/components/ui'
+import { Button, Input, Textarea, HotelBadgeIcon } from '@/components/ui'
 import { ROUTES } from '@/lib/constants/routes'
-import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES, STORAGE_KEYS } from '@/lib/constants'
+import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES, STORAGE_KEYS, HOTEL_TYPES, AGE_GROUP_OPTIONS } from '@/lib/constants'
 import { checkProfileStatus, isProfileComplete } from '@/lib/utils'
-import type { UserType, CreatorProfileStatus, HotelProfileStatus } from '@/lib/types'
+import type { UserType, CreatorProfileStatus, HotelProfileStatus, Creator } from '@/lib/types'
 import { creatorService } from '@/services/api/creators'
 import { hotelService } from '@/services/api/hotels'
 import { ApiErrorResponse } from '@/services/api/client'
@@ -39,17 +39,6 @@ import {
 
 import { countries } from 'countries-list'
 
-const HOTEL_CATEGORIES = [
-  'Hotel',
-  'Boutiques Hotel',
-  'City Hotel',
-  'Luxury Hotel',
-  'Apartment',
-  'Villa',
-  'Lodge',
-]
-
-const AGE_GROUP_OPTIONS = ['18-24', '25-34', '35-44', '45-54', '55+']
 const COUNTRIES = Object.values(countries).map(country => country.name).sort()
 
 interface PlatformFormData {
@@ -81,7 +70,7 @@ export default function ProfileCompletePage() {
     }
     if (Array.isArray(detail)) {
       // Pydantic validation errors: [{type, loc, msg, input, url}, ...]
-      return detail.map((err: any) => {
+      return detail.map((err: { loc?: (string | number)[]; msg?: string }) => {
         const field = Array.isArray(err.loc) ? err.loc.slice(1).join('.') : 'field'
         return `${field}: ${err.msg || 'Validation error'}`
       }).join('; ')
@@ -165,16 +154,6 @@ export default function ProfileCompletePage() {
   const [platformCountryInputs, setPlatformCountryInputs] = useState<Record<number, string>>({})
   const [platformSaveStatus, setPlatformSaveStatus] = useState<Record<number, string>>({})
   const [creatorProfilePictureFile, setCreatorProfilePictureFile] = useState<File | null>(null)
-  const HotelBadgeIcon = ({ active }: { active?: boolean }) => (
-    <div
-      className={`w-10 h-10 rounded-xl flex items-center justify-center border ${active
-        ? 'bg-[#2F54EB] text-white border-[#2F54EB]'
-        : 'bg-[#EEF2FF] text-[#2F54EB] border-[#E0E7FF]'
-        }`}
-    >
-      <BuildingOffice2Icon className="w-5 h-5" />
-    </div>
-  )
   const [expandedPlatforms, setExpandedPlatforms] = useState<Set<number>>(new Set())
   const [collapsedPlatformCards, setCollapsedPlatformCards] = useState<Set<number>>(new Set())
 
@@ -325,7 +304,7 @@ export default function ProfileCompletePage() {
     setExpandedPlatforms(newExpanded)
   }
 
-  const updatePlatform = (index: number, field: keyof PlatformFormData, value: any) => {
+  const updatePlatform = (index: number, field: keyof PlatformFormData, value: PlatformFormData[keyof PlatformFormData]) => {
     const updated = [...creatorPlatforms]
     updated[index] = { ...updated[index], [field]: value }
     setCreatorPlatforms(updated)
@@ -717,7 +696,7 @@ export default function ProfileCompletePage() {
     })
   }
 
-  const updateListing = (index: number, field: keyof ListingFormData, value: any) => {
+  const updateListing = (index: number, field: keyof ListingFormData, value: ListingFormData[keyof ListingFormData]) => {
     const updated = [...hotelListings]
     updated[index] = { ...updated[index], [field]: value }
     setHotelListings(updated)
@@ -955,17 +934,17 @@ export default function ProfileCompletePage() {
         }),
       }
 
-      const updatedProfile = await creatorService.updateMyProfile(updatePayload as any)
+      const updatedProfile = await creatorService.updateMyProfile(updatePayload)
 
       // Update profile picture immediately from response if available
-      if (updatedProfile && (updatedProfile.profilePicture || (updatedProfile as any).profile_picture)) {
-        const pictureUrl = updatedProfile.profilePicture || (updatedProfile as any).profile_picture
-        if (pictureUrl && pictureUrl.trim() !== '') {
-          setCreatorForm(prev => ({
-            ...prev,
-            profile_image: pictureUrl
-          }))
-        }
+      // API may return either camelCase (profilePicture) or snake_case (profile_picture)
+      const responseWithSnakeCase = updatedProfile as Creator & { profile_picture?: string | null }
+      const pictureUrl = updatedProfile.profilePicture || responseWithSnakeCase.profile_picture
+      if (pictureUrl && pictureUrl.trim() !== '') {
+        setCreatorForm(prev => ({
+          ...prev,
+          profile_image: pictureUrl
+        }))
       }
 
       // Check if profile is now complete after successful update
@@ -2292,7 +2271,7 @@ export default function ProfileCompletePage() {
                                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-gray-50 text-sm text-gray-900"
                                 >
                                   <option value="">Select type</option>
-                                  {HOTEL_CATEGORIES.map((cat) => (
+                                  {HOTEL_TYPES.map((cat) => (
                                     <option key={cat} value={cat}>
                                       {cat}
                                     </option>

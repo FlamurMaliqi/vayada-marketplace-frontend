@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { Collaboration, Hotel, Creator, CollaborationStatus, UserType } from '@/lib/types'
 import { Button } from '@/components/ui'
@@ -25,7 +25,7 @@ interface CollaborationCardProps {
   currentUserType?: UserType
 }
 
-const statusIcons: Record<CollaborationStatus, any> = {
+const statusIcons: Record<CollaborationStatus, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   pending: ClockIcon,
   negotiating: ArrowPathIcon,
   accepted: CheckCircleIcon,
@@ -137,9 +137,9 @@ export function CollaborationCard({
       <div className="flex items-start gap-4">
         {/* Profile Picture */}
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex-shrink-0 overflow-hidden relative">
-          {(currentUserType === 'hotel' ? collaboration.creator?.profilePicture : (collaboration.hotel as any)?.picture) && !imageError ? (
+          {(currentUserType === 'hotel' ? collaboration.creator?.profilePicture : collaboration.hotel?.picture) && !imageError ? (
             <Image
-              src={currentUserType === 'hotel' ? collaboration.creator?.profilePicture! : (collaboration.hotel as any)?.picture}
+              src={(currentUserType === 'hotel' ? collaboration.creator?.profilePicture : collaboration.hotel?.picture)!}
               alt={currentUserType === 'hotel' ? collaboration.creator?.name || '' : collaboration.hotel?.name || ''}
               fill
               className="object-cover"

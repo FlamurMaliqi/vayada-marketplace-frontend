@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ROUTES } from '@/lib/constants/routes'
+import { getErrorMessage } from '@/lib/utils'
 import { authService } from '@/services/auth'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
@@ -90,8 +91,8 @@ function ResetPasswordForm() {
       setTimeout(() => {
         router.push(ROUTES.LOGIN)
       }, 3000)
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again or request a new reset link.')
+    } catch (err) {
+      setError(getErrorMessage(err, 'Something went wrong. Please try again or request a new reset link.'))
     } finally {
       setIsSubmitting(false)
     }

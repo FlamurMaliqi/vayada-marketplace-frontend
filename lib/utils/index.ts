@@ -22,6 +22,55 @@ export function formatNumber(num: number): string {
 }
 
 /**
+ * Format budget/currency value
+ */
+export function formatBudget(value: number): string {
+  return `€${value.toLocaleString()}`
+}
+
+/**
+ * Format followers count (e.g., 1000 -> "1K", 1000000 -> "1M")
+ */
+export function formatFollowers(value: number): string {
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1)}M`
+  } else if (value >= 1000) {
+    return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}K`
+  }
+  return value.toString()
+}
+
+/**
+ * Format engagement rate as percentage
+ */
+export function formatEngagementRate(value: number): string {
+  return `${value.toFixed(1)}%`
+}
+
+/**
+ * Get initials from a name (e.g., "John Doe" -> "JD")
+ */
+export function getInitials(name: string | undefined | null): string {
+  if (!name) return ''
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase()
+}
+
+/**
+ * Format number with K/M suffix, handling undefined
+ */
+export function formatCompactNumber(num: number | undefined | null): string {
+  if (!num) return '0'
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
+  return num.toString()
+}
+
+/**
  * Generate slug from string
  */
 export function slugify(text: string): string {
@@ -43,6 +92,76 @@ export function formatDate(date: Date | string): string {
     month: 'long',
     day: 'numeric',
   }).format(d)
+}
+
+/**
+ * Format date to short readable string (e.g., "Jan 15, 2024")
+ */
+export function formatDateShort(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+/**
+ * Get relative time ago string (e.g., "2 hours ago", "3 days ago")
+ */
+export function getTimeAgo(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - d.getTime()) / 1000)
+
+  if (diffInSeconds < 60) {
+    return 'less than a minute ago'
+  }
+  const diffInMinutes = Math.floor(diffInSeconds / 60)
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`
+  }
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
+  }
+  const diffInDays = Math.floor(diffInHours / 24)
+  if (diffInDays === 1) return '1 day ago'
+  return `${diffInDays} days ago`
+}
+
+/**
+ * Month abbreviation mapping (German to English abbreviations)
+ */
+const MONTH_ABBR_MAP: Record<string, string> = {
+  'Januar': 'Jan',
+  'Februar': 'Feb',
+  'März': 'Mar',
+  'April': 'Apr',
+  'Mai': 'May',
+  'Juni': 'Jun',
+  'Juli': 'Jul',
+  'August': 'Aug',
+  'September': 'Sep',
+  'Oktober': 'Oct',
+  'November': 'Nov',
+  'Dezember': 'Dec',
+  // English month names (already abbreviated or full)
+  'January': 'Jan',
+  'February': 'Feb',
+  'March': 'Mar',
+  'May': 'May',
+  'June': 'Jun',
+  'July': 'Jul',
+  'October': 'Oct',
+  'December': 'Dec',
+}
+
+/**
+ * Get month abbreviation from full month name (supports German and English)
+ */
+export function getMonthAbbr(month: string): string {
+  return MONTH_ABBR_MAP[month] || month.substring(0, 3)
 }
 
 /**
@@ -318,4 +437,21 @@ export function transformHotelListingToHotel(listing: HotelListing): Hotel {
     createdAt: new Date(listing.created_at),
     updatedAt: new Date(listing.updated_at),
   }
+}
+
+/**
+ * Extract error message from unknown error type
+ * Handles Error objects, ApiErrorResponse, and plain objects with message property
+ */
+export function getErrorMessage(error: unknown, fallback = 'An unexpected error occurred'): string {
+  if (error instanceof Error) {
+    return error.message || fallback
+  }
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String((error as { message: unknown }).message) || fallback
+  }
+  if (typeof error === 'string') {
+    return error
+  }
+  return fallback
 }

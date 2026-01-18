@@ -9,6 +9,7 @@ export {
   YouTubeIcon,
   FacebookIcon,
   PlatformIcon,
+  PlatformBadge,
   getPlatformIcon,
 } from './SocialIcons'
 

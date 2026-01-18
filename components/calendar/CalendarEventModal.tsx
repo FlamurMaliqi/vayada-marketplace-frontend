@@ -46,6 +46,14 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
         }
     }
 
+    // Normalize creator requirements from either camelCase or snake_case API response
+    const creatorReqs = collaboration.creatorRequirements || collaboration.creator_requirements
+    const getCreatorReqPlatforms = () => creatorReqs?.platforms || []
+    const getMinFollowers = () => collaboration.creatorRequirements?.minFollowers || collaboration.creator_requirements?.min_followers || 0
+    const getTargetCountries = () => collaboration.creatorRequirements?.targetCountries || collaboration.creator_requirements?.target_countries || []
+    const getTargetAgeMin = () => collaboration.creatorRequirements?.targetAgeMin || collaboration.creator_requirements?.target_age_min
+    const getTargetAgeMax = () => collaboration.creatorRequirements?.targetAgeMax || collaboration.creator_requirements?.target_age_max
+
     return (
         <div className="relative z-50">
             {/* Backdrop */}
@@ -167,17 +175,16 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
                                         )}
 
                                         {/* Looking For Section */}
-                                        {((collaboration as any).creatorRequirements || (collaboration as any).creator_requirements) && (
+                                        {creatorReqs && (
                                             <div className="mt-8 pt-6 border-t border-gray-100 space-y-4">
                                                 <p className="text-lg font-bold text-gray-900">Looking For</p>
 
                                                 <div className="grid grid-cols-2 gap-4">
-                                                    {(((collaboration as any).creatorRequirements || (collaboration as any).creator_requirements)?.platforms) &&
-                                                        (((collaboration as any).creatorRequirements || (collaboration as any).creator_requirements)?.platforms).length > 0 && (
+                                                    {getCreatorReqPlatforms().length > 0 && (
                                                             <div>
                                                                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Platforms</p>
                                                                 <div className="flex flex-wrap gap-1">
-                                                                    {(((collaboration as any).creatorRequirements || (collaboration as any).creator_requirements)?.platforms).map((p: string, i: number, arr: string[]) => (
+                                                                    {getCreatorReqPlatforms().map((p, i, arr) => (
                                                                         <span key={p} className="text-sm font-medium text-gray-900 capitalize">
                                                                             {p}{i < arr.length - 1 ? ', ' : ''}
                                                                         </span>
@@ -186,32 +193,30 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
                                                             </div>
                                                         )}
 
-                                                    {(((collaboration as any).creatorRequirements?.minFollowers || (collaboration as any).creator_requirements?.min_followers) > 0) && (
+                                                    {getMinFollowers() > 0 && (
                                                         <div>
                                                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Min. Followers</p>
-                                                            <p className="text-sm font-medium text-gray-900">{formatNumber((collaboration as any).creatorRequirements?.minFollowers || (collaboration as any).creator_requirements?.min_followers)}</p>
+                                                            <p className="text-sm font-medium text-gray-900">{formatNumber(getMinFollowers())}</p>
                                                         </div>
                                                     )}
 
-                                                    {(((collaboration as any).creatorRequirements?.targetCountries || (collaboration as any).creator_requirements?.target_countries)) &&
-                                                        (((collaboration as any).creatorRequirements?.targetCountries || (collaboration as any).creator_requirements?.target_countries)).length > 0 && (
+                                                    {getTargetCountries().length > 0 && (
                                                             <div>
                                                                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Top Countries</p>
-                                                                <p className="text-sm font-medium text-gray-900">{((collaboration as any).creatorRequirements?.targetCountries || (collaboration as any).creator_requirements?.target_countries).join(', ')}</p>
+                                                                <p className="text-sm font-medium text-gray-900">{getTargetCountries().join(', ')}</p>
                                                             </div>
                                                         )}
 
-                                                    {((collaboration as any).creatorRequirements || (collaboration as any).creator_requirements) && (
+                                                    {creatorReqs && (
                                                         <div>
                                                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Target Age</p>
                                                             <p className="text-sm font-medium text-gray-900">
-                                                                {((collaboration as any).creatorRequirements?.targetAgeMin || (collaboration as any).creator_requirements?.target_age_min) &&
-                                                                    ((collaboration as any).creatorRequirements?.targetAgeMax || (collaboration as any).creator_requirements?.target_age_max)
-                                                                    ? `${((collaboration as any).creatorRequirements?.targetAgeMin || (collaboration as any).creator_requirements?.target_age_min)}-${((collaboration as any).creatorRequirements?.targetAgeMax || (collaboration as any).creator_requirements?.target_age_max)}`
-                                                                    : ((collaboration as any).creatorRequirements?.targetAgeMin || (collaboration as any).creator_requirements?.target_age_min)
-                                                                        ? `${((collaboration as any).creatorRequirements?.targetAgeMin || (collaboration as any).creator_requirements?.target_age_min)}+`
-                                                                        : ((collaboration as any).creatorRequirements?.targetAgeMax || (collaboration as any).creator_requirements?.target_age_max)
-                                                                            ? `Up to ${((collaboration as any).creatorRequirements?.targetAgeMax || (collaboration as any).creator_requirements?.target_age_max)}`
+                                                                {getTargetAgeMin() && getTargetAgeMax()
+                                                                    ? `${getTargetAgeMin()}-${getTargetAgeMax()}`
+                                                                    : getTargetAgeMin()
+                                                                        ? `${getTargetAgeMin()}+`
+                                                                        : getTargetAgeMax()
+                                                                            ? `Up to ${getTargetAgeMax()}`
                                                                             : 'Any'}
                                                             </p>
                                                         </div>

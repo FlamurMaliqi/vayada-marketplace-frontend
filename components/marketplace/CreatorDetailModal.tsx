@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Creator } from '@/lib/types'
 import { Button, StarRating, SuccessModal, ErrorModal, PlatformIcon } from '@/components/ui'
-import { formatNumber } from '@/lib/utils'
+import { formatNumber, formatFollowers, getTimeAgo } from '@/lib/utils'
 import {
   MapPinIcon,
   XMarkIcon,
@@ -18,18 +18,6 @@ interface CreatorDetailModalProps {
   creator: Creator | null
   isOpen: boolean
   onClose: () => void
-}
-
-
-// Format number with K suffix
-const formatFollowers = (num: number): string => {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M`
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K`
-  }
-  return num.toString()
 }
 
 // Get country flag emoji
@@ -69,26 +57,6 @@ const getCountryFlag = (country: string): string => {
     'Egypt': '🇪🇬',
   }
   return countryFlags[country] || '🏳️'
-}
-
-// Get time ago string
-const getTimeAgo = (date: Date): string => {
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-  if (diffInSeconds < 60) {
-    return 'less than a minute ago'
-  }
-  const diffInMinutes = Math.floor(diffInSeconds / 60)
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`
-  }
-  const diffInHours = Math.floor(diffInMinutes / 60)
-  if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
-  }
-  const diffInDays = Math.floor(diffInHours / 24)
-  return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
 }
 
 export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailModalProps) {

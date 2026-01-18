@@ -2,6 +2,7 @@
 
 import { XMarkIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline'
 import Button from './Button'
+import { Modal } from './Modal'
 
 interface ErrorModalProps {
   isOpen: boolean
@@ -11,29 +12,20 @@ interface ErrorModalProps {
   details?: string
 }
 
-export function ErrorModal({ 
-  isOpen, 
-  onClose, 
+export function ErrorModal({
+  isOpen,
+  onClose,
   title = 'Error',
   message,
   details
 }: ErrorModalProps) {
-  if (!isOpen) return null
-
   // Handle array of messages (validation errors)
   const messages = Array.isArray(message) ? message : [message]
   const hasMultipleErrors = messages.length > 1
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 md:p-8 animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <div className="p-6 md:p-8">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -98,7 +90,6 @@ export function ErrorModal({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
-

@@ -70,3 +70,13 @@ export const PlatformIcon = ({ platform, className = "w-4 h-4" }: { platform?: s
 export const getPlatformIcon = (platform: string, className: string = "w-4 h-4") => {
   return <PlatformIcon platform={platform} className={className} />
 }
+
+/**
+ * Platform Badge with icon and label
+ */
+export const PlatformBadge = ({ platform }: { platform: string }) => (
+  <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 border border-gray-200 rounded-md">
+    <PlatformIcon platform={platform} className="w-3.5 h-3.5 text-gray-500" />
+    <span className="text-[10px] font-medium text-gray-700 capitalize">{platform}</span>
+  </div>
+)

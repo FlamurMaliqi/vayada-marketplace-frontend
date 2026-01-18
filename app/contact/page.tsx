@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/constants/routes'
+import { siteConfig } from '@/config/site'
 import { Button, Input, Textarea } from '@/components/ui'
 import { Navigation, Footer } from '@/components/layout'
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline'
@@ -140,7 +141,7 @@ export default function ContactPage() {
                   <span>hello@vayada.com</span>
                 </a>
                 <a
-                  href="https://www.instagram.com/glorioushotels/"
+                  href={siteConfig.links.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-gray-700 hover:text-primary-600 transition-colors"
@@ -151,7 +152,7 @@ export default function ContactPage() {
                   <span>Instagram</span>
                 </a>
                 <a
-                  href="https://linkedin.com/company/vayada"
+                  href={siteConfig.links.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-gray-700 hover:text-primary-600 transition-colors"

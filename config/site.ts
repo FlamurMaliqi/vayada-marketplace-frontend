@@ -6,6 +6,9 @@ export const siteConfig = {
   links: {
     twitter: 'https://twitter.com/vayada',
     github: 'https://github.com/vayada',
+    instagram: 'https://www.instagram.com/glorioushotels/',
+    linkedin: 'https://linkedin.com/company/vayada',
+    whatsapp: 'https://wa.me/your-number',
   },
   // Note: Colors are now centralized in tailwind.config.js
   // Use Tailwind classes: primary-500, success-500, warning-500, error-500, info-500

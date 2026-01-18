@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ROUTES } from '@/lib/constants/routes'
+import { getErrorMessage } from '@/lib/utils'
 import { authService } from '@/services/auth'
 import { ApiErrorResponse } from '@/services/api/client'
 import { CheckCircleIcon, XCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
@@ -40,7 +41,7 @@ function VerifyEmailForm() {
         } else {
           setError(response.message || 'Email verification failed. Please try again.')
         }
-      } catch (error: any) {
+      } catch (error) {
         if (error instanceof ApiErrorResponse) {
           const detail = error.data.detail
           if (typeof detail === 'string') {
@@ -49,7 +50,7 @@ function VerifyEmailForm() {
             setError('Invalid or expired verification token. Please request a new verification link.')
           }
         } else {
-          setError(error.message || 'Failed to verify email. Please try again.')
+          setError(getErrorMessage(error, 'Failed to verify email. Please try again.'))
         }
       } finally {
         setVerifying(false)

@@ -16,5 +16,13 @@ export { StarRating, default as StarRatingDefault } from './StarRating'
 
 export { ErrorModal } from './ErrorModal'
 
+// Modal
+export { Modal, ModalHeader, ModalBody, ModalFooter } from './Modal'
+export type { ModalProps, ModalHeaderProps, ModalBodyProps, ModalFooterProps } from './Modal'
+
+// Avatar
+export { Avatar, AvatarSimple } from './Avatar'
+export type { AvatarProps } from './Avatar'
+
 // Icons
 export * from './icons'

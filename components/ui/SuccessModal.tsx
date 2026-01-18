@@ -2,6 +2,7 @@
 
 import { XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import Button from './Button'
+import { Modal } from './Modal'
 
 interface SuccessModalProps {
     isOpen: boolean
@@ -16,18 +17,9 @@ export function SuccessModal({
     title = 'Success!',
     message
 }: SuccessModalProps) {
-    if (!isOpen) return null
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                onClick={onClose}
-            />
-
-            {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8 animate-in fade-in zoom-in duration-200">
+        <Modal isOpen={isOpen} onClose={onClose} size="md">
+            <div className="p-6 md:p-8">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
@@ -65,6 +57,6 @@ export function SuccessModal({
                     </Button>
                 </div>
             </div>
-        </div>
+        </Modal>
     )
 }

@@ -7,7 +7,7 @@ import { AuthenticatedNavigation, ProfileWarningBanner } from '@/components/layo
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
 import { ROUTES } from '@/lib/constants/routes'
 import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES, STORAGE_KEYS } from '@/lib/constants'
-import { Button, Input, Textarea, StarRating, ErrorModal } from '@/components/ui'
+import { Button, Input, Textarea, StarRating, ErrorModal, HotelBadgeIcon } from '@/components/ui'
 import { MapPinIcon, CheckBadgeIcon, StarIcon, PencilIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { TrashIcon, ChevronDownIcon, ChevronUpIcon, ChevronLeftIcon, ChevronRightIcon, InformationCircleIcon, EnvelopeIcon, PhoneIcon, LinkIcon, UserIcon, BuildingOfficeIcon, BuildingOffice2Icon, GlobeAltIcon, GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, CheckCircleIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline'
@@ -45,6 +45,74 @@ interface Platform {
   topCountries?: PlatformCountry[]
   topAgeGroups?: PlatformAgeGroup[]
   genderSplit?: PlatformGenderSplit
+}
+
+// API response types that may have snake_case or camelCase fields
+interface ApiAgeGroup {
+  ageRange?: string | null
+  age_range?: string | null
+  percentage?: number
+}
+
+interface ApiPlatformResponse {
+  id?: string
+  name: string
+  handle?: string
+  followers?: number
+  engagementRate?: number
+  engagement_rate?: number
+  topCountries?: PlatformCountry[]
+  top_countries?: PlatformCountry[]
+  topAgeGroups?: ApiAgeGroup[]
+  top_age_groups?: ApiAgeGroup[]
+  genderSplit?: PlatformGenderSplit | string
+  gender_split?: PlatformGenderSplit | string
+}
+
+// API rating response might be snake_case or camelCase
+interface ApiRatingResponse {
+  averageRating?: number
+  average_rating?: number
+  totalReviews?: number
+  total_reviews?: number
+  reviews?: CollaborationReview[]
+}
+
+// Update payload for creator profile (uses snake_case for backend compatibility)
+interface CreatorUpdatePayload {
+  name?: string
+  location?: string
+  short_description?: string
+  portfolio_link?: string
+  phone?: string
+  profilePicture?: string
+  audience_size?: number
+  platforms?: Array<{
+    name: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
+    handle: string
+    followers: number
+    engagement_rate: number
+    top_countries?: Array<{ country: string; percentage: number }>
+    topAgeGroups?: Array<{ ageRange: string; percentage: number }>
+    gender_split?: { male: number; female: number }
+  }>
+}
+
+interface ApiCreatorResponse {
+  id?: string
+  name?: string
+  email?: string
+  phone?: string | null
+  location?: string
+  status?: 'verified' | 'pending' | 'rejected'
+  profilePicture?: string
+  profile_picture?: string
+  shortDescription?: string
+  short_description?: string
+  portfolioLink?: string
+  portfolio_link?: string
+  platforms?: ApiPlatformResponse[]
+  rating?: ApiRatingResponse
 }
 
 // Mock data for Creator Profile
@@ -108,36 +176,6 @@ const HOTEL_CATEGORIES = ['Hotel', 'Boutiques Hotel', 'City Hotel', 'Luxury Hote
 const AGE_GROUP_OPTIONS = ['18-24', '25-34', '35-44', '45-54', '55+']
 const COUNTRIES = Object.values(countries).map(country => country.name).sort()
 
-const HotelBadgeIcon = ({ active }: { active?: boolean }) => (
-  <div
-    className={`w-8 h-8 rounded-lg flex items-center justify-center ${active
-      ? 'bg-[#2F54EB] text-white'
-      : 'bg-[#EEF2FF] text-[#2F54EB]'
-
-      }`}
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-    >
-      <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
-      <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
-      <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
-      <path d="M10 6h4"></path>
-      <path d="M10 10h4"></path>
-      <path d="M10 14h4"></path>
-      <path d="M10 18h4"></path>
-    </svg>
-  </div>
-)
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -296,20 +334,9 @@ export default function ProfilePage() {
         platforms: (creatorProfile.platforms || []).map(platform => {
           // Clean age groups - filter out any with empty or null ageRange
           const cleanAgeGroups: PlatformAgeGroup[] = (platform.topAgeGroups || [])
-            .map((ag: any) => {
-              // Handle both camelCase and snake_case formats, and null values
-              const ageRangeValue = ag.ageRange ?? ag.age_range ?? null
-              // Skip if null or undefined
-              if (ageRangeValue === null || ageRangeValue === undefined) {
-                return null
-              }
-              const ageRange = String(ageRangeValue).trim()
-              return {
-                ageRange: ageRange,
-                percentage: ag.percentage ?? 0,
-              }
+            .filter((ag): ag is PlatformAgeGroup => {
+              return ag !== null && ag.ageRange !== undefined && ag.ageRange !== '' && ag.ageRange !== 'null'
             })
-            .filter((ag: any): ag is PlatformAgeGroup => ag !== null && ag.ageRange && ag.ageRange !== '' && ag.ageRange !== 'null') // Remove null entries and invalid age ranges
 
           return {
             ...platform,
@@ -418,7 +445,7 @@ export default function ProfilePage() {
    * Transform API creator response to frontend CreatorProfile format
    * Handles both snake_case and camelCase API responses
    */
-  const transformCreatorProfile = (apiCreator: any): CreatorProfile => {
+  const transformCreatorProfile = (apiCreator: ApiCreatorResponse): CreatorProfile => {
     // Handle both snake_case and camelCase field names
     const profilePicture = (apiCreator.profilePicture || apiCreator.profile_picture || '').trim() || undefined
     const shortDescription = apiCreator.shortDescription || apiCreator.short_description || ''
@@ -427,24 +454,24 @@ export default function ProfilePage() {
     const phone = apiCreator.phone || ''
 
     // Transform platforms - handle both snake_case and camelCase
-    const platforms = (apiCreator.platforms || []).map((platform: any) => {
+    const platforms = (apiCreator.platforms || []).map((platform: ApiPlatformResponse) => {
       // Handle genderSplit - might be a string (JSON) or object
-      let genderSplit = platform.genderSplit || platform.gender_split
-      if (typeof genderSplit === 'string') {
+      let genderSplit: PlatformGenderSplit = { male: 0, female: 0 }
+      const rawGenderSplit = platform.genderSplit || platform.gender_split
+      if (typeof rawGenderSplit === 'string') {
         try {
-          genderSplit = JSON.parse(genderSplit)
-        } catch (e) {
+          genderSplit = JSON.parse(rawGenderSplit)
+        } catch {
           genderSplit = { male: 0, female: 0 }
         }
-      }
-      if (!genderSplit || typeof genderSplit !== 'object') {
-        genderSplit = { male: 0, female: 0 }
+      } else if (rawGenderSplit && typeof rawGenderSplit === 'object') {
+        genderSplit = rawGenderSplit
       }
 
       // Handle age groups - transform from backend format and filter out invalid ones
-      const rawAgeGroups = platform.topAgeGroups || platform.top_age_groups || []
+      const rawAgeGroups: ApiAgeGroup[] = platform.topAgeGroups || platform.top_age_groups || []
       const topAgeGroups = rawAgeGroups
-        .map((ag: any) => {
+        .map((ag: ApiAgeGroup) => {
           // Handle both ageRange (camelCase) and age_range (snake_case)
           // Also handle null values from backend
           const ageRangeValue = ag.ageRange ?? ag.age_range ?? null
@@ -457,8 +484,8 @@ export default function ProfilePage() {
             percentage: ag.percentage ?? 0,
           }
         })
-        .filter((ag: any) => {
-          return ag !== null && ag.ageRange && ag.ageRange !== '' && ag.ageRange !== 'null'
+        .filter((ag): ag is PlatformAgeGroup => {
+          return ag !== null && ag.ageRange !== '' && ag.ageRange !== 'null'
         })
 
       return {
@@ -475,7 +502,7 @@ export default function ProfilePage() {
 
     // Handle rating - might be missing or have different structure
     // Handle both snake_case and camelCase, ensure averageRating is always a valid number
-    const ratingData = apiCreator.rating || {}
+    const ratingData: ApiRatingResponse = apiCreator.rating || {}
     const averageRating = ratingData.averageRating ?? ratingData.average_rating ?? 0
     const totalReviews = ratingData.totalReviews ?? ratingData.total_reviews ?? 0
     const reviews = ratingData.reviews || []
@@ -491,7 +518,7 @@ export default function ProfilePage() {
     }
 
     return {
-      id: apiCreator.id,
+      id: apiCreator.id || '',
       name: apiCreator.name || '',
       profilePicture,
       shortDescription,
@@ -571,9 +598,9 @@ export default function ProfilePage() {
           lookingForPlatforms: creatorReqs.platforms || [],
           lookingForMinFollowers: creatorReqs.min_followers ?? undefined,
           targetGroupCountries: creatorReqs.target_countries || [],
-          targetGroupAgeMin: (creatorReqs as any).target_age_min ?? (creatorReqs as any).targetAgeMin ?? undefined,
-          targetGroupAgeMax: (creatorReqs as any).target_age_max ?? (creatorReqs as any).targetAgeMax ?? undefined,
-          targetGroupAgeGroups: (creatorReqs as any).target_age_groups ?? (creatorReqs as any).targetAgeGroups ?? [],
+          targetGroupAgeMin: creatorReqs.target_age_min ?? undefined,
+          targetGroupAgeMax: creatorReqs.target_age_max ?? undefined,
+          targetGroupAgeGroups: creatorReqs.target_age_groups ?? [],
           status:
             apiListing.status === 'verified' || apiListing.status === 'pending' || apiListing.status === 'rejected'
               ? apiListing.status
@@ -593,7 +620,7 @@ export default function ProfilePage() {
     }
     if (Array.isArray(detail)) {
       // Pydantic validation errors: [{type, loc, msg, input, url}, ...]
-      return detail.map((err: any) => {
+      return detail.map((err: { loc?: (string | number)[]; msg?: string }) => {
         const field = Array.isArray(err.loc) ? err.loc.slice(1).join('.') : 'field'
         return `${field}: ${err.msg || 'Validation error'}`
       }).join('; ')
@@ -614,7 +641,7 @@ export default function ProfilePage() {
     }
     if (Array.isArray(detail)) {
       // Pydantic validation errors: [{type, loc, msg, input, url}, ...]
-      return detail.map((err: any) => {
+      return detail.map((err: { loc?: (string | number)[]; msg?: string }) => {
         const field = Array.isArray(err.loc) ? err.loc.slice(1).join('.') : 'field'
         return `${field}: ${err.msg || 'Validation error'}`
       })
@@ -671,7 +698,8 @@ export default function ProfilePage() {
       if (userType === 'creator') {
         try {
           const apiProfile = await creatorService.getMyProfile()
-          const profile = transformCreatorProfile(apiProfile)
+          // Cast to ApiCreatorResponse since the raw API response may have different property formats
+          const profile = transformCreatorProfile(apiProfile as unknown as ApiCreatorResponse)
           setCreatorProfile(profile)
         } catch (error) {
           // Check if it's a 405 (Method Not Allowed) - endpoint not implemented yet
@@ -686,7 +714,7 @@ export default function ProfilePage() {
       } else if (userType === 'hotel') {
         try {
           const apiProfile = await hotelService.getMyProfile()
-          const profile = transformHotelProfile(apiProfile as any)
+          const profile = transformHotelProfile(apiProfile)
           setHotelProfile(profile)
         } catch (error) {
           // Check if it's a 405 (Method Not Allowed) - endpoint not implemented yet
@@ -889,11 +917,10 @@ export default function ProfilePage() {
         return `Platform ${i + 1}: Engagement rate must be greater than 0`
       }
       // Validate age groups - if any exist, they must have valid age ranges
-      // Handle both ageRange (camelCase) and age_range (snake_case) formats, and null values
       if (platform.topAgeGroups && platform.topAgeGroups.length > 0) {
-        const invalidAgeGroups = platform.topAgeGroups.filter((tag: any) => {
-          const ageRange = (tag.ageRange || tag.age_range || '').toString().trim()
-          return !ageRange || ageRange === '' || ageRange === 'null' || tag.ageRange === null || tag.age_range === null
+        const invalidAgeGroups = platform.topAgeGroups.filter((tag) => {
+          const ageRange = (tag.ageRange || '').toString().trim()
+          return !ageRange || ageRange === '' || ageRange === 'null'
         })
         if (invalidAgeGroups.length > 0) {
           return `Platform ${i + 1}: All age groups must have a valid age range selected`
@@ -919,28 +946,15 @@ export default function ProfilePage() {
       // IMPORTANT: API uses REPLACE strategy - must include ALL platforms
       // Use snake_case for nested fields as backend expects it
       const platforms = editFormData.platforms.map(platform => {
-        // Filter out empty or null age ranges first - handle both ageRange and age_range formats
+        // Filter out empty or null age ranges first
         const validAgeGroups = platform.topAgeGroups && platform.topAgeGroups.length > 0
           ? platform.topAgeGroups
-            .map((tag: any) => {
-              // Handle both camelCase and snake_case formats, and null values
-              const ageRangeValue = tag.ageRange ?? tag.age_range ?? null
-              // Only process if we have a valid non-null value
-              if (ageRangeValue === null || ageRangeValue === undefined) {
-                return null
-              }
-              const trimmedAgeRange = String(ageRangeValue).trim()
-              return {
-                ageRange: trimmedAgeRange,
-                percentage: tag.percentage ?? 0,
-              }
-            })
-            .filter((tag: any) => {
+            .filter((tag): tag is PlatformAgeGroup => {
               // Filter out null entries and invalid age ranges
-              if (!tag || tag === null) return false
-              return tag.ageRange && tag.ageRange !== '' && tag.ageRange !== 'null'
+              const ageRange = tag.ageRange?.trim() || ''
+              return ageRange !== '' && ageRange !== 'null'
             })
-            .map((tag: any) => ({
+            .map((tag) => ({
               ageRange: tag.ageRange.trim(), // Use camelCase - backend expects ageRange not age_range
               percentage: tag.percentage,
             }))
@@ -998,7 +1012,7 @@ export default function ProfilePage() {
       }
 
       // Build update payload - always use JSON for creator profiles
-      const updatePayload = {
+      const updatePayload: CreatorUpdatePayload = {
         name: editFormData.name.trim(),
         location: editFormData.location.trim(),
         short_description: editFormData.shortDescription.trim(),
@@ -1017,22 +1031,23 @@ export default function ProfilePage() {
       }
 
       // Update creator profile (replaces all platforms)
-      const updatedProfile = await creatorService.updateMyProfile(updatePayload as any)
+      // Cast to Partial<Creator> since API accepts snake_case but returns camelCase
+      const updatedProfile = await creatorService.updateMyProfile(updatePayload as unknown as Partial<ApiCreator>)
 
       // Update profile picture immediately from response if available
-      if (updatedProfile && (updatedProfile.profilePicture || (updatedProfile as any).profile_picture)) {
-        const pictureUrl = updatedProfile.profilePicture || (updatedProfile as any).profile_picture
-        if (pictureUrl && pictureUrl.trim() !== '') {
-          setEditFormData(prev => ({
+      // API may return either camelCase (profilePicture) or snake_case (profile_picture)
+      const responseWithSnakeCase = updatedProfile as ApiCreator & { profile_picture?: string | null }
+      const pictureUrl = updatedProfile.profilePicture || responseWithSnakeCase.profile_picture
+      if (pictureUrl && pictureUrl.trim() !== '') {
+        setEditFormData(prev => ({
+          ...prev,
+          profilePicture: pictureUrl
+        }))
+        if (creatorProfile) {
+          setCreatorProfile(prev => prev ? {
             ...prev,
             profilePicture: pictureUrl
-          }))
-          if (creatorProfile) {
-            setCreatorProfile(prev => prev ? {
-              ...prev,
-              profilePicture: pictureUrl
-            } : null)
-          }
+          } : null)
         }
       }
 
@@ -1491,10 +1506,9 @@ export default function ProfilePage() {
       handleCancelListing()
       setIsSavingListing(false)
     } catch (error: unknown) {
-      const err = error as any
       const detail =
-        err && typeof err === 'object' && 'data' in err && err.data?.detail
-          ? err.data.detail
+        error instanceof ApiErrorResponse
+          ? error.data.detail
           : null
       const logError = error instanceof Error ? error : new Error(String(error))
       console.error('Failed to save listing:', logError)

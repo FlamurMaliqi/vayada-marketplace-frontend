@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ROUTES } from '@/lib/constants/routes'
+import { siteConfig } from '@/config/site'
 import { Navigation, Footer } from '@/components/layout'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
@@ -58,7 +59,7 @@ export default function AboutPage() {
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
                 Our journey began with a deep passion for boutique and independent hotels. Starting at 17 years old, it began with building the Instagram page{' '}
                 <a
-                  href="https://www.instagram.com/glorioushotels/"
+                  href={siteConfig.links.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary-600 hover:text-primary-700 underline font-semibold"

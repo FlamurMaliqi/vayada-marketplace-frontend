@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Hotel } from '@/lib/types'
 import { Button, PlatformIcon } from '@/components/ui'
+import { getMonthAbbr } from '@/lib/utils'
 import {
   MapPinIcon,
   GlobeAltIcon,
@@ -25,26 +26,7 @@ interface HotelDetailModalProps {
   onClose: () => void
 }
 
-// Month abbreviation mapping
-const getMonthAbbr = (month: string): string => {
-  const monthMap: { [key: string]: string } = {
-    'Januar': 'Jan',
-    'Februar': 'Feb',
-    'März': 'Mar',
-    'April': 'Apr',
-    'Mai': 'May',
-    'Juni': 'Jun',
-    'Juli': 'Jul',
-    'August': 'Aug',
-    'September': 'Sep',
-    'Oktober': 'Oct',
-    'November': 'Nov',
-    'Dezember': 'Dec',
-  }
-  return monthMap[month] || month.substring(0, 3)
-}
-
-// Format number with thousand separator
+// Format number with thousand separator (German locale)
 const formatNumber = (num: number): string => {
   return new Intl.NumberFormat('de-DE').format(num)
 }
