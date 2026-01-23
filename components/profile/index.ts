@@ -5,8 +5,8 @@ export * from './types'
 export { ProfilePictureModal } from './ProfilePictureModal'
 export { DeleteConfirmModal } from './DeleteConfirmModal'
 
-// Creator components (will be added as they are extracted)
-// export * from './creator'
+// Creator components
+export * from './creator'
 
-// Hotel components (will be added as they are extracted)
-// export * from './hotel'
+// Hotel components
+export * from './hotel'
