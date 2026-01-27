@@ -198,3 +198,29 @@ export interface DeleteConfirmModalState {
   listingId: string | null
   listingName: string
 }
+
+/**
+ * Factory function for empty listing form data
+ */
+export function createEmptyListingFormData(): ListingFormData {
+  return {
+    name: '',
+    location: '',
+    description: '',
+    images: [],
+    accommodationType: '',
+    collaborationTypes: [],
+    availability: [],
+    platforms: [],
+    freeStayMinNights: undefined,
+    freeStayMaxNights: undefined,
+    paidMaxAmount: undefined,
+    discountPercentage: undefined,
+    lookingForPlatforms: [],
+    lookingForMinFollowers: undefined,
+    targetGroupCountries: [],
+    targetGroupAgeMin: undefined,
+    targetGroupAgeMax: undefined,
+    targetGroupAgeGroups: [],
+  }
+}

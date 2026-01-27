@@ -5,5 +5,7 @@ export { CreatorOverviewTab } from './CreatorOverviewTab'
 export { CreatorPlatformsTab } from './CreatorPlatformsTab'
 export { CreatorReviewsTab } from './CreatorReviewsTab'
 
+export { CreatorProfile } from './CreatorProfile'
+
 // Utilities
 export { formatFollowersDE, getCountryFlag } from './utils'
