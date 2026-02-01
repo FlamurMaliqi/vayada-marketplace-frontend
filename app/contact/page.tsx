@@ -2,15 +2,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/lib/constants/routes'
 import { siteConfig } from '@/config/site'
 import { Button, Input, Textarea } from '@/components/ui'
 import { Navigation, Footer } from '@/components/layout'
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline'
+import { apiClient } from '@/services/api/client'
 
 export default function ContactPage() {
-  const router = useRouter()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -39,8 +38,15 @@ export default function ContactPage() {
     setIsSubmitting(true)
 
     try {
-      // See tickets/TICKET-001-contact-form-api.md for implementation
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await apiClient.post('/contact', {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        company: formData.company || undefined,
+        country: formData.country || undefined,
+        user_type: formData.userType || undefined,
+        message: formData.message,
+      })
 
       setSubmitSuccess(true)
       setFormData({
@@ -57,8 +63,9 @@ export default function ContactPage() {
       setTimeout(() => {
         setSubmitSuccess(false)
       }, 5000)
-    } catch (error) {
-      setSubmitError('Failed to submit form. Please try again.')
+    } catch (error: any) {
+      const message = error?.message || 'Failed to submit form. Please try again.'
+      setSubmitError(message)
     } finally {
       setIsSubmitting(false)
     }
