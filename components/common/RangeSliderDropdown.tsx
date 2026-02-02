@@ -67,6 +67,12 @@ export function RangeSliderDropdown({
           <div className="px-5 py-3 text-gray-900 text-sm font-bold text-center">
             {title}
           </div>
+          {/* Current value display */}
+          <div className="px-5 pb-2">
+            <div className="text-center text-2xl font-bold text-primary-600">
+              {formatValue(localValue)}
+            </div>
+          </div>
           <div className="px-5 pb-5">
             <div className="relative">
               <input
@@ -82,11 +88,8 @@ export function RangeSliderDropdown({
                 }}
               />
             </div>
-            <div className="flex justify-between mt-3 text-sm text-gray-700">
+            <div className="flex justify-between mt-3 text-sm text-gray-500">
               <span>{formatMin ?? formatValue(min)}</span>
-              {showCurrentValue && (
-                <span className="font-medium">{formatValue(localValue)}</span>
-              )}
               <span>{formatMax ?? formatValue(max)}</span>
             </div>
           </div>
