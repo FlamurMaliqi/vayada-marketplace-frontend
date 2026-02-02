@@ -156,17 +156,17 @@ export default function PublicCreatorsPage() {
               {hiddenCount > 0 && (
                 <div className="relative mt-6">
                   {/* Blurred preview cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 blur-[6px] opacity-60 pointer-events-none select-none" aria-hidden="true">
-                    {hiddenCreators.slice(0, 3).map((creator) => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 blur-[6px] opacity-50 pointer-events-none select-none" aria-hidden="true">
+                    {hiddenCreators.slice(0, 6).map((creator) => (
                       <CreatorCard key={creator.id} creator={creator} isPublic />
                     ))}
                   </div>
 
                   {/* Gradient fade overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/70 to-white pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/80 to-white pointer-events-none" />
 
-                  {/* CTA Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  {/* CTA Overlay - positioned at top, between row 2 and 3 */}
+                  <div className="absolute inset-x-0 -top-16 flex justify-center">
                     <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-8 md:p-10 max-w-lg mx-4 text-center">
                       <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <LockClosedIcon className="w-8 h-8 text-primary-600" />
