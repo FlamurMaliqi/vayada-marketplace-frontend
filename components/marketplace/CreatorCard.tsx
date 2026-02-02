@@ -30,12 +30,12 @@ export function CreatorCard({ creator, isPublic = false }: CreatorCardProps) {
         <div className="p-6 pb-4">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-xl font-bold text-gray-900">
+              <div className="flex items-start gap-2 mb-1">
+                <h3 className="text-xl font-bold text-gray-900 line-clamp-2">
                   {creator.name}
                 </h3>
                 {creator.status === 'verified' && (
-                  <div className="w-5 h-5 rounded-full bg-primary-600 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0 mt-1">
                     <CheckBadgeIcon className="w-4 h-4 text-white" />
                   </div>
                 )}
