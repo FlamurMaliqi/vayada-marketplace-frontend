@@ -41,8 +41,8 @@ export function CreatorCard({ creator, isPublic = false }: CreatorCardProps) {
                 )}
               </div>
               <div className="flex items-center text-gray-600 text-sm mb-3">
-                <MapPinIcon className="w-4 h-4 mr-1" />
-                <span>{creator.location}</span>
+                <MapPinIcon className="w-4 h-4 mr-1 flex-shrink-0" />
+                <span className="truncate">{creator.location}</span>
               </div>
               {/* Rating - replacing category section */}
               {creator.rating && (
