@@ -49,13 +49,13 @@ export default function CreatorBenefitsPage() {
                       <ArrowRightIcon className="w-5 h-5" />
                     </Button>
                   </Link>
-                  <Link href={ROUTES.COLLABORATIONS}>
+                  <Link href={ROUTES.PROPERTIES}>
                     <Button
                       variant="outline"
                       size="md"
                       className="bg-white text-gray-800 border border-gray-200 hover:border-primary-200 hover:text-primary-700"
                     >
-                      View open collabs
+                      Browse Properties
                     </Button>
                   </Link>
                 </div>
@@ -146,13 +146,13 @@ export default function CreatorBenefitsPage() {
             </div>
 
             <div className="flex justify-center mt-10">
-              <Link href={ROUTES.COLLABORATIONS}>
+              <Link href={ROUTES.PROPERTIES}>
                 <Button
                   variant="outline"
                   size="md"
                   className="bg-white text-gray-800 border border-gray-200 hover:border-primary-300 hover:text-primary-700 inline-flex items-center gap-2"
                 >
-                  View Open Collabs
+                  Browse Properties
                   <ArrowRightIcon className="w-5 h-5" />
                 </Button>
               </Link>

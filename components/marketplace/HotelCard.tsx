@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Hotel } from '@/lib/types'
 import { Button, SuccessModal, ErrorModal, PlatformIcon } from '@/components/ui'
 import { MapPinIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
@@ -8,13 +9,15 @@ import { CollaborationApplicationModal, type CollaborationApplicationData } from
 import { collaborationService, type CreateCreatorCollaborationRequest } from '@/services/api/collaborations'
 import { getCurrentUserInfo } from '@/lib/utils/accessControl'
 import { getMonthAbbr } from '@/lib/utils/months'
+import { ROUTES } from '@/lib/constants/routes'
 
 interface HotelCardProps {
   hotel: Hotel
   creatorPlatforms?: string[]
+  isPublic?: boolean
 }
 
-export function HotelCard({ hotel, creatorPlatforms = [] }: HotelCardProps) {
+export function HotelCard({ hotel, creatorPlatforms = [], isPublic = false }: HotelCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showApplicationModal, setShowApplicationModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -247,17 +250,25 @@ export function HotelCard({ hotel, creatorPlatforms = [] }: HotelCardProps) {
             >
               View Details
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              className="flex-1"
-              onClick={(e) => {
-                e.preventDefault()
-                setShowApplicationModal(true)
-              }}
-            >
-              Apply
-            </Button>
+            {isPublic ? (
+              <Link href={`${ROUTES.LOGIN}?redirect=/marketplace`} className="flex-1">
+                <Button variant="primary" size="sm" className="w-full">
+                  Sign in to Apply
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex-1"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setShowApplicationModal(true)
+                }}
+              >
+                Apply
+              </Button>
+            )}
           </div>
         </div>
       </div>

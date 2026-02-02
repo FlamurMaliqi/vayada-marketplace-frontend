@@ -6,6 +6,7 @@ export const ROUTES = {
   // Public routes
   HOME: '/',
   CREATORS: '/creators',
+  PROPERTIES: '/properties',
   MARKETPLACE: '/marketplace',
   COLLABORATIONS: '/collaborations',
   ABOUT: '/about',
