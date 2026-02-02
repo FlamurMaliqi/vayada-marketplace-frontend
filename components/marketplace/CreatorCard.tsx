@@ -8,9 +8,10 @@ import { CreatorDetailModal } from './CreatorDetailModal'
 
 interface CreatorCardProps {
   creator: Creator
+  isPublic?: boolean
 }
 
-export function CreatorCard({ creator }: CreatorCardProps) {
+export function CreatorCard({ creator, isPublic = false }: CreatorCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [imageError, setImageError] = useState(false)
   const totalFollowers = creator.platforms.reduce(
@@ -127,6 +128,7 @@ export function CreatorCard({ creator }: CreatorCardProps) {
         creator={creator}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        isPublic={isPublic}
       />
     </>
   )

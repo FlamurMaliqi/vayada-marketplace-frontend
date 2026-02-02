@@ -49,7 +49,7 @@ export default function HotelBenefitsPage() {
                       Register Hotel for Free
                     </Button>
                   </Link>
-                  <Link href={ROUTES.CREATOR_BENEFITS}>
+                  <Link href={ROUTES.CREATORS}>
                     <Button
                       variant="outline"
                       size="md"
@@ -139,7 +139,7 @@ export default function HotelBenefitsPage() {
             </div>
 
             <div className="flex justify-center mt-10">
-              <Link href={ROUTES.CREATOR_BENEFITS}>
+              <Link href={ROUTES.CREATORS}>
                 <Button
                   variant="outline"
                   size="md"

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Creator } from '@/lib/types'
 import { Button, StarRating, SuccessModal, ErrorModal, PlatformIcon } from '@/components/ui'
 import { formatNumber, formatFollowers, getTimeAgo } from '@/lib/utils'
@@ -13,11 +14,13 @@ import { HotelInvitationModal, type HotelInvitationData } from './HotelInvitatio
 import { collaborationService, type CreateHotelCollaborationRequest } from '@/services/api/collaborations'
 import { hotelService } from '@/services/api/hotels'
 import { getCurrentUserInfo } from '@/lib/utils/accessControl'
+import { ROUTES } from '@/lib/constants/routes'
 
 interface CreatorDetailModalProps {
   creator: Creator | null
   isOpen: boolean
   onClose: () => void
+  isPublic?: boolean
 }
 
 // Get country flag emoji
@@ -59,7 +62,7 @@ const getCountryFlag = (country: string): string => {
   return countryFlags[country] || '🏳️'
 }
 
-export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailModalProps) {
+export function CreatorDetailModal({ creator, isOpen, onClose, isPublic = false }: CreatorDetailModalProps) {
   const [showInvitationModal, setShowInvitationModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -75,10 +78,10 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
     offerings: Array<{ type: string; availability: string[] }>
   }[]>([])
 
-  // Fetch hotel listings when modal is open
+  // Fetch hotel listings when modal is open (skip for public view)
   useEffect(() => {
     const fetchListings = async () => {
-      if (!isOpen) return
+      if (!isOpen || isPublic) return
 
       const userInfo = getCurrentUserInfo()
       if (userInfo.userType !== 'hotel') return
@@ -110,7 +113,7 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
     }
 
     fetchListings()
-  }, [isOpen])
+  }, [isOpen, isPublic])
 
   if (!isOpen || !creator) return null
 
@@ -458,13 +461,21 @@ export function CreatorDetailModal({ creator, isOpen, onClose }: CreatorDetailMo
             <p className="text-sm text-gray-500">
               Last updated {getTimeAgo(creator.updatedAt)}
             </p>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={handleInviteClick}
-            >
-              Invite to Collaborate
-            </Button>
+            {isPublic ? (
+              <Link href={`${ROUTES.LOGIN}?redirect=/marketplace`}>
+                <Button variant="primary" size="lg">
+                  Sign in to Collaborate
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={handleInviteClick}
+              >
+                Invite to Collaborate
+              </Button>
+            )}
           </div>
         </div>
       </div>
