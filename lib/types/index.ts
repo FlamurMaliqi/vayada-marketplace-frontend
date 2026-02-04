@@ -7,6 +7,9 @@ export type UserType = 'hotel' | 'creator' | 'admin'
 
 export type UserStatus = 'pending' | 'verified' | 'rejected' | 'suspended'
 
+// Creator type (Lifestyle vs Travel)
+export type CreatorType = 'Lifestyle' | 'Travel'
+
 // Profile Status types
 export interface CreatorProfileStatus {
   profile_complete: boolean
@@ -121,6 +124,7 @@ export interface CreatorRequirements {
   target_age_min?: number | null
   target_age_max?: number | null
   target_age_groups?: string[] | null
+  creator_types?: string[] | null
   created_at: string
   updated_at: string
 }
@@ -172,6 +176,7 @@ export interface Creator {
   shortDescription?: string
   phone?: string | null
   profilePicture?: string | null
+  creatorType: CreatorType
   rating?: CreatorRating
   status: UserStatus
   createdAt: Date
@@ -347,6 +352,7 @@ export interface ListingFormData {
   targetGroupAgeMin?: number
   targetGroupAgeMax?: number
   targetGroupAgeGroups?: string[]
+  lookingForCreatorTypes?: CreatorType[]
 }
 
 export interface CreatorFormState {
@@ -356,6 +362,7 @@ export interface CreatorFormState {
   portfolio_link: string
   phone: string
   profile_image: string
+  creator_type?: CreatorType
 }
 
 export interface HotelFormState {

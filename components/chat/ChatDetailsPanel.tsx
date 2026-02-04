@@ -130,9 +130,10 @@ export function ChatDetailsPanel({
             />
             <div>
               <h2 className="font-bold text-gray-900">{activeChat.partner_name}</h2>
-              {userType === 'hotel' && activeCollaboration.listingName && (
+              {activeCollaboration.listingName && (
                 <p className="text-[10px] text-gray-400 font-medium">
-                  Applied to: <span className="text-blue-600">{activeCollaboration.listingName}</span>
+                  {userType === 'hotel' ? 'Applied to:' : 'Property:'}{' '}
+                  <span className="text-blue-600">{activeCollaboration.listingName}</span>
                 </p>
               )}
             </div>
@@ -221,6 +222,24 @@ export function ChatDetailsPanel({
             </div>
           </div>
 
+          {/* Stay Details */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <CalendarIcon className="w-4 h-4 text-gray-400" />
+              <h4 className="text-xs font-bold text-gray-900 uppercase">Stay Details</h4>
+            </div>
+            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div>
+                <div className="text-[10px] text-gray-500 uppercase">Check-in</div>
+                <div className="text-sm font-medium text-gray-900">{stayDetails.checkIn}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-500 uppercase">Check-out</div>
+                <div className="text-sm font-medium text-gray-900">{stayDetails.checkOut}</div>
+              </div>
+            </div>
+          </div>
+
           {/* Deliverables */}
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -290,24 +309,6 @@ export function ChatDetailsPanel({
                   </span>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Stay Details */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <CalendarIcon className="w-4 h-4 text-gray-400" />
-              <h4 className="text-xs font-bold text-gray-900 uppercase">Stay Details</h4>
-            </div>
-            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <div>
-                <div className="text-[10px] text-gray-500 uppercase">Check-in</div>
-                <div className="text-sm font-medium text-gray-900">{stayDetails.checkIn}</div>
-              </div>
-              <div>
-                <div className="text-[10px] text-gray-500 uppercase">Check-out</div>
-                <div className="text-sm font-medium text-gray-900">{stayDetails.checkOut}</div>
-              </div>
             </div>
           </div>
         </div>

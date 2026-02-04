@@ -38,11 +38,33 @@ export function MarketplaceFilters({
   }
 
   const handleHotelFiltersChange = (hotelFilters: HotelFiltersState) => {
-    onFiltersChange({ ...filters, ...hotelFilters })
+    // Create new filters, explicitly handling removed keys
+    const newFilters = { ...filters }
+    // Update or remove hotel filter keys
+    const hotelKeys: (keyof HotelFiltersState)[] = ['hotelType', 'offering', 'availability', 'budget']
+    hotelKeys.forEach(key => {
+      if (key in hotelFilters) {
+        newFilters[key] = hotelFilters[key]
+      } else {
+        delete newFilters[key]
+      }
+    })
+    onFiltersChange(newFilters)
   }
 
   const handleCreatorFiltersChange = (creatorFilters: CreatorFiltersState) => {
-    onFiltersChange({ ...filters, ...creatorFilters })
+    // Create new filters, explicitly handling removed keys
+    const newFilters = { ...filters }
+    // Update or remove creator filter keys
+    const creatorKeys: (keyof CreatorFiltersState)[] = ['minFollowers', 'minEngagementRate', 'creatorPlatforms', 'topCountries', 'creatorTypes']
+    creatorKeys.forEach(key => {
+      if (key in creatorFilters) {
+        newFilters[key] = creatorFilters[key]
+      } else {
+        delete newFilters[key]
+      }
+    })
+    onFiltersChange(newFilters)
   }
 
   const handleClearAll = () => {
@@ -62,6 +84,7 @@ export function MarketplaceFilters({
     minEngagementRate: filters.minEngagementRate,
     creatorPlatforms: filters.creatorPlatforms,
     topCountries: filters.topCountries,
+    creatorTypes: filters.creatorTypes,
   }
 
   const showHotelFilters = viewType === 'all' || viewType === 'hotels'

@@ -2,8 +2,9 @@
 
 import { RefObject } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import type { CreatorFormState, PlatformFormData } from '@/lib/types'
+import type { CreatorFormState, PlatformFormData, CreatorType } from '@/lib/types'
 import { FormNavigationButtons } from '../FormNavigationButtons'
+import { CreatorTypeStep } from './CreatorTypeStep'
 import { CreatorBasicInfoStep } from './CreatorBasicInfoStep'
 import { CreatorPlatformsStep } from './CreatorPlatformsStep'
 
@@ -92,8 +93,16 @@ export function CreatorProfileForm({
 
   return (
     <form onSubmit={handleFormSubmit} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-5">
-      {/* Step 1: Basic Information */}
+      {/* Step 1: Creator Type Selection */}
       {currentStep === 1 && (
+        <CreatorTypeStep
+          selectedType={form.creator_type}
+          onSelect={(type: CreatorType) => onFormChange({ creator_type: type })}
+        />
+      )}
+
+      {/* Step 2: Basic Information */}
+      {currentStep === 2 && (
         <CreatorBasicInfoStep
           form={form}
           onFormChange={onFormChange}
@@ -103,8 +112,8 @@ export function CreatorProfileForm({
         />
       )}
 
-      {/* Step 2: Platforms Section */}
-      {currentStep === 2 && (
+      {/* Step 3: Platforms Section */}
+      {currentStep === 3 && (
         <CreatorPlatformsStep
           platforms={platforms}
           expandedPlatforms={expandedPlatforms}

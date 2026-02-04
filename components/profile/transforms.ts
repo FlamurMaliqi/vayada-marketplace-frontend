@@ -8,7 +8,7 @@ import type {
   ProfileHotelListing,
   ListingFormData,
 } from './types'
-import type { PlatformAgeGroup, PlatformGenderSplit } from '@/lib/types'
+import type { PlatformAgeGroup, PlatformGenderSplit, CreatorType } from '@/lib/types'
 import type { HotelProfile as ApiHotelProfile } from '@/lib/types'
 
 /**
@@ -67,6 +67,7 @@ export function transformListingToApi(listingData: ListingFormData) {
       target_age_min: undefined as number | null | undefined,
       target_age_max: undefined as number | null | undefined,
       target_age_groups: listingData.targetGroupAgeGroups || [],
+      creator_types: listingData.lookingForCreatorTypes || [],
     },
   }
 
@@ -104,6 +105,7 @@ export function transformCreatorProfile(apiCreator: ApiCreatorResponse): Creator
   const profilePicture = (apiCreator.profilePicture || apiCreator.profile_picture || '').trim() || undefined
   const shortDescription = apiCreator.shortDescription || apiCreator.short_description || ''
   const portfolioLink = apiCreator.portfolioLink || apiCreator.portfolio_link || undefined
+  const creatorType: CreatorType = (apiCreator.creatorType || apiCreator.creator_type || 'Lifestyle') as CreatorType
   const email = apiCreator.email || ''
   const phone = apiCreator.phone || ''
 
@@ -174,6 +176,7 @@ export function transformCreatorProfile(apiCreator: ApiCreatorResponse): Creator
       apiCreator.status === 'verified' || apiCreator.status === 'pending' || apiCreator.status === 'rejected'
         ? apiCreator.status
         : 'pending',
+    creatorType,
     rating,
     platforms,
     portfolioLink,
@@ -226,6 +229,7 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
         target_countries: [],
         target_age_min: undefined,
         target_age_max: undefined,
+        creator_types: [],
       }
 
       return {
@@ -248,6 +252,7 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
         targetGroupAgeMin: creatorReqs.target_age_min ?? undefined,
         targetGroupAgeMax: creatorReqs.target_age_max ?? undefined,
         targetGroupAgeGroups: creatorReqs.target_age_groups ?? [],
+        lookingForCreatorTypes: (creatorReqs.creator_types || []) as CreatorType[],
         status:
           apiListing.status === 'verified' || apiListing.status === 'pending' || apiListing.status === 'rejected'
             ? apiListing.status

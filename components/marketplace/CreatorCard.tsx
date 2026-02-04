@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { Creator } from '@/lib/types'
 import { Button, StarRating, PlatformIcon } from '@/components/ui'
-import { MapPinIcon, CheckBadgeIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import { MapPinIcon, CheckBadgeIcon, UserGroupIcon, SparklesIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import { formatNumber } from '@/lib/utils'
 import { CreatorDetailModal } from './CreatorDetailModal'
 
@@ -52,6 +52,23 @@ export function CreatorCard({ creator, isPublic = false }: CreatorCardProps) {
                     totalReviews={creator.rating.totalReviews}
                     size="sm"
                   />
+                </div>
+              )}
+              {/* Creator Type Badge */}
+              {creator.creatorType && (
+                <div className="mt-2">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                    creator.creatorType === 'Lifestyle'
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'bg-amber-50 text-amber-700'
+                  }`}>
+                    {creator.creatorType === 'Lifestyle' ? (
+                      <SparklesIcon className="w-3 h-3" />
+                    ) : (
+                      <PaperAirplaneIcon className="w-3 h-3" />
+                    )}
+                    <span>{creator.creatorType}</span>
+                  </span>
                 </div>
               )}
             </div>

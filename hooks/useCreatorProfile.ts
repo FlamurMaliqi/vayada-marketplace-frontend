@@ -4,7 +4,7 @@ import { ApiErrorResponse } from '@/services/api/client'
 import { checkProfileStatus } from '@/lib/utils'
 import { transformCreatorProfile } from '@/components/profile/transforms'
 import { formatErrorForModal } from './useErrorModal'
-import type { CreatorProfileStatus } from '@/lib/types'
+import type { CreatorProfileStatus, CreatorType } from '@/lib/types'
 import type { Creator as ApiCreator } from '@/lib/types'
 import type {
   ProfilePlatform,
@@ -43,6 +43,7 @@ export function useCreatorProfile(showError: (title: string, message: string | s
     shortDescription: '',
     location: '',
     portfolioLink: '',
+    creatorType: 'Lifestyle' as CreatorType,
     platforms: [] as ProfilePlatform[],
   })
 
@@ -101,6 +102,7 @@ export function useCreatorProfile(showError: (title: string, message: string | s
         shortDescription: creatorProfile.shortDescription,
         location: creatorProfile.location,
         portfolioLink: creatorProfile.portfolioLink || '',
+        creatorType: creatorProfile.creatorType || 'Lifestyle',
         platforms: (creatorProfile.platforms || []).map(platform => {
           const cleanAgeGroups: PlatformAgeGroup[] = (platform.topAgeGroups || [])
             .filter((ag): ag is PlatformAgeGroup => {
@@ -260,6 +262,7 @@ export function useCreatorProfile(showError: (title: string, message: string | s
         name: editFormData.name.trim(),
         location: editFormData.location.trim(),
         short_description: editFormData.shortDescription.trim(),
+        creator_type: editFormData.creatorType,
         platforms: platforms,
         audience_size: audienceSize,
         ...(editFormData.portfolioLink && editFormData.portfolioLink.trim() && {
@@ -320,6 +323,7 @@ export function useCreatorProfile(showError: (title: string, message: string | s
         shortDescription: creatorProfile.shortDescription,
         location: creatorProfile.location,
         portfolioLink: creatorProfile.portfolioLink || '',
+        creatorType: creatorProfile.creatorType || 'Lifestyle',
         platforms: (creatorProfile.platforms || []).map(platform => ({
           ...platform,
           topCountries: platform.topCountries || [],

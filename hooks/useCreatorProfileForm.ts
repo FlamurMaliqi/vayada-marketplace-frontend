@@ -22,6 +22,7 @@ export function useCreatorProfileForm(options: UseCreatorProfileFormOptions = {}
     portfolio_link: '',
     phone: '',
     profile_image: '',
+    creator_type: undefined,
   })
 
   // Platforms state
@@ -250,6 +251,10 @@ export function useCreatorProfileForm(options: UseCreatorProfileFormOptions = {}
 
   // Validation
   const validateForm = useCallback((): boolean => {
+    if (!form.creator_type || (form.creator_type !== 'Lifestyle' && form.creator_type !== 'Travel')) {
+      onError?.('Please select your creator category')
+      return false
+    }
     if (!form.name.trim()) {
       onError?.('Name is required')
       return false
@@ -308,14 +313,18 @@ export function useCreatorProfileForm(options: UseCreatorProfileFormOptions = {}
   // Calculate progress
   const calculateProgress = useCallback((): number => {
     let progress = 0
-    // Step 1: Basic Info (50% total)
-    if (form.name.trim()) progress += 10
-    if (form.location.trim()) progress += 10
-    if (form.short_description.trim() && form.short_description.length >= 10) progress += 10
-    if (form.phone.trim()) progress += 10
-    if (form.profile_image) progress += 10
 
-    // Step 2: Platforms (50% total)
+    // Step 1: Creator Type (10%)
+    if (form.creator_type) progress += 10
+
+    // Step 2: Basic Info (40% total)
+    if (form.name.trim()) progress += 8
+    if (form.location.trim()) progress += 8
+    if (form.short_description.trim() && form.short_description.length >= 10) progress += 8
+    if (form.phone.trim()) progress += 8
+    if (form.profile_image) progress += 8
+
+    // Step 3: Platforms (50% total)
     if (platforms.length > 0) {
       progress += 20 // Base points for having a platform
 
@@ -330,7 +339,12 @@ export function useCreatorProfileForm(options: UseCreatorProfileFormOptions = {}
     return Math.min(100, progress)
   }, [form, platforms])
 
-  // Can proceed to next step
+  // Can proceed to next step - Step 1: Creator Type
+  const canProceedCreatorType = useCallback((): boolean => {
+    return !!(form.creator_type && (form.creator_type === 'Lifestyle' || form.creator_type === 'Travel'))
+  }, [form.creator_type])
+
+  // Can proceed to next step - Step 2: Basic Info (was step 1)
   const canProceedStep1 = useCallback((): boolean => {
     return !!(
       form.name.trim() &&
@@ -374,6 +388,7 @@ export function useCreatorProfileForm(options: UseCreatorProfileFormOptions = {}
     // Validation & progress
     validateForm,
     calculateProgress,
+    canProceedCreatorType,
     canProceedStep1,
 
     // State setters for external control

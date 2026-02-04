@@ -32,7 +32,7 @@ export default function ProfileCompletePage() {
   const [profileCompleted, setProfileCompleted] = useState(false)
   const [currentStep, setCurrentStep] = useState<number>(1)
 
-  const creatorSteps = ['Basic Information', 'Social Media Platforms']
+  const creatorSteps = ['Creator Type', 'Basic Information', 'Social Media Platforms']
   const hotelSteps = ['Basic Information', 'Property Listings']
 
   // Initialize hooks with error handler
@@ -106,7 +106,9 @@ export default function ProfileCompletePage() {
 
   const canProceedToNextStep = (): boolean => {
     if (userType === 'creator') {
-      return currentStep === 1 ? creatorForm.canProceedStep1() : true
+      if (currentStep === 1) return creatorForm.canProceedCreatorType()
+      if (currentStep === 2) return creatorForm.canProceedStep1()
+      return true
     }
     if (userType === 'hotel') {
       return currentStep === 1 ? hotelForm.canProceedStep1() : true
@@ -163,6 +165,7 @@ export default function ProfileCompletePage() {
         location: creatorForm.form.location,
         platforms,
         audienceSize,
+        creatorType: creatorForm.form.creator_type,
         ...(creatorForm.form.portfolio_link?.trim() && { portfolioLink: creatorForm.form.portfolio_link.trim() }),
         ...(creatorForm.form.short_description?.trim() && { shortDescription: creatorForm.form.short_description.trim() }),
         ...(creatorForm.form.phone?.trim() && { phone: creatorForm.form.phone.trim() }),

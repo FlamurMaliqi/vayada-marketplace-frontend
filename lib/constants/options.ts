@@ -15,6 +15,9 @@ export const MONTHS_ABBR = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ] as const
 
+// Creator type options (Lifestyle vs Travel)
+export const CREATOR_TYPE_OPTIONS = ['Lifestyle', 'Travel'] as const
+
 // Platform options for creators (base platforms)
 export const PLATFORM_OPTIONS = ['Instagram', 'TikTok', 'YouTube', 'Facebook'] as const
 
@@ -122,3 +125,4 @@ export type HotelType = typeof HOTEL_TYPES[number]
 export type OfferingOption = typeof OFFERING_OPTIONS[number]
 export type Country = typeof ALL_COUNTRIES[number]
 export type AgeGroup = typeof AGE_GROUP_OPTIONS[number]
+export type CreatorTypeOption = typeof CREATOR_TYPE_OPTIONS[number]

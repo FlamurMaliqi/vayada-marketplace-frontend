@@ -219,6 +219,7 @@ export type DetailedCollaboration = Collaboration & {
     targetAgeMin: number
     targetAgeMax: number
   }
+  allowedCollaborationTypes?: ('Free Stay' | 'Paid' | 'Discount')[]
 }
 
 export interface ConversationResponse {
@@ -230,6 +231,7 @@ export interface ConversationResponse {
   unread_count: number
   collaboration_status: string
   my_role: 'creator' | 'hotel'
+  listing_name?: string | null
 }
 
 export interface MessageMetadata {
@@ -429,6 +431,15 @@ export const collaborationService = {
       rating,
       comment
     })
+  },
+
+  /**
+   * Upload an image for chat messages
+   */
+  uploadChatImage: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return apiClient.upload<{ url: string }>('/upload/image/chat', formData)
   },
 }
 

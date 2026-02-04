@@ -32,6 +32,8 @@ interface SuggestChangesModalProps {
     initialFreeStayMaxNights?: number | null
     initialPaidAmount?: number | null
     initialDiscountPercentage?: number | null
+    allowedCollaborationTypes?: ('Free Stay' | 'Paid' | 'Discount')[]
+    userType?: string | null
     onSubmit: (data: {
         travel_date_from: string,
         travel_date_to: string,
@@ -54,11 +56,25 @@ export default function SuggestChangesModal({
     initialFreeStayMaxNights,
     initialPaidAmount,
     initialDiscountPercentage,
+    allowedCollaborationTypes,
+    userType,
     onSubmit
 }: SuggestChangesModalProps) {
     const [checkIn, setCheckIn] = useState(initialCheckIn)
     const [checkOut, setCheckOut] = useState(initialCheckOut)
-    const [collaborationType, setCollaborationType] = useState(initialCollaborationType || 'Free Stay')
+
+    // For creators, ensure the initial type is one of the allowed types
+    const getInitialCollaborationType = () => {
+        if (userType === 'creator' && allowedCollaborationTypes && allowedCollaborationTypes.length > 0) {
+            // If initial type is allowed, use it; otherwise use the first allowed type
+            if (initialCollaborationType && allowedCollaborationTypes.includes(initialCollaborationType)) {
+                return initialCollaborationType
+            }
+            return allowedCollaborationTypes[0]
+        }
+        return initialCollaborationType || 'Free Stay'
+    }
+    const [collaborationType, setCollaborationType] = useState(getInitialCollaborationType())
     const [freeStayMaxNights, setFreeStayMaxNights] = useState(initialFreeStayMaxNights || 1)
     const [paidAmount, setPaidAmount] = useState(initialPaidAmount || 0)
     const [discountPercentage, setDiscountPercentage] = useState(initialDiscountPercentage || 0)
@@ -175,15 +191,34 @@ export default function SuggestChangesModal({
                         <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Offer Type</label>
-                                <select
-                                    value={collaborationType}
-                                    onChange={(e) => setCollaborationType(e.target.value as 'Free Stay' | 'Paid' | 'Discount')}
-                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="Free Stay">Free Stay</option>
-                                    <option value="Paid">Paid</option>
-                                    <option value="Discount">Discount</option>
-                                </select>
+                                {/* For creators, only show types allowed by the hotel's listing */}
+                                {userType === 'creator' && allowedCollaborationTypes && allowedCollaborationTypes.length > 0 ? (
+                                    allowedCollaborationTypes.length === 1 ? (
+                                        <div className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm font-bold text-gray-900">
+                                            {allowedCollaborationTypes[0]}
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={collaborationType}
+                                            onChange={(e) => setCollaborationType(e.target.value as 'Free Stay' | 'Paid' | 'Discount')}
+                                            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
+                                        >
+                                            {allowedCollaborationTypes.map(type => (
+                                                <option key={type} value={type}>{type}</option>
+                                            ))}
+                                        </select>
+                                    )
+                                ) : (
+                                    <select
+                                        value={collaborationType}
+                                        onChange={(e) => setCollaborationType(e.target.value as 'Free Stay' | 'Paid' | 'Discount')}
+                                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option value="Free Stay">Free Stay</option>
+                                        <option value="Paid">Paid</option>
+                                        <option value="Discount">Discount</option>
+                                    </select>
+                                )}
                             </div>
 
                             {collaborationType === 'Free Stay' && (
@@ -306,8 +341,8 @@ export default function SuggestChangesModal({
                     </button>
                     <button
                         onClick={() => onSubmit({
-                            travel_date_from: checkIn,
-                            travel_date_to: checkOut,
+                            ...(checkIn && { travel_date_from: checkIn }),
+                            ...(checkOut && { travel_date_to: checkOut }),
                             platform_deliverables: platformDeliverables.map(pd => ({
                                 platform: pd.platform,
                                 deliverables: pd.deliverables.map(d => ({

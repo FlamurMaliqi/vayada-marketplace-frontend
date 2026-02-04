@@ -3,7 +3,8 @@ import type {
   CollaborationReview,
   PlatformCountry,
   PlatformAgeGroup,
-  PlatformGenderSplit
+  PlatformGenderSplit,
+  CreatorType
 } from '@/lib/types'
 
 // Re-export for convenience
@@ -69,6 +70,8 @@ export interface ApiCreatorResponse {
   short_description?: string
   portfolioLink?: string
   portfolio_link?: string
+  creatorType?: CreatorType
+  creator_type?: CreatorType
   platforms?: ApiPlatformResponse[]
   rating?: ApiRatingResponse
 }
@@ -82,6 +85,7 @@ export interface CreatorUpdatePayload {
   phone?: string
   profilePicture?: string
   audience_size?: number
+  creator_type?: CreatorType
   platforms?: Array<{
     name: 'Instagram' | 'TikTok' | 'YouTube' | 'Facebook'
     handle: string
@@ -101,6 +105,7 @@ export interface CreatorProfile {
   shortDescription: string
   location: string
   status: 'verified' | 'pending' | 'rejected'
+  creatorType: CreatorType
   rating?: CreatorRating
   platforms: ProfilePlatform[]
   portfolioLink?: string
@@ -129,6 +134,7 @@ export interface ProfileHotelListing {
   targetGroupAgeMin?: number
   targetGroupAgeMax?: number
   targetGroupAgeGroups?: string[]
+  lookingForCreatorTypes?: CreatorType[]
   status: 'verified' | 'pending' | 'rejected'
 }
 
@@ -153,6 +159,7 @@ export interface CreatorEditFormData {
   shortDescription: string
   location: string
   portfolioLink: string
+  creatorType: CreatorType
   platforms: ProfilePlatform[]
 }
 
@@ -183,6 +190,7 @@ export interface ListingFormData {
   targetGroupAgeMin?: number
   targetGroupAgeMax?: number
   targetGroupAgeGroups?: string[]
+  lookingForCreatorTypes?: CreatorType[]
 }
 
 // Modal state types
@@ -222,5 +230,6 @@ export function createEmptyListingFormData(): ListingFormData {
     targetGroupAgeMin: undefined,
     targetGroupAgeMax: undefined,
     targetGroupAgeGroups: [],
+    lookingForCreatorTypes: [],
   }
 }

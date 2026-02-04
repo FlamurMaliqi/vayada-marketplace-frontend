@@ -31,6 +31,7 @@ export default function MarketplacePage() {
     minEngagementRate?: number
     creatorPlatforms?: string | string[]
     topCountries?: string | string[]
+    creatorTypes?: string | string[]
   }>({})
   // Get userType from localStorage on mount
   useEffect(() => {
@@ -210,8 +211,19 @@ export default function MarketplacePage() {
       if (!hasMatchingCountry) return false
     }
 
+    // Creator Types filter (multiselect)
+    if (filters.creatorTypes) {
+      const selectedTypes = Array.isArray(filters.creatorTypes)
+        ? filters.creatorTypes
+        : [filters.creatorTypes]
+
+      if (!creator.creatorType || !selectedTypes.includes(creator.creatorType)) {
+        return false
+      }
+    }
+
     return true
-  }), [creators, searchQuery, filters.minFollowers, filters.minEngagementRate, filters.creatorPlatforms, filters.topCountries])
+  }), [creators, searchQuery, filters.minFollowers, filters.minEngagementRate, filters.creatorPlatforms, filters.topCountries, filters.creatorTypes])
 
   // Memoized sorted results
   const sortedHotels = useMemo(() => {

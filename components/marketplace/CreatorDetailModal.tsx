@@ -9,6 +9,8 @@ import { formatNumber, formatFollowers, getTimeAgo } from '@/lib/utils'
 import {
   MapPinIcon,
   XMarkIcon,
+  SparklesIcon,
+  PaperAirplaneIcon,
 } from '@heroicons/react/24/outline'
 import { HotelInvitationModal, type HotelInvitationData } from './HotelInvitationModal'
 import { collaborationService, type CreateHotelCollaborationRequest } from '@/services/api/collaborations'
@@ -247,8 +249,20 @@ export function CreatorDetailModal({ creator, isOpen, onClose, isPublic = false 
               <h2 className="text-2xl font-bold text-gray-900 mb-1">{creator.name}</h2>
               <p className="text-gray-600 mb-3">@{primaryHandle}</p>
 
-              {/* Platform Badges */}
+              {/* Creator Type and Platform Badges */}
               <div className="flex flex-wrap gap-2 mb-4">
+                {/* Creator Type Badge */}
+                {creator.creatorType && (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-primary-200 bg-primary-50 text-primary-700 rounded-lg text-sm font-medium">
+                    {creator.creatorType === 'Lifestyle' ? (
+                      <SparklesIcon className="w-4 h-4" />
+                    ) : (
+                      <PaperAirplaneIcon className="w-4 h-4" />
+                    )}
+                    <span>{creator.creatorType} Creator</span>
+                  </div>
+                )}
+                {/* Platform Badges */}
                 {creator.platforms.map((platform, index) => (
                   <div
                     key={index}

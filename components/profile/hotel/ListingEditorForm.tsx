@@ -1,8 +1,9 @@
 'use client'
 
-import { XMarkIcon, GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, SparklesIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import { Input, Textarea, Button, HotelBadgeIcon } from '@/components/ui'
-import { HOTEL_TYPES } from '@/lib/constants'
+import { HOTEL_TYPES, CREATOR_TYPE_OPTIONS } from '@/lib/constants'
+import type { CreatorType } from '@/lib/types'
 import { CollaborationTypeSelector } from './CollaborationTypeSelector'
 import { AvailabilityMonthSelector } from './AvailabilityMonthSelector'
 import { PlatformSelector } from './PlatformSelector'
@@ -293,6 +294,58 @@ export function ListingEditorForm({
             label="Creator's platforms"
             description="Which platforms should the creator have?"
           />
+
+          {/* Creator Types */}
+          <div>
+            <label className="block text-base font-semibold text-gray-900 mb-1">Creator Type (optional)</label>
+            <p className="text-sm text-gray-600 mb-3">What type of creators are you looking for?</p>
+            <div className="flex flex-wrap gap-2">
+              {CREATOR_TYPE_OPTIONS.map((type) => {
+                const isSelected = formData.lookingForCreatorTypes?.includes(type as CreatorType) || false
+                return (
+                  <label
+                    key={type}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${isSelected
+                      ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                      }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => {
+                        const currentTypes = formData.lookingForCreatorTypes || []
+                        if (e.target.checked) {
+                          updateField('lookingForCreatorTypes', [...currentTypes, type as CreatorType])
+                        } else {
+                          updateField('lookingForCreatorTypes', currentTypes.filter((t) => t !== type))
+                        }
+                      }}
+                      className="sr-only"
+                    />
+                    <span
+                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
+                        ? 'border-[#2F54EB] bg-[#2F54EB]'
+                        : 'border-gray-400 bg-white'
+                        }`}
+                    >
+                      {isSelected && (
+                        <span className="w-2 h-2 rounded-full bg-white"></span>
+                      )}
+                    </span>
+                    {type === 'Lifestyle' ? (
+                      <SparklesIcon className={`w-4 h-4 mr-1 ${isSelected ? 'text-[#2F54EB]' : 'text-gray-500'}`} />
+                    ) : (
+                      <PaperAirplaneIcon className={`w-4 h-4 mr-1 ${isSelected ? 'text-[#2F54EB]' : 'text-gray-500'}`} />
+                    )}
+                    <span className={isSelected ? 'text-[#2F54EB]' : 'text-gray-700'}>
+                      {type} Creator
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          </div>
 
           {/* Min Followers */}
           <div>

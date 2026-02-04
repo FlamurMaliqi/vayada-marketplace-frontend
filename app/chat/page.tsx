@@ -369,6 +369,65 @@ function ChatPageContent() {
     }
   }
 
+  const handleSendImageMessage = async (file: File, caption?: string) => {
+    if (!selectedChatId) return
+
+    // Upload image
+    const { url } = await collaborationService.uploadChatImage(file)
+
+    // Create temp message for image
+    const tempImageMessage = {
+      id: `temp-img-${Date.now()}`,
+      collaboration_id: selectedChatId,
+      sender_id: 'me',
+      sender_name: 'Me',
+      sender_avatar: null,
+      content: url,
+      content_type: 'image' as const,
+      metadata: null,
+      created_at: new Date().toISOString(),
+    }
+
+    setRealMessages((prev) => [...prev, tempImageMessage])
+
+    // Send image message
+    await collaborationService.sendMessage(selectedChatId, url, 'image')
+
+    // Update conversation list
+    setConversations((prev) => {
+      const chatIndex = prev.findIndex((c) => c.collaboration_id === selectedChatId)
+      if (chatIndex === -1) return prev
+
+      const updatedChat = {
+        ...prev[chatIndex],
+        last_message_content: caption || 'Sent an image',
+        last_message_at: new Date().toISOString(),
+        unread_count: 0,
+      }
+
+      const filtered = prev.filter((c) => c.collaboration_id !== selectedChatId)
+      return [updatedChat, ...filtered]
+    })
+
+    // If caption provided, send it as a separate text message
+    if (caption) {
+      const tempCaptionMessage = {
+        id: `temp-caption-${Date.now()}`,
+        collaboration_id: selectedChatId,
+        sender_id: 'me',
+        sender_name: 'Me',
+        sender_avatar: null,
+        content: caption,
+        content_type: 'text' as const,
+        metadata: null,
+        created_at: new Date().toISOString(),
+      }
+
+      setRealMessages((prev) => [...prev, tempCaptionMessage])
+      await collaborationService.sendMessage(selectedChatId, caption)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-white flex flex-col">
       <AuthenticatedNavigation />
@@ -442,10 +501,10 @@ function ChatPageContent() {
                         {activeChat.collaboration_status}
                       </span>
                     </div>
-                    {userType === 'hotel' && activeCollaboration.listingName && (
+                    {activeCollaboration.listingName && (
                       <div className="flex items-center gap-1.5 py-0.5 px-2 bg-blue-50/50 border border-blue-100/50 rounded-lg w-fit">
                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-tight">
-                          Applied to:
+                          {userType === 'hotel' ? 'Applied to:' : 'Property:'}
                         </span>
                         <span className="text-xs font-black text-blue-600 tracking-wide">
                           {activeCollaboration.listingName}
@@ -520,6 +579,7 @@ function ChatPageContent() {
                 onMessageInputChange={setMessageInput}
                 onSendMessage={handleSendMessage}
                 onLoadMore={handleLoadMore}
+                onSendImageMessage={handleSendImageMessage}
               />
             </div>
 
@@ -568,6 +628,8 @@ function ChatPageContent() {
         initialFreeStayMaxNights={activeCollaboration?.freeStayMaxNights}
         initialPaidAmount={activeCollaboration?.paidAmount}
         initialDiscountPercentage={activeCollaboration?.discountPercentage}
+        allowedCollaborationTypes={activeCollaboration?.allowedCollaborationTypes}
+        userType={userType}
         onSubmit={handleSuggestChanges}
       />
 

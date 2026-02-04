@@ -216,6 +216,7 @@ interface CreatorMarketplaceResponse {
   short_description: string
   portfolio_link: string | null
   profile_picture: string | null
+  creator_type: 'Lifestyle' | 'Travel'
   platforms: Array<{
     id: string
     name: "Instagram" | "TikTok" | "YouTube" | "Facebook"
@@ -296,6 +297,7 @@ export function transformCreatorMarketplaceResponse(apiCreator: CreatorMarketpla
     shortDescription: apiCreator.short_description || undefined,
     phone: null,
     profilePicture: apiCreator.profile_picture || undefined,
+    creatorType: apiCreator.creator_type || 'Lifestyle',
     rating: {
       averageRating: apiCreator.average_rating,
       totalReviews: apiCreator.total_reviews,

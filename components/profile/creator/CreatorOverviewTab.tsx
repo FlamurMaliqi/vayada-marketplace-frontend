@@ -1,10 +1,22 @@
 'use client'
 
 import { useRef, RefObject } from 'react'
-import { UserIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, LinkIcon } from '@heroicons/react/24/outline'
+import { UserIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, LinkIcon, SparklesIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import { Input, Textarea } from '@/components/ui'
-import { STORAGE_KEYS } from '@/lib/constants'
+import { STORAGE_KEYS, CREATOR_TYPE_OPTIONS } from '@/lib/constants'
 import type { CreatorProfile, CreatorEditFormData } from '@/components/profile/types'
+import type { CreatorType } from '@/lib/types'
+
+const CREATOR_TYPE_CONFIG = {
+  Lifestyle: {
+    icon: SparklesIcon,
+    label: 'Lifestyle Creator',
+  },
+  Travel: {
+    icon: PaperAirplaneIcon,
+    label: 'Travel Creator',
+  },
+}
 
 interface CreatorOverviewTabProps {
   profile: CreatorProfile
@@ -78,6 +90,57 @@ export function CreatorOverviewTab({
             placeholder="e.g., New York, USA"
             leadingIcon={<MapPinIcon className="w-5 h-5 text-gray-400" />}
           />
+
+          {/* Creator Category Selection */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Creator Category <span className="text-red-500">*</span>
+            </label>
+            {isEditing ? (
+              <div className="grid grid-cols-2 gap-3">
+                {CREATOR_TYPE_OPTIONS.map((type) => {
+                  const config = CREATOR_TYPE_CONFIG[type as keyof typeof CREATOR_TYPE_CONFIG]
+                  const Icon = config.icon
+                  const isSelected = editFormData.creatorType === type
+
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => onEditFormChange({ ...editFormData, creatorType: type as CreatorType })}
+                      className={`flex flex-col items-center justify-center gap-2 px-4 py-5 rounded-xl border transition-all ${
+                        isSelected
+                          ? 'border-[#2F54EB] bg-primary-50'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        isSelected ? 'bg-primary-100' : 'bg-gray-100'
+                      }`}>
+                        <Icon className={`w-5 h-5 ${isSelected ? 'text-[#2F54EB]' : 'text-gray-500'}`} />
+                      </div>
+                      <span className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                        {config.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+                {(() => {
+                  const config = CREATOR_TYPE_CONFIG[profile.creatorType as keyof typeof CREATOR_TYPE_CONFIG]
+                  const Icon = config?.icon || SparklesIcon
+                  return (
+                    <>
+                      <Icon className="w-4 h-4 text-gray-500" />
+                      <span>{config?.label || 'Creator'}</span>
+                    </>
+                  )
+                })()}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Column: Profile Picture */}

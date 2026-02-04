@@ -111,7 +111,7 @@ export function ListingCard({
                 value={listing.name}
                 onChange={(e) => onUpdateListing(index, 'name', e.target.value)}
                 required
-                placeholder="Luxury Beach Villa"
+                placeholder="Hotel Vayada"
                 className="bg-gray-50 border-gray-200"
               />
 

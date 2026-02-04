@@ -11,6 +11,7 @@ import {
   PLATFORM_OPTIONS,
   FOLLOWERS_RANGE,
   ENGAGEMENT_RATE_RANGE,
+  CREATOR_TYPE_OPTIONS,
 } from '@/lib/constants'
 import { formatFollowers, formatEngagementRate } from '@/lib/utils'
 
@@ -19,6 +20,7 @@ export interface CreatorFiltersState {
   minEngagementRate?: number
   creatorPlatforms?: string | string[]
   topCountries?: string | string[]
+  creatorTypes?: string | string[]
 }
 
 interface CreatorFiltersProps {
@@ -53,8 +55,9 @@ export function CreatorFilters({
 
   const selectedCreatorPlatforms = toArray(filters.creatorPlatforms)
   const selectedTopCountries = toArray(filters.topCountries)
+  const selectedCreatorTypes = toArray(filters.creatorTypes)
 
-  const createToggleHandler = (key: 'creatorPlatforms' | 'topCountries') => (value: string) => {
+  const createToggleHandler = (key: 'creatorPlatforms' | 'topCountries' | 'creatorTypes') => (value: string) => {
     const current = toArray(filters[key])
     const updated = current.includes(value)
       ? current.filter((v) => v !== value)
@@ -107,6 +110,7 @@ export function CreatorFilters({
   const hasFilters =
     selectedCreatorPlatforms.length > 0 ||
     selectedTopCountries.length > 0 ||
+    selectedCreatorTypes.length > 0 ||
     (filters.minFollowers !== undefined && filters.minFollowers > FOLLOWERS_RANGE.min) ||
     (filters.minEngagementRate !== undefined && filters.minEngagementRate > ENGAGEMENT_RATE_RANGE.min)
 
@@ -141,6 +145,14 @@ export function CreatorFilters({
           formatMin="0%"
           formatMax="10%"
           showCurrentValue
+        />
+
+        <MultiSelectDropdown
+          label="Creator Type"
+          title="Select Creator Type"
+          options={CREATOR_TYPE_OPTIONS}
+          selected={selectedCreatorTypes}
+          onToggle={createToggleHandler('creatorTypes')}
         />
 
         <MultiSelectDropdown
@@ -184,6 +196,13 @@ export function CreatorFilters({
               onRemove={() => handleMinEngagementRateChange(ENGAGEMENT_RATE_RANGE.min)}
             />
           )}
+          {selectedCreatorTypes.map((type) => (
+            <FilterChip
+              key={type}
+              label={`${type} Creator`}
+              onRemove={() => createToggleHandler('creatorTypes')(type)}
+            />
+          ))}
           {selectedCreatorPlatforms.map((platform) => (
             <FilterChip
               key={platform}

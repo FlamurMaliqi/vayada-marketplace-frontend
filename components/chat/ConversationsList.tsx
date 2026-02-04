@@ -107,10 +107,19 @@ export function ConversationsList({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
-                    <h4 className="text-sm font-semibold text-gray-900 truncate">
-                      {chat.partner_name}
-                    </h4>
-                    <span className="text-[10px] text-gray-400 flex-shrink-0">
+                    <div className="truncate">
+                      <h4 className="text-sm font-semibold text-gray-900 truncate">
+                        {chat.my_role === 'creator' && chat.listing_name
+                          ? chat.listing_name
+                          : chat.partner_name}
+                      </h4>
+                      {chat.my_role === 'creator' && chat.listing_name && (
+                        <p className="text-[10px] text-gray-400 truncate">
+                          {chat.partner_name}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-gray-400 flex-shrink-0 ml-2">
                       {formatTime(chat.last_message_at)}
                     </span>
                   </div>
