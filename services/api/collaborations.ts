@@ -483,6 +483,7 @@ export function transformCollaborationResponse(
       })) || [],
       audienceSize: response.total_followers ?? 0,
       avgEngagementRate: response.avg_engagement_rate ?? undefined,
+      creatorType: (response.creator_type as 'Lifestyle' | 'Travel') || 'Lifestyle',
       rating: response.reputation
         ? {
           averageRating: response.reputation.average_rating,
