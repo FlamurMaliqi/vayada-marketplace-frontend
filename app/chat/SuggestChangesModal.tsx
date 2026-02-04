@@ -341,8 +341,8 @@ export default function SuggestChangesModal({
                     </button>
                     <button
                         onClick={() => onSubmit({
-                            ...(checkIn && { travel_date_from: checkIn }),
-                            ...(checkOut && { travel_date_to: checkOut }),
+                            travel_date_from: checkIn,
+                            travel_date_to: checkOut,
                             platform_deliverables: platformDeliverables.map(pd => ({
                                 platform: pd.platform,
                                 deliverables: pd.deliverables.map(d => ({
