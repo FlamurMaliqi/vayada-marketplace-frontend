@@ -112,8 +112,19 @@ export function CreatorBasicInfoStep({
           rows={3}
           maxLength={500}
           error={error && error.includes('description') ? error : undefined}
-          helperText={`${form.short_description.length}/500 characters`}
         />
+        <p className={`text-xs mt-1 ${
+          form.short_description.trim().length >= 10
+            ? 'text-green-600'
+            : form.short_description.trim().length > 0
+              ? 'text-red-500'
+              : 'text-gray-500'
+        }`}>
+          {form.short_description.length}/500 characters
+          {form.short_description.trim().length > 0 && form.short_description.trim().length < 10 && (
+            <span> (minimum 10 characters)</span>
+          )}
+        </p>
       </div>
 
       <div className="space-y-2">
