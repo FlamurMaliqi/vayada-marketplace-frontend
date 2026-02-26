@@ -28,67 +28,71 @@ export function CreatorCard({ creator, isPublic = false }: CreatorCardProps) {
       <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200 flex flex-col h-full">
         {/* Header */}
         <div className="p-6 pb-4">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <div className="flex items-start gap-2 mb-1">
-                <h3 className="text-xl font-bold text-gray-900 line-clamp-2">
-                  {creator.name}
-                </h3>
-                {creator.status === 'verified' && (
-                  <div className="w-5 h-5 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckBadgeIcon className="w-4 h-4 text-white" />
+          {/* Profile Picture - centered and larger */}
+          <div className="flex justify-center mb-4">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden ring-2 ring-gray-100">
+                {creator.profilePicture && !imageError ? (
+                  <Image
+                    src={creator.profilePicture}
+                    alt={creator.name}
+                    width={96}
+                    height={96}
+                    className="object-cover w-full h-full"
+                    onError={() => setImageError(true)}
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-2xl">
+                    {creator.name.charAt(0)}
                   </div>
                 )}
               </div>
-              <div className="flex items-center text-gray-600 text-sm mb-3">
-                <MapPinIcon className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="truncate">{creator.location}</span>
-              </div>
-              {/* Rating - replacing category section */}
-              {creator.rating && (
-                <div className="flex items-center">
-                  <StarRating
-                    rating={creator.rating.averageRating}
-                    totalReviews={creator.rating.totalReviews}
-                    size="sm"
-                  />
-                </div>
-              )}
-              {/* Creator Type Badge */}
-              {creator.creatorType && (
-                <div className="mt-2">
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                    creator.creatorType === 'Lifestyle'
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'bg-amber-50 text-amber-700'
-                  }`}>
-                    {creator.creatorType === 'Lifestyle' ? (
-                      <SparklesIcon className="w-3 h-3" />
-                    ) : (
-                      <PaperAirplaneIcon className="w-3 h-3" />
-                    )}
-                    <span>{creator.creatorType}</span>
-                  </span>
+              {/* Verification Badge - overlaid on profile picture */}
+              {creator.status === 'verified' && (
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center ring-2 ring-white">
+                  <CheckBadgeIcon className="w-5 h-5 text-white" />
                 </div>
               )}
             </div>
-            {/* Profile Picture */}
-            <div className="w-16 h-16 rounded-full flex-shrink-0 overflow-hidden relative">
-              {creator.profilePicture && !imageError ? (
-                <Image
-                  src={creator.profilePicture}
-                  alt={creator.name}
-                  fill
-                  className="object-cover"
-                  onError={() => setImageError(true)}
-                  unoptimized
+          </div>
+
+          {/* Name and Info - centered */}
+          <div className="text-center">
+            <h3 className="text-lg font-bold text-gray-900 truncate max-w-full" title={creator.name}>
+              {creator.name}
+            </h3>
+            <div className="flex items-center justify-center text-gray-600 text-sm mt-1 mb-3">
+              <MapPinIcon className="w-4 h-4 mr-1 flex-shrink-0" />
+              <span className="truncate">{creator.location}</span>
+            </div>
+            {/* Rating */}
+            {creator.rating && (
+              <div className="flex items-center justify-center">
+                <StarRating
+                  rating={creator.rating.averageRating}
+                  totalReviews={creator.rating.totalReviews}
+                  size="sm"
                 />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-xl">
-                  {creator.name.charAt(0)}
-                </div>
-              )}
-            </div>
+              </div>
+            )}
+            {/* Creator Type Badge */}
+            {creator.creatorType && (
+              <div className="mt-2">
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                  creator.creatorType === 'Lifestyle'
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'bg-amber-50 text-amber-700'
+                }`}>
+                  {creator.creatorType === 'Lifestyle' ? (
+                    <SparklesIcon className="w-3 h-3" />
+                  ) : (
+                    <PaperAirplaneIcon className="w-3 h-3" />
+                  )}
+                  <span>{creator.creatorType}</span>
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
