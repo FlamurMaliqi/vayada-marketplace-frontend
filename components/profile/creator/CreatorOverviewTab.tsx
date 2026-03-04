@@ -184,7 +184,7 @@ export function CreatorOverviewTab({
               </>
             )}
           </div>
-          <p className="text-xs text-gray-500 text-center">Optional - JPG, PNG or WebP (max 5MB)</p>
+          <p className="text-xs text-gray-500 text-center">Optional - JPG, PNG or WebP (max 20MB)</p>
           <input
             type="file"
             ref={fileInputRef}

@@ -207,8 +207,8 @@ export function useListingManagement(
         showError('Invalid File Type', 'Please select image files only')
         return
       }
-      if (file.size > 5 * 1024 * 1024) {
-        showError('File Too Large', `${file.name} is larger than 5MB`)
+      if (file.size > 20 * 1024 * 1024) {
+        showError('File Too Large', `${file.name} is larger than 20MB`)
         return
       }
     }

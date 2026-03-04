@@ -350,8 +350,8 @@ export function useCreatorProfile(showError: (title: string, message: string | s
       return
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      showError('File Too Large', 'Image must be less than 5MB')
+    if (file.size > 20 * 1024 * 1024) {
+      showError('File Too Large', 'Image must be less than 20MB')
       return
     }
 

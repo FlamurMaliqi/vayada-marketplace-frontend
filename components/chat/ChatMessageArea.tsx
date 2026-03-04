@@ -29,7 +29,7 @@ interface ChatMessageAreaProps {
   onSendImageMessage?: (file: File, caption?: string) => Promise<void>
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 export function ChatMessageArea({
@@ -91,7 +91,7 @@ export function ChatMessageArea({
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      setUploadError('Image must be smaller than 5MB')
+      setUploadError('Image must be smaller than 20MB')
       return
     }
 

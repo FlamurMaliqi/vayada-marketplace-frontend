@@ -88,7 +88,7 @@ export function ListingImageGallery({
             <PlusIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500" />
           </div>
           <p className="text-sm font-semibold text-gray-700 group-hover:text-primary-600 mb-1">Upload Property Photos</p>
-          <p className="text-xs text-gray-500">JPG, PNG, WEBP - Max 5MB per image</p>
+          <p className="text-xs text-gray-500">JPG, PNG, WEBP - Max 20MB per image</p>
         </div>
       )}
       <input

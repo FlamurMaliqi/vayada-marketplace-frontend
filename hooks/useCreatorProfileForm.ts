@@ -50,8 +50,8 @@ export function useCreatorProfileForm(options: UseCreatorProfileFormOptions = {}
       onError?.('Please upload an image file (JPG, PNG, WebP)')
       return
     }
-    if (file.size > 5 * 1024 * 1024) {
-      onError?.('Image must be less than 5MB')
+    if (file.size > 20 * 1024 * 1024) {
+      onError?.('Image must be less than 20MB')
       return
     }
 

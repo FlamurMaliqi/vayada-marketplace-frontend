@@ -260,7 +260,7 @@ export function ListingCard({
                   </div>
                   <p className="text-base font-semibold text-gray-700 group-hover:text-primary-600 transition-colors mb-1">Upload Property Photos</p>
                   <p className="text-sm text-gray-500">Showcase your property with high-quality images</p>
-                  <p className="text-xs text-gray-400 mt-2">JPG, PNG, WEBP - Max 5MB per image</p>
+                  <p className="text-xs text-gray-400 mt-2">JPG, PNG, WEBP - Max 20MB per image</p>
                 </div>
               )}
               <input
