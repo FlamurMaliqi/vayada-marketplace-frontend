@@ -57,5 +57,6 @@ export const ROUTES = {
   SETTINGS_PRIVACY: '/settings/privacy',
   SETTINGS_DATA_EXPORT: '/settings/data-export',
   SETTINGS_DELETE_ACCOUNT: '/settings/delete-account',
+  SETTINGS_NEWSLETTER: '/settings/newsletter',
 } as const
 

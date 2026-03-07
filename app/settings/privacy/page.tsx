@@ -216,6 +216,27 @@ export default function PrivacySettingsPage() {
                 </div>
               </div>
 
+              {/* Newsletter Preferences */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <EnvelopeIcon className="h-6 w-6 text-primary-600" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Weekly Newsletter</h3>
+                      <p className="text-sm text-gray-500">
+                        Get weekly recommendations for hotels or creators, plus new members on Vayada
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={ROUTES.SETTINGS_NEWSLETTER}
+                    className="px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+                  >
+                    Manage
+                  </Link>
+                </div>
+              </div>
+
               {/* Cookie Settings */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center justify-between">
