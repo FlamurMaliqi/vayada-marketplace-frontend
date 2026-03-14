@@ -326,11 +326,12 @@ export function transformListingMarketplaceResponse(apiListing: ListingMarketpla
     collaborationType = 'Bezahlt'
   }
   
-  // Get availability months (union of all offerings)
+  // Get availability months (union of all offerings), sorted chronologically
+  const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const availabilityMonths = Array.from(
     new Set(offerings.flatMap(o => o.availability_months || []))
-  )
-  
+  ).sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b))
+
   // Get platforms (union of all offerings)
   const platforms = Array.from(
     new Set(offerings.flatMap(o => o.platforms || []))
@@ -399,12 +400,13 @@ export function transformHotelListingToHotel(listing: HotelListing): Hotel {
     collaborationType = 'Bezahlt'
   }
 
-  // Get availability months (union of all offerings)
+  // Get availability months (union of all offerings), sorted chronologically
+  const monthOrder2 = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const availabilityMonths = Array.from(
     new Set(
       offerings.flatMap((offering) => offering.availability_months || [])
     )
-  )
+  ).sort((a, b) => monthOrder2.indexOf(a) - monthOrder2.indexOf(b))
 
   // Get platforms (union of all offerings)
   const platforms = Array.from(

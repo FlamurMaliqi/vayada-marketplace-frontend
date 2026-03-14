@@ -38,6 +38,21 @@ export function getMonthAbbr(month: string): string {
 }
 
 /**
+ * Sort months chronologically (January first, December last)
+ * Supports both English and German month names
+ */
+const MONTH_ORDER: Record<string, number> = {
+  'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
+  'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11,
+  'Januar': 0, 'Februar': 1, 'März': 2, 'Mai': 4, 'Juni': 5,
+  'Juli': 6, 'Oktober': 9, 'Dezember': 11,
+}
+
+export function sortMonths(months: string[]): string[] {
+  return [...months].sort((a, b) => (MONTH_ORDER[a] ?? 99) - (MONTH_ORDER[b] ?? 99))
+}
+
+/**
  * Format array of months as abbreviated string
  * @param months Array of month names
  * @returns Comma-separated abbreviated month names

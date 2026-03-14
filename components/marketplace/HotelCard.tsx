@@ -8,7 +8,7 @@ import { HotelDetailModal } from './HotelDetailModal'
 import { CollaborationApplicationModal, type CollaborationApplicationData } from './CollaborationApplicationModal'
 import { collaborationService, type CreateCreatorCollaborationRequest } from '@/services/api/collaborations'
 import { getCurrentUserInfo } from '@/lib/utils/accessControl'
-import { getMonthAbbr } from '@/lib/utils/months'
+import { getMonthAbbr, sortMonths } from '@/lib/utils/months'
 import { ROUTES } from '@/lib/constants/routes'
 
 interface HotelCardProps {
@@ -210,7 +210,7 @@ export function HotelCard({ hotel, creatorPlatforms = [], isPublic = false }: Ho
                     </span>
                   ) : hotel.availability.length > 4 ? (
                     <>
-                      {hotel.availability.slice(0, 4).map((month, index) => (
+                      {sortMonths(hotel.availability).slice(0, 4).map((month, index) => (
                         <span
                           key={index}
                           className="inline-block px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium"
@@ -223,7 +223,7 @@ export function HotelCard({ hotel, creatorPlatforms = [], isPublic = false }: Ho
                       </span>
                     </>
                   ) : (
-                    hotel.availability.map((month, index) => (
+                    sortMonths(hotel.availability).map((month, index) => (
                       <span
                         key={index}
                         className="inline-block px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium"

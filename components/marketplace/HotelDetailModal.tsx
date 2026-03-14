@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Hotel } from '@/lib/types'
 import { Button, PlatformIcon } from '@/components/ui'
-import { getMonthAbbr } from '@/lib/utils'
+import { getMonthAbbr, sortMonths } from '@/lib/utils/months'
 import {
   MapPinIcon,
   GlobeAltIcon,
@@ -314,7 +314,7 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
                       Available All Year
                     </span>
                   ) : (
-                    hotel.availability.map((month, index) => (
+                    sortMonths(hotel.availability).map((month, index) => (
                       <span
                         key={index}
                         className="px-3 py-1.5 bg-primary-100 text-primary-700 rounded-full text-sm font-medium"
