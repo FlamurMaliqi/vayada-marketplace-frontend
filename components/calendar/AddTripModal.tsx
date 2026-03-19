@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { XMarkIcon, PlusIcon, CalendarIcon } from '@heroicons/react/24/outline'
+import { tripService } from '@/services/api/trips'
+import type { TripResponse } from '@/services/api/trips'
 
 interface Collaboration {
     id: string
@@ -13,9 +15,10 @@ interface Collaboration {
 interface AddTripModalProps {
     isOpen: boolean
     onClose: () => void
+    onTripCreated?: (trip: TripResponse) => void
 }
 
-export function AddTripModal({ isOpen, onClose }: AddTripModalProps) {
+export function AddTripModal({ isOpen, onClose, onTripCreated }: AddTripModalProps) {
     const [formData, setFormData] = useState({
         tripName: '',
         location: '',
@@ -25,6 +28,8 @@ export function AddTripModal({ isOpen, onClose }: AddTripModalProps) {
     })
 
     const [collaborations, setCollaborations] = useState<Collaboration[]>([])
+    const [saving, setSaving] = useState(false)
+    const [error, setError] = useState('')
 
     if (!isOpen) return null
 
@@ -46,9 +51,55 @@ export function AddTripModal({ isOpen, onClose }: AddTripModalProps) {
         setCollaborations(collaborations.map(c => c.id === id ? { ...c, ...updates } : c))
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const resetForm = () => {
+        setFormData({ tripName: '', location: '', startDate: '', endDate: '', notes: '' })
+        setCollaborations([])
+        setError('')
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        onClose()
+        setError('')
+        setSaving(true)
+
+        try {
+            // 1. Create the trip
+            const trip = await tripService.createTrip({
+                name: formData.tripName,
+                location: formData.location || undefined,
+                start_date: formData.startDate,
+                end_date: formData.endDate,
+                notes: formData.notes || undefined,
+            })
+
+            // 2. Create any inline external collaborations linked to this trip
+            for (const collab of collaborations) {
+                if (collab.hotelName.trim()) {
+                    try {
+                        await tripService.createExternalCollaboration({
+                            trip_id: trip.id,
+                            title: collab.hotelName,
+                            hotel_name: collab.hotelName,
+                            collaboration_type: collab.type as 'Custom / External' | 'Paid' | 'Free Stay',
+                            start_date: formData.startDate,
+                            end_date: formData.endDate,
+                            deliverables: collab.deliverables || undefined,
+                        })
+                    } catch {
+                        // Non-fatal: continue with other collaborations
+                    }
+                }
+            }
+
+            onTripCreated?.(trip)
+            resetForm()
+            onClose()
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to create trip'
+            setError(message)
+        } finally {
+            setSaving(false)
+        }
     }
 
     return (
@@ -80,6 +131,12 @@ export function AddTripModal({ isOpen, onClose }: AddTripModalProps) {
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plane h-6 w-6 text-gray-900"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>
                                 <h3 className="text-[22px] font-bold text-gray-900">Add Trip</h3>
                             </div>
+
+                            {error && (
+                                <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
+                                    {error}
+                                </div>
+                            )}
 
                             <div className="space-y-6">
                                 {/* Trip Name */}
@@ -258,9 +315,10 @@ export function AddTripModal({ isOpen, onClose }: AddTripModalProps) {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-10 py-3 rounded-xl bg-[#4353e4] text-white text-[15px] font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                                    disabled={saving}
+                                    className="px-10 py-3 rounded-xl bg-[#4353e4] text-white text-[15px] font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98] disabled:opacity-50"
                                 >
-                                    Add Trip
+                                    {saving ? 'Saving...' : 'Add Trip'}
                                 </button>
                             </div>
                         </form>

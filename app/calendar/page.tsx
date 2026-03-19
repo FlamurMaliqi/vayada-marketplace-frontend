@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { AuthenticatedNavigation } from '@/components/layout'
 import { useSidebar } from '@/components/layout/AuthenticatedNavigation'
 import { YearlyCalendar } from '@/components/calendar/YearlyCalendar'
 import { collaborationService, transformCollaborationResponse, type CollaborationResponse } from '@/services/api/collaborations'
+import { tripService, type TripResponse, type ExternalCollaborationResponse } from '@/services/api/trips'
 import { CollaborationRequestDetailModal } from '@/components/marketplace/CollaborationRequestDetailModal'
 import type { Collaboration, Hotel, Creator } from '@/lib/types'
 import { STORAGE_KEYS } from '@/lib/constants'
@@ -12,34 +13,46 @@ import { STORAGE_KEYS } from '@/lib/constants'
 function CalendarPageContent() {
     const { isCollapsed } = useSidebar()
     const [collaborations, setCollaborations] = useState<CollaborationResponse[]>([])
+    const [trips, setTrips] = useState<TripResponse[]>([])
+    const [externalCollaborations, setExternalCollaborations] = useState<ExternalCollaborationResponse[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [detailCollaboration, setDetailCollaboration] = useState<(Collaboration & { hotel?: Hotel; creator?: Creator }) | null>(null)
     const [userType, setUserType] = useState<'hotel' | 'creator'>('hotel')
+
+    const fetchData = useCallback(async (storedUserType: 'hotel' | 'creator') => {
+        try {
+            let collabData: CollaborationResponse[] = []
+            if (storedUserType === 'creator') {
+                const [collabs, tripsData, extCollabs] = await Promise.all([
+                    collaborationService.getCreatorCollaborations(),
+                    tripService.listTrips(),
+                    tripService.listExternalCollaborations(),
+                ])
+                collabData = collabs
+                setTrips(tripsData)
+                setExternalCollaborations(extCollabs)
+            } else {
+                collabData = await collaborationService.getHotelCollaborations()
+            }
+            setCollaborations(collabData)
+        } catch (error) {
+            console.error('Failed to fetch calendar data:', error)
+        } finally {
+            setIsLoading(false)
+        }
+    }, [])
 
     useEffect(() => {
         const storedUserType = localStorage.getItem(STORAGE_KEYS.USER_TYPE) as 'hotel' | 'creator'
         if (storedUserType) {
             setUserType(storedUserType)
         }
+        fetchData(storedUserType || 'hotel')
+    }, [fetchData])
 
-        const fetchCollaborations = async () => {
-            try {
-                let data: CollaborationResponse[] = []
-                if (storedUserType === 'creator') {
-                    data = await collaborationService.getCreatorCollaborations()
-                } else {
-                    data = await collaborationService.getHotelCollaborations()
-                }
-                setCollaborations(data)
-            } catch (error) {
-                console.error('Failed to fetch collaborations:', error)
-            } finally {
-                setIsLoading(false)
-            }
-        }
-
-        fetchCollaborations()
-    }, [])
+    const handleDataChanged = () => {
+        fetchData(userType)
+    }
 
     const handleViewDetails = async (id: string) => {
         try {
@@ -57,7 +70,6 @@ function CalendarPageContent() {
         try {
             await collaborationService.respondToCollaboration(id, { status: 'accepted' })
             handleViewDetails(id)
-            // Optionally refresh the full list
         } catch (error) {
             console.error('Failed to accept collaboration:', error)
         }
@@ -93,7 +105,10 @@ function CalendarPageContent() {
                     ) : (
                         <YearlyCalendar
                             collaborations={collaborations}
+                            trips={trips}
+                            externalCollaborations={externalCollaborations}
                             onViewDetails={handleViewDetails}
+                            onDataChanged={handleDataChanged}
                             userType={userType}
                         />
                     )}

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import type { CollaborationResponse } from '@/services/api/collaborations'
+import type { TripResponse, ExternalCollaborationResponse } from '@/services/api/trips'
 import { CalendarEventModal } from './CalendarEventModal'
 import { AddCollaborationModal } from './AddCollaborationModal'
 import { AddTripModal } from './AddTripModal'
@@ -11,11 +12,14 @@ import { MONTHS_ABBR, MONTHS_FULL, DAYS_IN_MONTH, WEEKDAYS } from '@/lib/constan
 
 interface YearlyCalendarProps {
     collaborations?: CollaborationResponse[]
+    trips?: TripResponse[]
+    externalCollaborations?: ExternalCollaborationResponse[]
     onViewDetails: (id: string) => void
+    onDataChanged?: () => void
     userType?: 'hotel' | 'creator'
 }
 
-export function YearlyCalendar({ collaborations = [], onViewDetails, userType = 'hotel' }: YearlyCalendarProps) {
+export function YearlyCalendar({ collaborations = [], trips = [], externalCollaborations = [], onViewDetails, onDataChanged, userType = 'hotel' }: YearlyCalendarProps) {
     const [year, setYear] = useState(2026)
     const [month, setMonth] = useState(0) // 0-11
     const [view, setView] = useState<'month' | 'year'>('year')
@@ -146,6 +150,18 @@ export function YearlyCalendar({ collaborations = [], onViewDetails, userType = 
                         <span className="w-2.5 h-2.5 rounded-full bg-[#0fb981]"></span>
                         <span>Campaign Active</span>
                     </div>
+                    {userType === 'creator' && (
+                        <>
+                            <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                                <span>Trip</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                                <span>External</span>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -217,38 +233,64 @@ export function YearlyCalendar({ collaborations = [], onViewDetails, userType = 
 
                                                 // Find active collaboration for this day
                                                 const activeCollab = isValidDate ? collaborations.find(c => {
-                                                    // Get date strings (assuming YYYY-MM-DD or ISO)
                                                     let startStr = c.travel_date_from || c.preferred_date_from
                                                     let endStr = c.travel_date_to || c.preferred_date_to
-
                                                     if (!startStr || !endStr) return false
-
-                                                    // Extract YYYY-MM-DD part
                                                     startStr = startStr.split('T')[0]
                                                     endStr = endStr.split('T')[0]
-
                                                     return currentDateStr >= startStr && currentDateStr <= endStr
                                                 }) : null
 
-                                                // Determine visuals
+                                                // Find active trip for this day
+                                                const activeTrip = isValidDate && !activeCollab ? trips.find(t => {
+                                                    const startStr = t.start_date.split('T')[0]
+                                                    const endStr = t.end_date.split('T')[0]
+                                                    return currentDateStr >= startStr && currentDateStr <= endStr
+                                                }) : null
+
+                                                // Find active external collaboration for this day
+                                                const activeExtCollab = isValidDate && !activeCollab && !activeTrip ? externalCollaborations.find(ec => {
+                                                    const startStr = ec.start_date.split('T')[0]
+                                                    const endStr = ec.end_date.split('T')[0]
+                                                    return currentDateStr >= startStr && currentDateStr <= endStr
+                                                }) : null
+
+                                                // Determine which event to show (priority: collab > trip > external)
                                                 let isStart = false
                                                 let isEnd = false
                                                 let colorClass = ''
+                                                let label = ''
+                                                let hasEvent = false
 
                                                 if (activeCollab) {
+                                                    hasEvent = true
                                                     let startStr = activeCollab.travel_date_from || activeCollab.preferred_date_from
                                                     let endStr = activeCollab.travel_date_to || activeCollab.preferred_date_to
-
                                                     if (startStr) startStr = startStr.split('T')[0]
                                                     if (endStr) endStr = endStr.split('T')[0]
-
                                                     isStart = currentDateStr === startStr
                                                     isEnd = currentDateStr === endStr
-
                                                     if (activeCollab.status === 'pending') colorClass = 'bg-[#64748b]'
                                                     else if (activeCollab.status === 'accepted') colorClass = 'bg-blue-500'
                                                     else if (activeCollab.status === 'completed') colorClass = 'bg-[#0fb981]'
                                                     else colorClass = 'bg-gray-400'
+                                                    label = userType === 'creator' ? activeCollab.hotel_name : activeCollab.creator_name
+                                                } else if (activeTrip) {
+                                                    hasEvent = true
+                                                    const startStr = activeTrip.start_date.split('T')[0]
+                                                    const endStr = activeTrip.end_date.split('T')[0]
+                                                    isStart = currentDateStr === startStr
+                                                    isEnd = currentDateStr === endStr
+                                                    colorClass = 'bg-amber-500'
+                                                    label = activeTrip.name
+                                                } else if (activeExtCollab) {
+                                                    hasEvent = true
+                                                    const startStr = activeExtCollab.start_date.split('T')[0]
+                                                    const endStr = activeExtCollab.end_date.split('T')[0]
+                                                    isStart = currentDateStr === startStr
+                                                    isEnd = currentDateStr === endStr
+                                                    colorClass = 'bg-purple-500'
+                                                    label = activeExtCollab.hotel_name || activeExtCollab.title
                                                 }
 
                                                 return (
@@ -256,30 +298,34 @@ export function YearlyCalendar({ collaborations = [], onViewDetails, userType = 
                                                         key={day}
                                                         className={`h-12 relative flex items-center justify-center transition-colors
                               ${!isValidDate ? 'bg-gray-50/30 pattern-diagonal-lines' : ''}
-                              ${isValidDate && !activeCollab ? 'hover:bg-gray-100/50' : ''}
+                              ${isValidDate && !hasEvent ? 'hover:bg-gray-100/50' : ''}
                             `}
                                                         style={{ zIndex: isStart ? 10 : 1 }}
                                                     >
                                                         {!isValidDate && <div className="w-full h-full bg-gray-50 opacity-50" />}
 
-                                                        {activeCollab && (
+                                                        {hasEvent && (
                                                             <div
-                                                                onClick={() => setSelectedCollaboration(activeCollab)}
-                                                                className={`h-8 w-full flex items-center px-2 cursor-pointer hover:brightness-95 transition-all
+                                                                onClick={() => {
+                                                                    if (activeCollab) setSelectedCollaboration(activeCollab)
+                                                                }}
+                                                                className={`h-8 w-full flex items-center px-2 ${activeCollab ? 'cursor-pointer' : ''} hover:brightness-95 transition-all
                                                                     ${colorClass} text-white shadow-sm shrink-0
                                                                     ${isStart ? 'rounded-l-md ml-1' : ''}
                                                                     ${isEnd ? 'rounded-r-md mr-1' : ''}
-                                                                    ${!isStart && !isEnd ? 'rounded-none min-w-[calc(100%+1px)] -ml-[1px]' : ''} 
+                                                                    ${!isStart && !isEnd ? 'rounded-none min-w-[calc(100%+1px)] -ml-[1px]' : ''}
                                                                     ${isStart ? 'overflow-visible' : 'overflow-hidden'}
                                                                 `}
-                                                                title={`${userType === 'creator' ? activeCollab.hotel_name : activeCollab.creator_name} - ${activeCollab.status}`}
+                                                                title={label}
                                                             >
                                                                 {isStart && (
                                                                     <div className="flex items-center gap-2 min-w-max relative z-20">
-                                                                        {userType === 'creator' ? (
+                                                                        {activeTrip ? (
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plane h-4 w-4 text-white/80"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>
+                                                                        ) : userType === 'creator' ? (
                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-building2 h-4 w-4 text-white/80"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
                                                                         ) : (
-                                                                            activeCollab.creator_profile_picture ? (
+                                                                            activeCollab?.creator_profile_picture ? (
                                                                                 <div className="w-5 h-5 rounded-full border border-white/30 overflow-hidden relative">
                                                                                     <Image
                                                                                         src={activeCollab.creator_profile_picture}
@@ -289,14 +335,14 @@ export function YearlyCalendar({ collaborations = [], onViewDetails, userType = 
                                                                                         unoptimized
                                                                                     />
                                                                                 </div>
-                                                                            ) : (
+                                                                            ) : activeCollab ? (
                                                                                 <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[8px] font-bold">
                                                                                     {activeCollab.creator_name.charAt(0)}
                                                                                 </div>
-                                                                            )
+                                                                            ) : null
                                                                         )}
                                                                         <span className="text-xs font-medium whitespace-nowrap drop-shadow-sm">
-                                                                            {userType === 'creator' ? activeCollab.hotel_name : activeCollab.creator_name}
+                                                                            {label}
                                                                         </span>
                                                                     </div>
                                                                 )}
@@ -350,11 +396,13 @@ export function YearlyCalendar({ collaborations = [], onViewDetails, userType = 
             <AddCollaborationModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
+                onCollaborationCreated={() => onDataChanged?.()}
             />
 
             <AddTripModal
                 isOpen={isTripModalOpen}
                 onClose={() => setIsTripModalOpen(false)}
+                onTripCreated={() => onDataChanged?.()}
             />
         </div>
     )

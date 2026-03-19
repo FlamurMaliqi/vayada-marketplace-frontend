@@ -1,14 +1,17 @@
 'use client'
 
-import { useState } from 'react'
-import { XMarkIcon, CalendarIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { XMarkIcon, CalendarIcon } from '@heroicons/react/24/outline'
+import { tripService } from '@/services/api/trips'
+import type { TripResponse, ExternalCollaborationResponse } from '@/services/api/trips'
 
 interface AddCollaborationModalProps {
     isOpen: boolean
     onClose: () => void
+    onCollaborationCreated?: (collab: ExternalCollaborationResponse) => void
 }
 
-export function AddCollaborationModal({ isOpen, onClose }: AddCollaborationModalProps) {
+export function AddCollaborationModal({ isOpen, onClose, onCollaborationCreated }: AddCollaborationModalProps) {
     const [formData, setFormData] = useState({
         title: '',
         tripId: '',
@@ -20,12 +23,49 @@ export function AddCollaborationModal({ isOpen, onClose }: AddCollaborationModal
         notes: ''
     })
 
+    const [trips, setTrips] = useState<TripResponse[]>([])
+    const [saving, setSaving] = useState(false)
+    const [error, setError] = useState('')
+
+    useEffect(() => {
+        if (isOpen) {
+            tripService.listTrips().then(setTrips).catch(() => {})
+        }
+    }, [isOpen])
+
     if (!isOpen) return null
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const resetForm = () => {
+        setFormData({ title: '', tripId: '', hotelName: '', location: '', startDate: '', endDate: '', deliverables: '', notes: '' })
+        setError('')
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        // API call will be implemented later
-        onClose()
+        setError('')
+        setSaving(true)
+
+        try {
+            const collab = await tripService.createExternalCollaboration({
+                title: formData.title,
+                trip_id: formData.tripId || undefined,
+                hotel_name: formData.hotelName || undefined,
+                location: formData.location || undefined,
+                start_date: formData.startDate,
+                end_date: formData.endDate,
+                deliverables: formData.deliverables || undefined,
+                notes: formData.notes || undefined,
+            })
+
+            onCollaborationCreated?.(collab)
+            resetForm()
+            onClose()
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to create collaboration'
+            setError(message)
+        } finally {
+            setSaving(false)
+        }
     }
 
     return (
@@ -57,6 +97,12 @@ export function AddCollaborationModal({ isOpen, onClose }: AddCollaborationModal
                                 <h3 className="text-xl font-bold text-gray-900">Add Collaboration</h3>
                             </div>
 
+                            {error && (
+                                <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
+                                    {error}
+                                </div>
+                            )}
+
                             <div className="space-y-4">
                                 {/* Collaboration Title */}
                                 <div>
@@ -87,7 +133,11 @@ export function AddCollaborationModal({ isOpen, onClose }: AddCollaborationModal
                                             onChange={(e) => setFormData({ ...formData, tripId: e.target.value })}
                                         >
                                             <option value="">Select a trip to link</option>
-                                            {/* Options would be dynamic */}
+                                            {trips.map((trip) => (
+                                                <option key={trip.id} value={trip.id}>
+                                                    {trip.name}{trip.location ? ` — ${trip.location}` : ''} ({trip.start_date} to {trip.end_date})
+                                                </option>
+                                            ))}
                                         </select>
                                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                             <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
@@ -203,9 +253,10 @@ export function AddCollaborationModal({ isOpen, onClose }: AddCollaborationModal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+                                    disabled={saving}
+                                    className="flex-1 px-4 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50"
                                 >
-                                    Add Collaboration
+                                    {saving ? 'Saving...' : 'Add Collaboration'}
                                 </button>
                             </div>
                         </form>

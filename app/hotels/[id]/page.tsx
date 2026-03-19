@@ -72,9 +72,9 @@ export default function HotelDetailPage() {
       setShowRequestModal(false)
       // Reset form
       setRequestForm({ message: '', proposedDates: '', collaborationType: '' })
-      // Redirect to collaborations page after a short delay
+      // Redirect to calendar page after a short delay
       setTimeout(() => {
-        router.push(ROUTES.COLLABORATIONS)
+        router.push(ROUTES.CALENDAR)
       }, 500)
     }, 1000)
   }
