@@ -425,7 +425,7 @@ export default function ProfileCompletePage() {
             <ArrowLeftIcon className="w-5 h-5" />
           </a>
           <div className="flex items-center gap-2">
-            <img src="/vayada-logo.png" alt="Vayada" className="h-12" />
+            <img src="/vayada-logo.png" alt="vayada" className="h-12" />
           </div>
         </div>
       </div>

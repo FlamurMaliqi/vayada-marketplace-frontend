@@ -224,7 +224,7 @@ export default function PrivacySettingsPage() {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">Weekly Newsletter</h3>
                       <p className="text-sm text-gray-500">
-                        Get weekly recommendations for hotels or creators, plus new members on Vayada
+                        Get weekly recommendations for hotels or creators, plus new members on vayada
                       </p>
                     </div>
                   </div>

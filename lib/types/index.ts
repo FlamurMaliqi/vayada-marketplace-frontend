@@ -1,5 +1,5 @@
 /**
- * Core domain types for Vayada marketplace
+ * Core domain types for vayada marketplace
  */
 
 // User types

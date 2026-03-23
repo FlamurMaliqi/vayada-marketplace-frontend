@@ -141,7 +141,7 @@ export default function NewsletterSettingsPage() {
                     <div>
                       <h2 className="text-lg font-semibold text-gray-900">Weekly Newsletter</h2>
                       <p className="text-sm text-gray-500">
-                        Receive weekly recommendations and discover new members on Vayada
+                        Receive weekly recommendations and discover new members on vayada
                       </p>
                     </div>
                   </div>
@@ -244,7 +244,7 @@ export default function NewsletterSettingsPage() {
                 <h3 className="text-sm font-semibold text-blue-900 mb-2">What you will receive</h3>
                 <ul className="text-sm text-blue-800 space-y-1.5 list-disc list-inside">
                   <li>Personalized weekly recommendations every Monday</li>
-                  <li>New hotels or creators that recently joined Vayada</li>
+                  <li>New hotels or creators that recently joined vayada</li>
                   <li>Recommendations filtered by your country preferences</li>
                 </ul>
               </div>

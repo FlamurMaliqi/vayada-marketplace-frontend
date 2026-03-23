@@ -1,4 +1,4 @@
-# Vayada Creator Marketplace
+# vayada Creator Marketplace
 
 A transparent marketplace connecting hotels with travel creators and influencers for authentic collaborations.
 

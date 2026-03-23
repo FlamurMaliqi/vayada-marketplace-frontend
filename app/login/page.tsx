@@ -93,7 +93,7 @@ export default function LoginPage() {
           <div className="mb-8">
             <img
               src="/vayada-logo.png"
-              alt="Vayada"
+              alt="vayada"
               className="h-12 mb-6"
             />
           </div>

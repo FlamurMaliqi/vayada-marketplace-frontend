@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: 'Vayada',
+  name: 'vayada',
   description: 'A transparent marketplace connecting hotels with verified travel influencers for authentic collaborations.',
   url: 'https://vayada.com',
   ogImage: '/og-image.jpg',

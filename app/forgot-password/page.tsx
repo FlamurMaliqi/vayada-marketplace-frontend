@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
           <div className="mb-6">
             <img
               src="/vayada-logo.png"
-              alt="Vayada"
+              alt="vayada"
               className="h-10 mb-4"
             />
           </div>
