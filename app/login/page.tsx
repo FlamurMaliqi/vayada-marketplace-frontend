@@ -38,7 +38,8 @@ export default function LoginPage() {
           const profileStatus = await checkProfileStatus(userType)
           if (profileStatus && profileStatus.profile_complete) {
             localStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETE, 'true')
-          } else if (profileStatus && !profileStatus.profile_complete) {
+          } else {
+            // Treat missing/incomplete status the same: send to completion.
             localStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETE, 'false')
             router.push(ROUTES.PROFILE_COMPLETE)
             return

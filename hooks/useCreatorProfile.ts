@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { creatorService } from '@/services/api/creators'
 import { ApiErrorResponse } from '@/services/api/client'
 import { checkProfileStatus } from '@/lib/utils'
+import { ROUTES } from '@/lib/constants/routes'
 import { transformCreatorProfile } from '@/components/profile/transforms'
 import { formatErrorForModal } from './useErrorModal'
 import type { CreatorProfileStatus, CreatorType } from '@/lib/types'
@@ -15,6 +17,7 @@ import type {
 } from '@/components/profile/types'
 
 export function useCreatorProfile(showError: (title: string, message: string | string[], details?: string) => void) {
+  const router = useRouter()
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [profileStatus, setProfileStatus] = useState<CreatorProfileStatus | null>(null)
@@ -53,9 +56,13 @@ export function useCreatorProfile(showError: (title: string, message: string | s
       const status = await checkProfileStatus('creator') as CreatorProfileStatus | null
       setProfileStatus(status)
 
-      if (status && !status.profile_complete) {
+      // Treat a missing status (e.g. endpoint 404'd because profile row
+      // doesn't exist yet) the same as an incomplete profile — send the
+      // user straight to the completion flow.
+      if (!status || !status.profile_complete) {
         setIsProfileIncomplete(true)
         setCreatorProfile(null)
+        router.push(ROUTES.PROFILE_COMPLETE)
         return
       }
 
