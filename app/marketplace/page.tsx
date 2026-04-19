@@ -327,6 +327,7 @@ export default function MarketplacePage() {
                           key={hotel.id}
                           hotel={hotel}
                           creatorPlatforms={currentCreator?.platforms.map(p => p.name)}
+                          creatorFollowers={currentCreator?.audienceSize}
                         />
                       ))}
                     </div>

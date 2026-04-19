@@ -84,6 +84,7 @@ export interface Hotel {
   domain?: string // Website domain
   boardType?: 'All Inclusive' | 'Full Board' | 'Half Board' | 'Bed & Breakfast' | 'Room Only'
   numberOfNights?: number // Maximum number of nights for free collaboration
+  minNumberOfNights?: number // Minimum number of nights for free collaboration
   targetAudience?: string[] // Target audience regions: 'Asia', 'Africa', 'Middle East', 'Australia', 'North America', 'South America'
   minFollowers?: number // Minimum number of followers required (e.g., 10000)
   targetAgeMin?: number // Minimum target age

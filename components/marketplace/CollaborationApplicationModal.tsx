@@ -18,6 +18,8 @@ interface CollaborationApplicationModalProps {
   availableMonths?: string[]
   requiredPlatforms?: string[]
   creatorPlatforms?: string[]
+  maxNights?: number
+  minNights?: number
 }
 
 export interface CollaborationApplicationData {
@@ -56,6 +58,8 @@ export function CollaborationApplicationModal({
   availableMonths = [],
   requiredPlatforms = [],
   creatorPlatforms = [],
+  maxNights,
+  minNights,
 }: CollaborationApplicationModalProps) {
   const [whyGreatFit, setWhyGreatFit] = useState('')
   const [travelDateFrom, setTravelDateFrom] = useState('')
@@ -113,6 +117,27 @@ export function CollaborationApplicationModal({
 
     if (!whyGreatFit.trim() || validPlatformDeliverables.length === 0 || !consent) {
       return
+    }
+
+    // Nights Validation — creator cannot request more nights than hotel offers
+    if (travelDateFrom && travelDateTo) {
+      const from = new Date(travelDateFrom)
+      const to = new Date(travelDateTo)
+      if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
+        const nights = Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24))
+        if (maxNights && nights > maxNights) {
+          setErrorMessage(
+            `This hotel offers a maximum of ${maxNights} night${maxNights === 1 ? '' : 's'}. Please shorten your stay.`
+          )
+          return
+        }
+        if (minNights && nights > 0 && nights < minNights) {
+          setErrorMessage(
+            `This hotel requires a minimum of ${minNights} night${minNights === 1 ? '' : 's'}. Please extend your stay.`
+          )
+          return
+        }
+      }
     }
 
     // Availability Validation
@@ -216,6 +241,16 @@ export function CollaborationApplicationModal({
               className="resize-y"
             />
           </div>
+
+          {/* Stay length hint */}
+          {(maxNights || minNights) && (
+            <div className="px-4 py-3 rounded-xl bg-blue-50 border border-blue-100 text-sm text-blue-900">
+              Stay length offered:{' '}
+              {minNights && maxNights && minNights !== maxNights
+                ? `${minNights}–${maxNights} nights`
+                : `up to ${maxNights || minNights} night${(maxNights || minNights) === 1 ? '' : 's'}`}
+            </div>
+          )}
 
           {/* Preferred Travel Dates */}
           <DateMonthPicker

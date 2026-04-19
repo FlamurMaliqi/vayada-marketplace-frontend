@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Hotel } from '@/lib/types'
 import { Button, SuccessModal, ErrorModal, PlatformIcon } from '@/components/ui'
-import { MapPinIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { MapPinIcon, ChevronLeftIcon, ChevronRightIcon, LockClosedIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import { HotelDetailModal } from './HotelDetailModal'
 import { CollaborationApplicationModal, type CollaborationApplicationData } from './CollaborationApplicationModal'
 import { collaborationService, type CreateCreatorCollaborationRequest } from '@/services/api/collaborations'
@@ -14,10 +14,23 @@ import { ROUTES } from '@/lib/constants/routes'
 interface HotelCardProps {
   hotel: Hotel
   creatorPlatforms?: string[]
+  creatorFollowers?: number
   isPublic?: boolean
 }
 
-export function HotelCard({ hotel, creatorPlatforms = [], isPublic = false }: HotelCardProps) {
+const formatFollowerCount = (count: number): string => {
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(count % 1_000_000 === 0 ? 0 : 1)}M`
+  if (count >= 1_000) return `${(count / 1_000).toFixed(count % 1_000 === 0 ? 0 : 1)}k`
+  return count.toString()
+}
+
+export function HotelCard({ hotel, creatorPlatforms = [], creatorFollowers, isPublic = false }: HotelCardProps) {
+  const minFollowersRequired = hotel.minFollowers ?? 0
+  const isLocked = !isPublic
+    && minFollowersRequired > 0
+    && creatorFollowers !== undefined
+    && creatorFollowers < minFollowersRequired
+  const followersShort = minFollowersRequired > 0 ? formatFollowerCount(minFollowersRequired) : ''
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showApplicationModal, setShowApplicationModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -101,7 +114,29 @@ export function HotelCard({ hotel, creatorPlatforms = [], isPublic = false }: Ho
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200 flex flex-col h-full">
+      <div className={`relative bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border ${isLocked ? 'border-gray-300' : 'border-gray-200'} flex flex-col h-full ${isLocked ? 'grayscale opacity-90' : ''}`}>
+        {isLocked && (
+          <>
+            <div className="absolute inset-0 bg-gray-900/20 z-20 pointer-events-none" />
+            <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-900/85 text-white shadow-lg backdrop-blur-sm">
+              <LockClosedIcon className="w-4 h-4" />
+              <span className="text-xs font-semibold">Locked</span>
+            </div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-2 px-5 py-4 rounded-2xl bg-white/95 shadow-xl border border-gray-200 max-w-[80%] text-center">
+              <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
+                <UserGroupIcon className="w-6 h-6 text-primary-700" />
+              </div>
+              <p className="text-sm font-semibold text-gray-900">
+                Min. {followersShort} followers required
+              </p>
+              {creatorFollowers !== undefined && (
+                <p className="text-xs text-gray-600">
+                  You have {formatFollowerCount(creatorFollowers)}
+                </p>
+              )}
+            </div>
+          </>
+        )}
         {/* Image Gallery */}
         <div className="relative h-48 bg-gradient-to-br from-primary-100 to-primary-200 flex-shrink-0 overflow-hidden">
           {images.length > 0 && !imageError ? (
@@ -256,6 +291,17 @@ export function HotelCard({ hotel, creatorPlatforms = [], isPublic = false }: Ho
                   Sign in to Apply
                 </Button>
               </Link>
+            ) : isLocked ? (
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex-1 !bg-gray-300 !text-gray-600 cursor-not-allowed hover:!bg-gray-300"
+                disabled
+                title={`Requires at least ${followersShort} followers`}
+              >
+                <LockClosedIcon className="w-4 h-4 mr-1.5" />
+                Locked
+              </Button>
             ) : (
               <Button
                 variant="primary"
@@ -285,6 +331,8 @@ export function HotelCard({ hotel, creatorPlatforms = [], isPublic = false }: Ho
         availableMonths={hotel.availability}
         requiredPlatforms={hotel.platforms}
         creatorPlatforms={creatorPlatforms}
+        maxNights={hotel.numberOfNights}
+        minNights={hotel.minNumberOfNights}
       />
 
       {/* Success Modal */}

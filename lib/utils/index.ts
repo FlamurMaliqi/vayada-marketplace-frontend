@@ -337,9 +337,10 @@ export function transformListingMarketplaceResponse(apiListing: ListingMarketpla
     new Set(offerings.flatMap(o => o.platforms || []))
   )
   
-  // Get max nights from free stay offering
+  // Get min/max nights from free stay offering
   const freeStayOffering = offerings.find(o => o.collaboration_type === 'Free Stay')
   const numberOfNights = freeStayOffering?.free_stay_max_nights || undefined
+  const minNumberOfNights = freeStayOffering?.free_stay_min_nights || undefined
 
   // Extract creator requirements
   const creatorRequirements = apiListing.creator_requirements
@@ -369,6 +370,7 @@ export function transformListingMarketplaceResponse(apiListing: ListingMarketpla
     domain: undefined, // Not provided in listing response
     boardType: undefined, // Not provided in listing response
     numberOfNights,
+    minNumberOfNights,
     targetAudience: targetAudience.length > 0 ? targetAudience : undefined,
     minFollowers,
     targetAgeMin,
@@ -435,6 +437,7 @@ export function transformHotelListingToHotel(listing: HotelListing): Hotel {
     availability: availabilityMonths.length > 0 ? availabilityMonths : undefined,
     platforms: platforms.length > 0 ? platforms : undefined,
     numberOfNights: freeStayOffering?.free_stay_max_nights || undefined,
+    minNumberOfNights: freeStayOffering?.free_stay_min_nights || undefined,
     targetAudience: targetAudience.length > 0 ? targetAudience : undefined,
     minFollowers: listing.creator_requirements?.min_followers || undefined,
     status: listing.status,
