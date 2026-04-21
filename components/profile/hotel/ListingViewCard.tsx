@@ -234,9 +234,9 @@ export function ListingViewCard({
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Max. Amount ($)</label>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Max. Amount (IDR)</label>
                       <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
-                        ${listing.paidMaxAmount || '0'}
+                        Rp{(listing.paidMaxAmount || 0).toLocaleString('id-ID')}
                       </div>
                     </div>
                   </div>

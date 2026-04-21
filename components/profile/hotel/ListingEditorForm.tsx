@@ -219,11 +219,11 @@ export function ListingEditorForm({
                 </div>
               </div>
               <Input
-                label="Max. Amount ($)"
+                label="Max. Amount (IDR)"
                 type="number"
                 value={formData.paidMaxAmount || ''}
                 onChange={(e) => updateField('paidMaxAmount', parseInt(e.target.value) || undefined)}
-                placeholder="5000"
+                placeholder="5000000"
                 required
                 className="bg-gray-50 border-gray-200"
               />
