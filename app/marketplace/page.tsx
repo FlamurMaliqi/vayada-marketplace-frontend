@@ -327,7 +327,9 @@ export default function MarketplacePage() {
                           key={hotel.id}
                           hotel={hotel}
                           creatorPlatforms={currentCreator?.platforms.map(p => p.name)}
-                          creatorFollowers={currentCreator?.audienceSize}
+                          creatorFollowers={currentCreator
+                            ? currentCreator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0)
+                            : undefined}
                         />
                       ))}
                     </div>
