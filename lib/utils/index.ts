@@ -3,6 +3,7 @@
  */
 
 export * from './profileStatus'
+export * from './getCurrencySymbol'
 
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -253,6 +254,7 @@ interface ListingMarketplaceResponse {
     free_stay_min_nights: number | null
     free_stay_max_nights: number | null
     paid_max_amount: string | null // Backend returns as string (e.g., "2000.00")
+    currency: string | null
     discount_percentage: number | null
     created_at: string
     updated_at: string

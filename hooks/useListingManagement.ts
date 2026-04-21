@@ -48,6 +48,7 @@ export function useListingManagement(
       freeStayMinNights: listing.freeStayMinNights,
       freeStayMaxNights: listing.freeStayMaxNights,
       paidMaxAmount: listing.paidMaxAmount,
+      currency: listing.currency,
       discountPercentage: listing.discountPercentage,
       lookingForPlatforms: listing.lookingForPlatforms || [],
       lookingForMinFollowers: listing.lookingForMinFollowers,

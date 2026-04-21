@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button, Textarea } from '@/components/ui'
 import { getMonthAbbr } from '@/lib/utils'
+import { CURRENCY_OPTIONS } from '@/lib/utils/getCurrencySymbol'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { usePlatformDeliverables } from '@/hooks/usePlatformDeliverables'
 import { PlatformDeliverablesSelector } from './PlatformDeliverablesSelector'
@@ -33,6 +34,7 @@ export interface HotelInvitationData {
   freeStayMinNights?: number
   freeStayMaxNights?: number
   paidAmount?: number
+  currency?: string
   discountPercentage?: number
   preferredDateFrom?: string
   preferredDateTo?: string
@@ -54,6 +56,7 @@ export function HotelInvitationModal({
   const [freeStayMinNights, setFreeStayMinNights] = useState<number | undefined>(undefined)
   const [freeStayMaxNights, setFreeStayMaxNights] = useState<number | undefined>(undefined)
   const [paidAmount, setPaidAmount] = useState<number | undefined>(undefined)
+  const [currency, setCurrency] = useState<string>('USD')
   const [discountPercentage, setDiscountPercentage] = useState<number | undefined>(undefined)
   const [preferredDateFrom, setPreferredDateFrom] = useState('')
   const [preferredDateTo, setPreferredDateTo] = useState('')
@@ -149,6 +152,7 @@ export function HotelInvitationModal({
         freeStayMinNights,
         freeStayMaxNights,
         paidAmount,
+        currency: collaborationType === 'Paid' ? currency : undefined,
         discountPercentage,
         preferredDateFrom: preferredDateFrom || undefined,
         preferredDateTo: preferredDateTo || undefined,
@@ -162,6 +166,7 @@ export function HotelInvitationModal({
       setFreeStayMinNights(undefined)
       setFreeStayMaxNights(undefined)
       setPaidAmount(undefined)
+      setCurrency('USD')
       setDiscountPercentage(undefined)
       setPreferredDateFrom('')
       setPreferredDateTo('')
@@ -307,16 +312,30 @@ export function HotelInvitationModal({
           {collaborationType === 'Paid' && (
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
               <h4 className="font-semibold text-gray-900 mb-4">Paid Details</h4>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Amount Offered ($)</label>
-                <input
-                  type="number"
-                  value={paidAmount || ''}
-                  onChange={(e) => setPaidAmount(parseInt(e.target.value) || undefined)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="5000"
-                  min="0"
-                />
+              <div className="flex gap-3">
+                <div className="w-32">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                  <select
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="w-full px-3 py-3 rounded-lg border border-gray-300 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    {CURRENCY_OPTIONS.map(c => (
+                      <option key={c.code} value={c.code}>{c.code}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount Offered</label>
+                  <input
+                    type="number"
+                    value={paidAmount || ''}
+                    onChange={(e) => setPaidAmount(parseInt(e.target.value) || undefined)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="5000"
+                    min="0"
+                  />
+                </div>
               </div>
             </div>
           )}

@@ -22,6 +22,7 @@ export function transformListingToApi(listingData: ListingFormData) {
     free_stay_min_nights?: number
     free_stay_max_nights?: number
     paid_max_amount?: number
+    currency?: string
     discount_percentage?: number
   }> = []
 
@@ -41,6 +42,7 @@ export function transformListingToApi(listingData: ListingFormData) {
       availability_months: listingData.availability,
       platforms: listingData.platforms,
       paid_max_amount: listingData.paidMaxAmount,
+      currency: listingData.currency || 'USD',
     })
   }
 
@@ -245,6 +247,7 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
         freeStayMinNights: freeStayOffering?.free_stay_min_nights ?? undefined,
         freeStayMaxNights: freeStayOffering?.free_stay_max_nights ?? undefined,
         paidMaxAmount: paidOffering?.paid_max_amount ?? undefined,
+        currency: paidOffering?.currency ?? undefined,
         discountPercentage: discountOffering?.discount_percentage ?? undefined,
         lookingForPlatforms: creatorReqs.platforms || [],
         lookingForMinFollowers: creatorReqs.min_followers ?? undefined,

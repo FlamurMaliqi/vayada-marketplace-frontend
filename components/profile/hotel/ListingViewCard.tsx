@@ -4,7 +4,7 @@ import { PencilIcon, XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicon
 import { GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { HotelBadgeIcon } from '@/components/ui'
 import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES, AGE_GROUP_OPTIONS } from '@/lib/constants'
-import { formatNumber } from '@/lib/utils'
+import { formatNumber, getCurrencySymbol } from '@/lib/utils'
 import type { ProfileHotelListing } from '../types'
 
 interface ListingViewCardProps {
@@ -234,9 +234,9 @@ export function ListingViewCard({
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Max. Amount (IDR)</label>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Max. Amount ({listing.currency || 'USD'})</label>
                       <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
-                        Rp{(listing.paidMaxAmount || 0).toLocaleString('id-ID')}
+                        {getCurrencySymbol(listing.currency || 'USD')}{(listing.paidMaxAmount || 0).toLocaleString()}
                       </div>
                     </div>
                   </div>

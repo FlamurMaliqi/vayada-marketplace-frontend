@@ -10,6 +10,7 @@ import {
     TagIcon
 } from '@heroicons/react/24/outline'
 import { PLATFORM_OPTIONS_ALL } from '@/lib/constants'
+import { CURRENCY_OPTIONS } from '@/lib/utils/getCurrencySymbol'
 
 interface Deliverable {
     id?: string
@@ -31,6 +32,7 @@ interface SuggestChangesModalProps {
     initialCollaborationType?: 'Free Stay' | 'Paid' | 'Discount' | null
     initialFreeStayMaxNights?: number | null
     initialPaidAmount?: number | null
+    initialCurrency?: string | null
     initialDiscountPercentage?: number | null
     allowedCollaborationTypes?: ('Free Stay' | 'Paid' | 'Discount')[]
     userType?: string | null
@@ -41,6 +43,7 @@ interface SuggestChangesModalProps {
         collaboration_type?: string,
         free_stay_max_nights?: number | null,
         paid_amount?: number | null,
+        currency?: string | null,
         discount_percentage?: number | null
     }) => void
 }
@@ -55,6 +58,7 @@ export default function SuggestChangesModal({
     initialCollaborationType,
     initialFreeStayMaxNights,
     initialPaidAmount,
+    initialCurrency,
     initialDiscountPercentage,
     allowedCollaborationTypes,
     userType,
@@ -77,6 +81,7 @@ export default function SuggestChangesModal({
     const [collaborationType, setCollaborationType] = useState(getInitialCollaborationType())
     const [freeStayMaxNights, setFreeStayMaxNights] = useState(initialFreeStayMaxNights || 1)
     const [paidAmount, setPaidAmount] = useState(initialPaidAmount || 0)
+    const [currency, setCurrency] = useState(initialCurrency || 'USD')
     const [discountPercentage, setDiscountPercentage] = useState(initialDiscountPercentage || 0)
     const [platformDeliverables, setPlatformDeliverables] = useState<PlatformDeliverables[]>(
         initialPlatformDeliverables.length > 0
@@ -234,13 +239,24 @@ export default function SuggestChangesModal({
 
                             {collaborationType === 'Paid' && (
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Paid Amount ($)</label>
-                                    <input
-                                        type="number"
-                                        value={paidAmount}
-                                        onChange={(e) => setPaidAmount(parseInt(e.target.value) || 0)}
-                                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
-                                    />
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Paid Amount</label>
+                                    <div className="flex gap-2">
+                                        <select
+                                            value={currency}
+                                            onChange={(e) => setCurrency(e.target.value)}
+                                            className="w-28 px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
+                                        >
+                                            {CURRENCY_OPTIONS.map(c => (
+                                                <option key={c.code} value={c.code}>{c.code}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="number"
+                                            value={paidAmount}
+                                            onChange={(e) => setPaidAmount(parseInt(e.target.value) || 0)}
+                                            className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
                                 </div>
                             )}
 
@@ -354,6 +370,7 @@ export default function SuggestChangesModal({
                             collaboration_type: collaborationType,
                             free_stay_max_nights: collaborationType === 'Free Stay' ? freeStayMaxNights : null,
                             paid_amount: collaborationType === 'Paid' ? paidAmount : null,
+                            currency: collaborationType === 'Paid' ? currency : null,
                             discount_percentage: collaborationType === 'Discount' ? discountPercentage : null
                         })}
                         className="px-8 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md active:scale-95"

@@ -3,6 +3,7 @@
 import { XMarkIcon, GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, SparklesIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import { Input, Textarea, Button, HotelBadgeIcon } from '@/components/ui'
 import { HOTEL_TYPES, CREATOR_TYPE_OPTIONS } from '@/lib/constants'
+import { CURRENCY_OPTIONS } from '@/lib/utils/getCurrencySymbol'
 import type { CreatorType } from '@/lib/types'
 import { CollaborationTypeSelector } from './CollaborationTypeSelector'
 import { AvailabilityMonthSelector } from './AvailabilityMonthSelector'
@@ -218,15 +219,31 @@ export function ListingEditorForm({
                   <p className="text-sm text-gray-600">Set the maximum payment amount</p>
                 </div>
               </div>
-              <Input
-                label="Max. Amount (IDR)"
-                type="number"
-                value={formData.paidMaxAmount || ''}
-                onChange={(e) => updateField('paidMaxAmount', parseInt(e.target.value) || undefined)}
-                placeholder="5000000"
-                required
-                className="bg-gray-50 border-gray-200"
-              />
+              <div className="flex gap-2">
+                <div className="w-32">
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Currency</label>
+                  <select
+                    value={formData.currency || 'USD'}
+                    onChange={(e) => updateField('currency', e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {CURRENCY_OPTIONS.map(c => (
+                      <option key={c.code} value={c.code}>{c.code}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <Input
+                    label="Max. Amount"
+                    type="number"
+                    value={formData.paidMaxAmount || ''}
+                    onChange={(e) => updateField('paidMaxAmount', parseInt(e.target.value) || undefined)}
+                    placeholder="5000"
+                    required
+                    className="bg-gray-50 border-gray-200"
+                  />
+                </div>
+              </div>
             </div>
           )}
 

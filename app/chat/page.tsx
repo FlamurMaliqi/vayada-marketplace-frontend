@@ -30,7 +30,7 @@ import {
 } from '@/components/chat'
 import type { Collaboration, Hotel, Creator } from '@/lib/types'
 import { STORAGE_KEYS, getStatusClasses } from '@/lib/constants'
-import { getInitials, formatCompactNumber } from '@/lib/utils'
+import { getInitials, formatCompactNumber, getCurrencySymbol } from '@/lib/utils'
 
 function ChatPageContent() {
   const { isCollapsed } = useSidebar()
@@ -90,7 +90,7 @@ function ChatPageContent() {
             if (collab.collaboration_type === 'Free Stay' && collab.free_stay_max_nights) {
               offerDetails = `${collab.free_stay_max_nights} Nights`
             } else if (collab.collaboration_type === 'Paid' && collab.paid_amount) {
-              offerDetails = `$${collab.paid_amount}`
+              offerDetails = `${getCurrencySymbol(collab.currency || 'USD')}${Number(collab.paid_amount).toLocaleString()}`
             } else if (collab.collaboration_type === 'Discount' && collab.discount_percentage) {
               offerDetails = `${collab.discount_percentage}% Off`
             } else {
@@ -627,6 +627,7 @@ function ChatPageContent() {
         initialCollaborationType={activeCollaboration?.collaborationType}
         initialFreeStayMaxNights={activeCollaboration?.freeStayMaxNights}
         initialPaidAmount={activeCollaboration?.paidAmount}
+        initialCurrency={activeCollaboration?.currency}
         initialDiscountPercentage={activeCollaboration?.discountPercentage}
         allowedCollaborationTypes={activeCollaboration?.allowedCollaborationTypes}
         userType={userType}

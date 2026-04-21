@@ -59,6 +59,7 @@ export interface UpdateCollaborationTermsRequest {
   collaboration_type?: string
   free_stay_max_nights?: number | null
   paid_amount?: number | null
+  currency?: string | null
   discount_percentage?: number | null
 }
 
@@ -76,6 +77,7 @@ export interface CreateHotelCollaborationRequest {
   free_stay_min_nights?: number
   free_stay_max_nights?: number
   paid_amount?: number
+  currency?: string
   discount_percentage?: number
   preferred_date_from?: string
   preferred_date_to?: string
@@ -136,6 +138,7 @@ export interface CollaborationResponse {
   free_stay_min_nights: number | null
   free_stay_max_nights: number | null
   paid_amount: number | null
+  currency: string | null
   discount_percentage: number | null
   travel_date_from: string | null
   travel_date_to: string | null
@@ -198,6 +201,7 @@ export type DetailedCollaboration = Collaboration & {
   freeStayMinNights?: number | null
   freeStayMaxNights?: number | null
   paidAmount?: number | null
+  currency?: string | null
   discountPercentage?: number | null
   travelDateFrom?: string | null
   travelDateTo?: string | null
@@ -531,6 +535,7 @@ export function transformCollaborationResponse(
     freeStayMinNights: response.free_stay_min_nights,
     freeStayMaxNights: response.free_stay_max_nights,
     paidAmount: response.paid_amount,
+    currency: response.currency,
     discountPercentage: response.discount_percentage,
     travelDateFrom: response.travel_date_from,
     travelDateTo: response.travel_date_to,

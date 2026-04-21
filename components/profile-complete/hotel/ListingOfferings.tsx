@@ -9,6 +9,7 @@ import {
   CalendarDaysIcon,
 } from '@heroicons/react/24/outline'
 import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES } from '@/lib/constants'
+import { CURRENCY_OPTIONS } from '@/lib/utils/getCurrencySymbol'
 import type { ListingFormData } from '@/lib/types'
 
 interface ListingOfferingsProps {
@@ -144,15 +145,31 @@ export function ListingOfferings({ listing, index, onUpdateListing }: ListingOff
                 <p className="text-sm text-gray-600">Set the maximum payment amount</p>
               </div>
             </div>
-            <Input
-              label="Max. Amount (IDR)"
-              type="number"
-              value={listing.paidMaxAmount || ''}
-              onChange={(e) => onUpdateListing(index, 'paidMaxAmount', parseInt(e.target.value) || undefined)}
-              placeholder="5000000"
-              required
-              className="bg-gray-50 border-gray-200"
-            />
+            <div className="flex gap-2">
+              <div className="w-32">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Currency</label>
+                <select
+                  value={listing.currency || 'USD'}
+                  onChange={(e) => onUpdateListing(index, 'currency', e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {CURRENCY_OPTIONS.map(c => (
+                    <option key={c.code} value={c.code}>{c.code}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1">
+                <Input
+                  label="Max. Amount"
+                  type="number"
+                  value={listing.paidMaxAmount || ''}
+                  onChange={(e) => onUpdateListing(index, 'paidMaxAmount', parseInt(e.target.value) || undefined)}
+                  placeholder="5000"
+                  required
+                  className="bg-gray-50 border-gray-200"
+                />
+              </div>
+            </div>
           </div>
         )}
 

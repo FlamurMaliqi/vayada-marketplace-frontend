@@ -127,6 +127,7 @@ export interface ProfileHotelListing {
   freeStayMinNights?: number
   freeStayMaxNights?: number
   paidMaxAmount?: number
+  currency?: string
   discountPercentage?: number
   lookingForPlatforms: string[]
   lookingForMinFollowers?: number
@@ -183,6 +184,7 @@ export interface ListingFormData {
   freeStayMinNights?: number
   freeStayMaxNights?: number
   paidMaxAmount?: number
+  currency?: string
   discountPercentage?: number
   lookingForPlatforms: string[]
   lookingForMinFollowers?: number
@@ -223,6 +225,7 @@ export function createEmptyListingFormData(): ListingFormData {
     freeStayMinNights: undefined,
     freeStayMaxNights: undefined,
     paidMaxAmount: undefined,
+    currency: undefined,
     discountPercentage: undefined,
     lookingForPlatforms: [],
     lookingForMinFollowers: undefined,

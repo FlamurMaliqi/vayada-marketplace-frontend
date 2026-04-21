@@ -153,6 +153,7 @@ export function CreatorDetailModal({ creator, isOpen, onClose, isPublic = false 
         free_stay_min_nights: data.freeStayMinNights,
         free_stay_max_nights: data.freeStayMaxNights,
         paid_amount: data.paidAmount,
+        currency: data.currency,
         discount_percentage: data.discountPercentage,
         preferred_date_from: data.preferredDateFrom || undefined,
         preferred_date_to: data.preferredDateTo || undefined,

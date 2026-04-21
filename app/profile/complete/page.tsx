@@ -327,6 +327,7 @@ export default function ProfileCompletePage() {
       free_stay_min_nights?: number
       free_stay_max_nights?: number
       paid_max_amount?: number
+      currency?: string
       discount_percentage?: number
     }> = []
 
@@ -345,6 +346,7 @@ export default function ProfileCompletePage() {
         availability_months: listing.availability,
         platforms: listing.platforms,
         paid_max_amount: listing.paidMaxAmount,
+        currency: listing.currency || 'USD',
       })
     }
     if (listing.collaborationTypes.includes('Discount')) {

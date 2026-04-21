@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { XMarkIcon, ArrowTopRightOnSquareIcon, UsersIcon, MapPinIcon } from '@heroicons/react/24/outline'
 import type { CollaborationResponse } from '@/services/api/collaborations'
+import { getCurrencySymbol } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
 interface CalendarEventModalProps {
@@ -153,7 +154,7 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
                                         <div className="flex flex-col gap-1">
                                             <p className="text-base font-bold text-gray-900">Offer Details</p>
                                             <p className="text-gray-600">
-                                                {collaboration.collaboration_type || 'Custom'} • {collaboration.collaboration_type === 'Paid' ? `$${collaboration.paid_amount}` :
+                                                {collaboration.collaboration_type || 'Custom'} • {collaboration.collaboration_type === 'Paid' ? `${getCurrencySymbol(collaboration.currency || 'USD')}${Number(collaboration.paid_amount || 0).toLocaleString()}` :
                                                     collaboration.collaboration_type === 'Discount' ? `${collaboration.discount_percentage}% Off` :
                                                         collaboration.collaboration_type === 'Free Stay' ? `${collaboration.free_stay_max_nights} Nights` : 'Barter'}
                                             </p>

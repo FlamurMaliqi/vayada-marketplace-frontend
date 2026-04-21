@@ -8,7 +8,7 @@ import { DetailedCollaboration } from '@/services/api/collaborations'
 import { Button, StarRating, getPlatformIcon } from '@/components/ui'
 import { XMarkIcon } from '@heroicons/react/24/solid'
 import { CheckBadgeIcon, MapPinIcon, StarIcon, ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
-import { formatNumber, formatDateShort, getTimeAgo } from '@/lib/utils'
+import { formatNumber, formatDateShort, getTimeAgo, getCurrencySymbol } from '@/lib/utils'
 
 interface CollaborationRequestDetailModalProps {
   isOpen: boolean
@@ -280,7 +280,7 @@ export function CollaborationRequestDetailModal({
                   <p className="text-gray-700 font-medium">
                     {collaboration.collaborationType}
                     {collaboration.collaborationType === 'Free Stay' && collaboration.freeStayMaxNights && ` • ${collaboration.freeStayMaxNights} Nights`}
-                    {collaboration.collaborationType === 'Paid' && collaboration.paidAmount && ` • $${collaboration.paidAmount}`}
+                    {collaboration.collaborationType === 'Paid' && collaboration.paidAmount && ` • ${getCurrencySymbol(collaboration.currency || 'USD')}${Number(collaboration.paidAmount).toLocaleString()}`}
                     {collaboration.collaborationType === 'Discount' && collaboration.discountPercentage && ` • ${collaboration.discountPercentage}% Off`}
                   </p>
                 </div>

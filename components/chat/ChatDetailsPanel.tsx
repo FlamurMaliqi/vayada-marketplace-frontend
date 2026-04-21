@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { PlatformBadge, AvatarSimple } from '@/components/ui'
 import { getStatusClasses } from '@/lib/constants'
-import { formatCompactNumber } from '@/lib/utils'
+import { formatCompactNumber, getCurrencySymbol } from '@/lib/utils'
 import type { DetailedCollaboration, ConversationResponse, PlatformDeliverablesItem, PlatformDeliverable } from '@/services/api/collaborations'
 
 interface ChatDetailsPanelProps {
@@ -68,7 +68,7 @@ export function ChatDetailsPanel({
     if (collab.collaborationType === 'Free Stay') {
       return `${collab.freeStayMaxNights || '?'} Nights`
     } else if (collab.collaborationType === 'Paid') {
-      return `$${collab.paidAmount || '?'}`
+      return `${getCurrencySymbol(collab.currency || 'USD')}${collab.paidAmount ? Number(collab.paidAmount).toLocaleString() : '?'}`
     } else if (collab.collaborationType === 'Discount') {
       return `${collab.discountPercentage || '?'}% Off`
     }
