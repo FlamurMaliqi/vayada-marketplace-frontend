@@ -29,12 +29,13 @@ interface SuggestChangesModalProps {
     initialCheckIn: string
     initialCheckOut: string
     initialPlatformDeliverables: PlatformDeliverables[]
-    initialCollaborationType?: 'Free Stay' | 'Paid' | 'Discount' | null
+    initialCollaborationType?: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate' | null
     initialFreeStayMaxNights?: number | null
     initialPaidAmount?: number | null
     initialCurrency?: string | null
     initialDiscountPercentage?: number | null
-    allowedCollaborationTypes?: ('Free Stay' | 'Paid' | 'Discount')[]
+    initialCreatorFee?: number | null
+    allowedCollaborationTypes?: ('Free Stay' | 'Paid' | 'Discount' | 'Affiliate')[]
     userType?: string | null
     onSubmit: (data: {
         travel_date_from: string,
@@ -44,7 +45,8 @@ interface SuggestChangesModalProps {
         free_stay_max_nights?: number | null,
         paid_amount?: number | null,
         currency?: string | null,
-        discount_percentage?: number | null
+        discount_percentage?: number | null,
+        creator_fee?: number | null
     }) => void
 }
 
@@ -60,6 +62,7 @@ export default function SuggestChangesModal({
     initialPaidAmount,
     initialCurrency,
     initialDiscountPercentage,
+    initialCreatorFee,
     allowedCollaborationTypes,
     userType,
     onSubmit
@@ -83,6 +86,7 @@ export default function SuggestChangesModal({
     const [paidAmount, setPaidAmount] = useState(initialPaidAmount || 0)
     const [currency, setCurrency] = useState(initialCurrency || 'USD')
     const [discountPercentage, setDiscountPercentage] = useState(initialDiscountPercentage || 0)
+    const [creatorFee, setCreatorFee] = useState(initialCreatorFee || 0)
     const [platformDeliverables, setPlatformDeliverables] = useState<PlatformDeliverables[]>(
         initialPlatformDeliverables.length > 0
             ? JSON.parse(JSON.stringify(initialPlatformDeliverables)) // Deep clone for local editing
@@ -205,7 +209,7 @@ export default function SuggestChangesModal({
                                     ) : (
                                         <select
                                             value={collaborationType}
-                                            onChange={(e) => setCollaborationType(e.target.value as 'Free Stay' | 'Paid' | 'Discount')}
+                                            onChange={(e) => setCollaborationType(e.target.value as 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate')}
                                             className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:border-blue-500"
                                         >
                                             {allowedCollaborationTypes.map(type => (
@@ -222,6 +226,7 @@ export default function SuggestChangesModal({
                                         <option value="Free Stay">Free Stay</option>
                                         <option value="Paid">Paid</option>
                                         <option value="Discount">Discount</option>
+                                        <option value="Affiliate">Affiliate</option>
                                     </select>
                                 )}
                             </div>
@@ -267,6 +272,17 @@ export default function SuggestChangesModal({
                                         <button onClick={() => setDiscountPercentage(prev => Math.max(0, prev - 5))} className="text-gray-400 hover:text-gray-900"><MinusIcon className="w-5 h-5" /></button>
                                         <span className="flex-1 text-center font-bold text-gray-900">{discountPercentage}%</span>
                                         <button onClick={() => setDiscountPercentage(prev => Math.min(100, prev + 5))} className="text-gray-400 hover:text-gray-900"><PlusIcon className="w-5 h-5" /></button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {collaborationType === 'Affiliate' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Commission Percentage (%)</label>
+                                    <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-2">
+                                        <button onClick={() => setCreatorFee(prev => Math.max(0, prev - 1))} className="text-gray-400 hover:text-gray-900"><MinusIcon className="w-5 h-5" /></button>
+                                        <span className="flex-1 text-center font-bold text-gray-900">{creatorFee}%</span>
+                                        <button onClick={() => setCreatorFee(prev => Math.min(100, prev + 1))} className="text-gray-400 hover:text-gray-900"><PlusIcon className="w-5 h-5" /></button>
                                     </div>
                                 </div>
                             )}
@@ -371,7 +387,8 @@ export default function SuggestChangesModal({
                             free_stay_max_nights: collaborationType === 'Free Stay' ? freeStayMaxNights : null,
                             paid_amount: collaborationType === 'Paid' ? paidAmount : null,
                             currency: collaborationType === 'Paid' ? currency : null,
-                            discount_percentage: collaborationType === 'Discount' ? discountPercentage : null
+                            discount_percentage: collaborationType === 'Discount' ? discountPercentage : null,
+                            creator_fee: collaborationType === 'Affiliate' ? creatorFee : null
                         })}
                         className="px-8 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md active:scale-95"
                     >

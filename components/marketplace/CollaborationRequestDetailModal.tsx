@@ -282,6 +282,7 @@ export function CollaborationRequestDetailModal({
                     {collaboration.collaborationType === 'Free Stay' && collaboration.freeStayMaxNights && ` • ${collaboration.freeStayMaxNights} Nights`}
                     {collaboration.collaborationType === 'Paid' && collaboration.paidAmount && ` • ${getCurrencySymbol(collaboration.currency || 'USD')}${Number(collaboration.paidAmount).toLocaleString()}`}
                     {collaboration.collaborationType === 'Discount' && collaboration.discountPercentage && ` • ${collaboration.discountPercentage}% Off`}
+                    {collaboration.collaborationType === 'Affiliate' && collaboration.creatorFee && ` • ${collaboration.creatorFee}% Commission`}
                   </p>
                 </div>
               </div>

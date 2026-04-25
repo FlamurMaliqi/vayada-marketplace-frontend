@@ -1,7 +1,7 @@
 'use client'
 
 import { PencilIcon, XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
-import { GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, CheckCircleIcon, LinkIcon } from '@heroicons/react/24/outline'
 import { HotelBadgeIcon } from '@/components/ui'
 import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES, AGE_GROUP_OPTIONS } from '@/lib/constants'
 import { formatNumber, getCurrencySymbol } from '@/lib/utils'
@@ -155,13 +155,14 @@ export function ListingViewCard({
                 {/* Collaboration Types */}
                 <div>
                   <label className="block text-base font-semibold text-gray-900 mb-3">Collaboration Types</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {COLLABORATION_TYPES.map((type) => {
                       const isSelected = listing.collaborationTypes?.includes(type) || false
                       const icons = {
                         'Free Stay': GiftIcon,
                         'Paid': CurrencyDollarIcon,
                         'Discount': TagIcon,
+                        'Affiliate': LinkIcon,
                       }
                       const Icon = icons[type as keyof typeof icons]
 
@@ -258,6 +259,27 @@ export function ListingViewCard({
                       <label className="block text-xs font-semibold text-gray-700 mb-1">Discount Percentage (%)</label>
                       <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
                         {listing.discountPercentage || '0'}%
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Affiliate Details */}
+                {listing.collaborationTypes?.includes('Affiliate') && (
+                  <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
+                        <LinkIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h6 className="font-semibold text-gray-900 text-base">Affiliate Details</h6>
+                        <p className="text-sm text-gray-600">Commission on bookings driven by the creator's link</p>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Commission Percentage (%)</label>
+                      <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
+                        {listing.commissionPercentage || '0'}%
                       </div>
                     </div>
                   </div>

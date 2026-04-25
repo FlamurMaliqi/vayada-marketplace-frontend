@@ -32,7 +32,7 @@ export const PLATFORM_OPTIONS_ALL = [
 ] as const
 
 // Collaboration types
-export const COLLABORATION_TYPES = ['Free Stay', 'Paid', 'Discount'] as const
+export const COLLABORATION_TYPES = ['Free Stay', 'Paid', 'Discount', 'Affiliate'] as const
 
 // Platform to deliverables mapping
 export const PLATFORM_DELIVERABLES: Record<string, readonly string[]> = {
@@ -64,6 +64,7 @@ export const OFFERING_OPTIONS = [
   'Free stay',
   'Paid stay',
   'Discount',
+  'Affiliate',
 ] as const
 
 // Budget filter range

@@ -155,6 +155,7 @@ export function CreatorDetailModal({ creator, isOpen, onClose, isPublic = false 
         paid_amount: data.paidAmount,
         currency: data.currency,
         discount_percentage: data.discountPercentage,
+        creator_fee: data.creatorFee,
         preferred_date_from: data.preferredDateFrom || undefined,
         preferred_date_to: data.preferredDateTo || undefined,
         preferred_months: data.preferredMonths.length > 0 ? data.preferredMonths : undefined,

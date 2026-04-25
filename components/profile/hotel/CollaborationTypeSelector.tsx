@@ -1,6 +1,6 @@
 'use client'
 
-import { GiftIcon, CurrencyDollarIcon, TagIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { GiftIcon, CurrencyDollarIcon, TagIcon, CheckCircleIcon, LinkIcon } from '@heroicons/react/24/outline'
 import { COLLABORATION_TYPES } from '@/lib/constants'
 
 interface CollaborationTypeSelectorProps {
@@ -12,11 +12,12 @@ const ICONS = {
   'Free Stay': GiftIcon,
   'Paid': CurrencyDollarIcon,
   'Discount': TagIcon,
+  'Affiliate': LinkIcon,
 } as const
 
 export function CollaborationTypeSelector({ selectedTypes, onChange }: CollaborationTypeSelectorProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {COLLABORATION_TYPES.map((type) => {
         const isSelected = selectedTypes.includes(type)
         const Icon = ICONS[type as keyof typeof ICONS]

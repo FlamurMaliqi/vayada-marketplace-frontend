@@ -21,7 +21,7 @@ interface ListingMarketplaceResponse {
   collaboration_offerings: Array<{
     id: string
     listing_id: string
-    collaboration_type: "Free Stay" | "Paid" | "Discount"
+    collaboration_type: "Free Stay" | "Paid" | "Discount" | "Affiliate"
     availability_months: string[]
     platforms: ("Instagram" | "TikTok" | "YouTube" | "Facebook")[]
     free_stay_min_nights: number | null
@@ -29,6 +29,7 @@ interface ListingMarketplaceResponse {
     paid_max_amount: string | null // Backend returns as string (e.g., "2000.00")
     currency: string | null
     discount_percentage: number | null
+    commission_percentage: number | null
     created_at: string
     updated_at: string
   }>
@@ -67,7 +68,7 @@ export interface CreateListingRequest {
   accommodation_type?: string
   images?: string[]
   collaboration_offerings: Array<{
-    collaboration_type: 'Free Stay' | 'Paid' | 'Discount'
+    collaboration_type: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate'
     availability_months: string[]
     platforms: string[]
     free_stay_min_nights?: number
@@ -75,6 +76,7 @@ export interface CreateListingRequest {
     paid_max_amount?: number
     currency?: string
     discount_percentage?: number
+    commission_percentage?: number
   }>
   creator_requirements: {
     platforms: string[]

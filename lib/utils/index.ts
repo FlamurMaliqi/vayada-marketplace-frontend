@@ -207,7 +207,7 @@ export function buildQueryString(params: Record<string, string | number | boolea
 /**
  * Transform HotelListing from API to Hotel type for frontend
  */
-import type { HotelListing, Hotel, Creator, Platform } from '@/lib/types'
+import type { HotelListing, Hotel, Creator, Platform, CollaborationOffering } from '@/lib/types'
 
 // Backend API response types for marketplace (snake_case from backend)
 interface CreatorMarketplaceResponse {
@@ -248,7 +248,7 @@ interface ListingMarketplaceResponse {
   collaboration_offerings: Array<{
     id: string
     listing_id: string
-    collaboration_type: "Free Stay" | "Paid" | "Discount"
+    collaboration_type: "Free Stay" | "Paid" | "Discount" | "Affiliate"
     availability_months: string[]
     platforms: ("Instagram" | "TikTok" | "YouTube" | "Facebook")[]
     free_stay_min_nights: number | null
@@ -256,6 +256,7 @@ interface ListingMarketplaceResponse {
     paid_max_amount: string | null // Backend returns as string (e.g., "2000.00")
     currency: string | null
     discount_percentage: number | null
+    commission_percentage: number | null
     created_at: string
     updated_at: string
   }>
@@ -344,6 +345,23 @@ export function transformListingMarketplaceResponse(apiListing: ListingMarketpla
   const numberOfNights = freeStayOffering?.free_stay_max_nights || undefined
   const minNumberOfNights = freeStayOffering?.free_stay_min_nights || undefined
 
+  // Full offerings list for detail rendering — normalize paid_max_amount from string to number
+  const collaborationOfferings: CollaborationOffering[] = offerings.map(o => ({
+    id: o.id,
+    listing_id: o.listing_id,
+    collaboration_type: o.collaboration_type,
+    availability_months: o.availability_months,
+    platforms: o.platforms,
+    free_stay_min_nights: o.free_stay_min_nights,
+    free_stay_max_nights: o.free_stay_max_nights,
+    paid_max_amount: o.paid_max_amount !== null ? Number(o.paid_max_amount) : null,
+    currency: o.currency,
+    discount_percentage: o.discount_percentage,
+    commission_percentage: o.commission_percentage,
+    created_at: o.created_at,
+    updated_at: o.updated_at,
+  }))
+
   // Extract creator requirements
   const creatorRequirements = apiListing.creator_requirements
   const targetAudience = creatorRequirements?.target_countries || []
@@ -367,6 +385,7 @@ export function transformListingMarketplaceResponse(apiListing: ListingMarketpla
     images,
     accommodationType: apiListing.accommodation_type || undefined,
     collaborationType,
+    collaborationOfferings,
     availability: availabilityMonths.length > 0 ? availabilityMonths : undefined,
     platforms: platforms.length > 0 ? platforms : undefined,
     domain: undefined, // Not provided in listing response
@@ -436,6 +455,7 @@ export function transformHotelListingToHotel(listing: HotelListing): Hotel {
     images: listing.images || [],
     accommodationType: listing.accommodation_type || undefined,
     collaborationType,
+    collaborationOfferings: offerings,
     availability: availabilityMonths.length > 0 ? availabilityMonths : undefined,
     platforms: platforms.length > 0 ? platforms : undefined,
     numberOfNights: freeStayOffering?.free_stay_max_nights || undefined,

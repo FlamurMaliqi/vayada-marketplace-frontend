@@ -16,7 +16,7 @@ import type { HotelProfile as ApiHotelProfile } from '@/lib/types'
  */
 export function transformListingToApi(listingData: ListingFormData) {
   const offerings: Array<{
-    collaboration_type: 'Free Stay' | 'Paid' | 'Discount'
+    collaboration_type: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate'
     availability_months: string[]
     platforms: string[]
     free_stay_min_nights?: number
@@ -24,6 +24,7 @@ export function transformListingToApi(listingData: ListingFormData) {
     paid_max_amount?: number
     currency?: string
     discount_percentage?: number
+    commission_percentage?: number
   }> = []
 
   if (listingData.collaborationTypes.includes('Free Stay')) {
@@ -52,6 +53,15 @@ export function transformListingToApi(listingData: ListingFormData) {
       availability_months: listingData.availability,
       platforms: listingData.platforms,
       discount_percentage: listingData.discountPercentage,
+    })
+  }
+
+  if (listingData.collaborationTypes.includes('Affiliate')) {
+    offerings.push({
+      collaboration_type: 'Affiliate',
+      availability_months: listingData.availability,
+      platforms: listingData.platforms,
+      commission_percentage: listingData.commissionPercentage,
     })
   }
 
@@ -213,6 +223,7 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
         | 'Free Stay'
         | 'Paid'
         | 'Discount'
+        | 'Affiliate'
       )[]
 
       const availabilityMonths = Array.from(
@@ -224,6 +235,7 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
       const freeStayOffering = offerings.find((o) => o.collaboration_type === 'Free Stay')
       const paidOffering = offerings.find((o) => o.collaboration_type === 'Paid')
       const discountOffering = offerings.find((o) => o.collaboration_type === 'Discount')
+      const affiliateOffering = offerings.find((o) => o.collaboration_type === 'Affiliate')
 
       const creatorReqs = apiListing.creator_requirements || {
         platforms: [],
@@ -249,6 +261,7 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
         paidMaxAmount: paidOffering?.paid_max_amount ?? undefined,
         currency: paidOffering?.currency ?? undefined,
         discountPercentage: discountOffering?.discount_percentage ?? undefined,
+        commissionPercentage: affiliateOffering?.commission_percentage ?? undefined,
         lookingForPlatforms: creatorReqs.platforms || [],
         lookingForMinFollowers: creatorReqs.min_followers ?? undefined,
         targetGroupCountries: creatorReqs.target_countries || [],

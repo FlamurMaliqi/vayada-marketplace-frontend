@@ -7,6 +7,7 @@ import {
   CurrencyDollarIcon,
   TagIcon,
   CalendarDaysIcon,
+  LinkIcon,
 } from '@heroicons/react/24/outline'
 import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES } from '@/lib/constants'
 import { CURRENCY_OPTIONS } from '@/lib/utils/getCurrencySymbol'
@@ -31,13 +32,14 @@ export function ListingOfferings({ listing, index, onUpdateListing }: ListingOff
           <label className="block text-base font-semibold text-gray-900 mb-3">
             Collaboration Types <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {COLLABORATION_TYPES.map((type) => {
               const isSelected = listing.collaborationTypes.includes(type)
               const icons = {
                 'Free Stay': GiftIcon,
                 'Paid': CurrencyDollarIcon,
                 'Discount': TagIcon,
+                'Affiliate': LinkIcon,
               }
               const Icon = icons[type as keyof typeof icons]
 
@@ -191,6 +193,32 @@ export function ListingOfferings({ listing, index, onUpdateListing }: ListingOff
               value={listing.discountPercentage || ''}
               onChange={(e) => onUpdateListing(index, 'discountPercentage', parseInt(e.target.value) || undefined)}
               placeholder="20"
+              min={1}
+              max={100}
+              required
+              className="bg-gray-50 border-gray-200"
+            />
+          </div>
+        )}
+
+        {/* Affiliate Details */}
+        {listing.collaborationTypes.includes('Affiliate') && (
+          <div className="p-4 md:p-5 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
+                <LinkIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <h6 className="font-semibold text-gray-900 text-base">Affiliate Details</h6>
+                <p className="text-sm text-gray-600">Commission paid on bookings driven by the creator's link</p>
+              </div>
+            </div>
+            <Input
+              label="Commission Percentage (%)"
+              type="number"
+              value={listing.commissionPercentage || ''}
+              onChange={(e) => onUpdateListing(index, 'commissionPercentage', parseInt(e.target.value) || undefined)}
+              placeholder="10"
               min={1}
               max={100}
               required

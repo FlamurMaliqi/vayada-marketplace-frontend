@@ -321,7 +321,7 @@ export default function ProfileCompletePage() {
 
   const buildListingOfferings = (listing: typeof hotelForm.listings[0]) => {
     const offerings: Array<{
-      collaboration_type: 'Free Stay' | 'Paid' | 'Discount'
+      collaboration_type: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate'
       availability_months: string[]
       platforms: string[]
       free_stay_min_nights?: number
@@ -329,6 +329,7 @@ export default function ProfileCompletePage() {
       paid_max_amount?: number
       currency?: string
       discount_percentage?: number
+      commission_percentage?: number
     }> = []
 
     if (listing.collaborationTypes.includes('Free Stay')) {
@@ -355,6 +356,14 @@ export default function ProfileCompletePage() {
         availability_months: listing.availability,
         platforms: listing.platforms,
         discount_percentage: listing.discountPercentage,
+      })
+    }
+    if (listing.collaborationTypes.includes('Affiliate')) {
+      offerings.push({
+        collaboration_type: 'Affiliate',
+        availability_months: listing.availability,
+        platforms: listing.platforms,
+        commission_percentage: listing.commissionPercentage,
       })
     }
     return offerings

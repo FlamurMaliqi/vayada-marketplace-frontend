@@ -71,6 +71,8 @@ export function ChatDetailsPanel({
       return `${getCurrencySymbol(collab.currency || 'USD')}${collab.paidAmount ? Number(collab.paidAmount).toLocaleString() : '?'}`
     } else if (collab.collaborationType === 'Discount') {
       return `${collab.discountPercentage || '?'}% Off`
+    } else if (collab.collaborationType === 'Affiliate') {
+      return `${collab.creatorFee || '?'}% Commission`
     }
     return '-'
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { XMarkIcon, GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, SparklesIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, SparklesIcon, PaperAirplaneIcon, LinkIcon } from '@heroicons/react/24/outline'
 import { Input, Textarea, Button, HotelBadgeIcon } from '@/components/ui'
 import { HOTEL_TYPES, CREATOR_TYPE_OPTIONS } from '@/lib/constants'
 import { CURRENCY_OPTIONS } from '@/lib/utils/getCurrencySymbol'
@@ -150,7 +150,7 @@ export function ListingEditorForm({
             </label>
             <CollaborationTypeSelector
               selectedTypes={formData.collaborationTypes}
-              onChange={(types) => updateField('collaborationTypes', types as ('Free Stay' | 'Paid' | 'Discount')[])}
+              onChange={(types) => updateField('collaborationTypes', types as ('Free Stay' | 'Paid' | 'Discount' | 'Affiliate')[])}
             />
           </div>
 
@@ -265,6 +265,32 @@ export function ListingEditorForm({
                 value={formData.discountPercentage || ''}
                 onChange={(e) => updateField('discountPercentage', parseInt(e.target.value) || undefined)}
                 placeholder="20"
+                min={1}
+                max={100}
+                required
+                className="bg-gray-50 border-gray-200"
+              />
+            </div>
+          )}
+
+          {/* Affiliate Details */}
+          {formData.collaborationTypes.includes('Affiliate') && (
+            <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
+                  <LinkIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h6 className="font-semibold text-gray-900 text-base">Affiliate Details</h6>
+                  <p className="text-sm text-gray-600">Commission paid on bookings driven by the creator's link</p>
+                </div>
+              </div>
+              <Input
+                label="Commission Percentage (%)"
+                type="number"
+                value={formData.commissionPercentage || ''}
+                onChange={(e) => updateField('commissionPercentage', parseInt(e.target.value) || undefined)}
+                placeholder="10"
                 min={1}
                 max={100}
                 required

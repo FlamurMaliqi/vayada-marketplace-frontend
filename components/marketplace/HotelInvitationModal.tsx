@@ -30,12 +30,13 @@ interface HotelInvitationModalProps {
 
 export interface HotelInvitationData {
   listingId: string
-  collaborationType: 'Free Stay' | 'Paid' | 'Discount'
+  collaborationType: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate'
   freeStayMinNights?: number
   freeStayMaxNights?: number
   paidAmount?: number
   currency?: string
   discountPercentage?: number
+  creatorFee?: number
   preferredDateFrom?: string
   preferredDateTo?: string
   preferredMonths: string[]
@@ -52,12 +53,13 @@ export function HotelInvitationModal({
   creatorPlatforms = [],
 }: HotelInvitationModalProps) {
   const [listingId, setListingId] = useState('')
-  const [collaborationType, setCollaborationType] = useState<'Free Stay' | 'Paid' | 'Discount' | ''>('')
+  const [collaborationType, setCollaborationType] = useState<'Free Stay' | 'Paid' | 'Discount' | 'Affiliate' | ''>('')
   const [freeStayMinNights, setFreeStayMinNights] = useState<number | undefined>(undefined)
   const [freeStayMaxNights, setFreeStayMaxNights] = useState<number | undefined>(undefined)
   const [paidAmount, setPaidAmount] = useState<number | undefined>(undefined)
   const [currency, setCurrency] = useState<string>('USD')
   const [discountPercentage, setDiscountPercentage] = useState<number | undefined>(undefined)
+  const [creatorFee, setCreatorFee] = useState<number | undefined>(undefined)
   const [preferredDateFrom, setPreferredDateFrom] = useState('')
   const [preferredDateTo, setPreferredDateTo] = useState('')
   const [preferredMonths, setPreferredMonths] = useState<string[]>([])
@@ -148,12 +150,13 @@ export function HotelInvitationModal({
     setTimeout(() => {
       onSubmit({
         listingId,
-        collaborationType: collaborationType as 'Free Stay' | 'Paid' | 'Discount',
+        collaborationType: collaborationType as 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate',
         freeStayMinNights,
         freeStayMaxNights,
         paidAmount,
         currency: collaborationType === 'Paid' ? currency : undefined,
         discountPercentage,
+        creatorFee: collaborationType === 'Affiliate' ? creatorFee : undefined,
         preferredDateFrom: preferredDateFrom || undefined,
         preferredDateTo: preferredDateTo || undefined,
         preferredMonths,
@@ -168,6 +171,7 @@ export function HotelInvitationModal({
       setPaidAmount(undefined)
       setCurrency('USD')
       setDiscountPercentage(undefined)
+      setCreatorFee(undefined)
       setPreferredDateFrom('')
       setPreferredDateTo('')
       setPreferredMonths([])
@@ -185,6 +189,7 @@ export function HotelInvitationModal({
     setFreeStayMaxNights(undefined)
     setPaidAmount(undefined)
     setDiscountPercentage(undefined)
+    setCreatorFee(undefined)
     setPreferredDateFrom('')
     setPreferredDateTo('')
     setPreferredMonths([])
@@ -275,6 +280,17 @@ export function HotelInvitationModal({
                 />
                 <span className="ml-2 text-gray-700">Discount</span>
               </label>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="collaborationType"
+                  value="Affiliate"
+                  checked={collaborationType === 'Affiliate'}
+                  onChange={(e) => setCollaborationType(e.target.value as 'Affiliate')}
+                  className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                />
+                <span className="ml-2 text-gray-700">Affiliate</span>
+              </label>
             </div>
           </div>
 
@@ -354,6 +370,25 @@ export function HotelInvitationModal({
                   min="1"
                   max="100"
                 />
+              </div>
+            </div>
+          )}
+
+          {collaborationType === 'Affiliate' && (
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h4 className="font-semibold text-gray-900 mb-4">Affiliate Details</h4>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Commission Percentage (%)</label>
+                <input
+                  type="number"
+                  value={creatorFee || ''}
+                  onChange={(e) => setCreatorFee(parseInt(e.target.value) || undefined)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="10"
+                  min="1"
+                  max="100"
+                />
+                <p className="mt-2 text-xs text-gray-500">Creator earns this percentage on bookings driven by their affiliate link.</p>
               </div>
             </div>
           )}

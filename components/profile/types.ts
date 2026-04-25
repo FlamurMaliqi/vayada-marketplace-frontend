@@ -121,7 +121,7 @@ export interface ProfileHotelListing {
   description: string
   images: string[]
   accommodationType?: string
-  collaborationTypes: ('Free Stay' | 'Paid' | 'Discount')[]
+  collaborationTypes: ('Free Stay' | 'Paid' | 'Discount' | 'Affiliate')[]
   availability: string[]
   platforms: string[]
   freeStayMinNights?: number
@@ -129,6 +129,7 @@ export interface ProfileHotelListing {
   paidMaxAmount?: number
   currency?: string
   discountPercentage?: number
+  commissionPercentage?: number
   lookingForPlatforms: string[]
   lookingForMinFollowers?: number
   targetGroupCountries: string[]
@@ -178,7 +179,7 @@ export interface ListingFormData {
   description: string
   images: string[]
   accommodationType: string
-  collaborationTypes: ('Free Stay' | 'Paid' | 'Discount')[]
+  collaborationTypes: ('Free Stay' | 'Paid' | 'Discount' | 'Affiliate')[]
   availability: string[]
   platforms: string[]
   freeStayMinNights?: number
@@ -186,6 +187,7 @@ export interface ListingFormData {
   paidMaxAmount?: number
   currency?: string
   discountPercentage?: number
+  commissionPercentage?: number
   lookingForPlatforms: string[]
   lookingForMinFollowers?: number
   targetGroupCountries: string[]
@@ -227,6 +229,7 @@ export function createEmptyListingFormData(): ListingFormData {
     paidMaxAmount: undefined,
     currency: undefined,
     discountPercentage: undefined,
+    commissionPercentage: undefined,
     lookingForPlatforms: [],
     lookingForMinFollowers: undefined,
     targetGroupCountries: [],

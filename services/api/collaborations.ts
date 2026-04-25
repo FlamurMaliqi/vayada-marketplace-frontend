@@ -61,6 +61,7 @@ export interface UpdateCollaborationTermsRequest {
   paid_amount?: number | null
   currency?: string | null
   discount_percentage?: number | null
+  creator_fee?: number | null
 }
 
 export interface CollaborationResponseRequest {
@@ -73,12 +74,13 @@ export interface CreateHotelCollaborationRequest {
   initiator_type: 'hotel'
   listing_id: string
   creator_id: string
-  collaboration_type: 'Free Stay' | 'Paid' | 'Discount'
+  collaboration_type: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate'
   free_stay_min_nights?: number
   free_stay_max_nights?: number
   paid_amount?: number
   currency?: string
   discount_percentage?: number
+  creator_fee?: number
   preferred_date_from?: string
   preferred_date_to?: string
   preferred_months?: string[]
@@ -134,12 +136,13 @@ export interface CollaborationResponse {
   listing_id: string
   listing_name: string
   listing_location: string
-  collaboration_type: 'Free Stay' | 'Paid' | 'Discount' | null
+  collaboration_type: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate' | null
   free_stay_min_nights: number | null
   free_stay_max_nights: number | null
   paid_amount: number | null
   currency: string | null
   discount_percentage: number | null
+  creator_fee: number | null
   travel_date_from: string | null
   travel_date_to: string | null
   preferred_date_from: string | null
@@ -193,7 +196,7 @@ export type DetailedCollaboration = Collaboration & {
   listingId?: string
   listingName?: string
   listingLocation?: string
-  collaborationType?: 'Free Stay' | 'Paid' | 'Discount' | null
+  collaborationType?: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate' | null
   hotelLocation?: string | null
   hotelWebsite?: string | null
   hotelAbout?: string | null
@@ -203,6 +206,7 @@ export type DetailedCollaboration = Collaboration & {
   paidAmount?: number | null
   currency?: string | null
   discountPercentage?: number | null
+  creatorFee?: number | null
   travelDateFrom?: string | null
   travelDateTo?: string | null
   preferredDateFrom?: string | null
@@ -224,7 +228,7 @@ export type DetailedCollaboration = Collaboration & {
     targetAgeMin: number
     targetAgeMax: number
   }
-  allowedCollaborationTypes?: ('Free Stay' | 'Paid' | 'Discount')[]
+  allowedCollaborationTypes?: ('Free Stay' | 'Paid' | 'Discount' | 'Affiliate')[]
 }
 
 export interface ConversationResponse {
@@ -537,6 +541,7 @@ export function transformCollaborationResponse(
     paidAmount: response.paid_amount,
     currency: response.currency,
     discountPercentage: response.discount_percentage,
+    creatorFee: response.creator_fee,
     travelDateFrom: response.travel_date_from,
     travelDateTo: response.travel_date_to,
     preferredDateFrom: response.preferred_date_from,

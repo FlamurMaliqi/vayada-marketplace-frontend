@@ -629,6 +629,7 @@ function ChatPageContent() {
         initialPaidAmount={activeCollaboration?.paidAmount}
         initialCurrency={activeCollaboration?.currency}
         initialDiscountPercentage={activeCollaboration?.discountPercentage}
+        initialCreatorFee={activeCollaboration?.creatorFee}
         allowedCollaborationTypes={activeCollaboration?.allowedCollaborationTypes}
         userType={userType}
         onSubmit={handleSuggestChanges}

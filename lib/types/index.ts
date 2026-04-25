@@ -78,7 +78,8 @@ export interface Hotel {
   picture?: string
   images: string[]
   accommodationType?: string // Hotel, Boutiques Hotel, City Hotel, Luxury Hotel, Apartment, Villa, Lodge
-  collaborationType?: 'Kostenlos' | 'Bezahlt' // Free, Paid
+  collaborationType?: 'Kostenlos' | 'Bezahlt' // Free, Paid — legacy single-value summary
+  collaborationOfferings?: CollaborationOffering[] // Full list of offerings; preferred for detail rendering
   availability?: string[] // Array of months
   platforms?: string[] // Array of platform names: 'Instagram', 'TikTok', 'YouTube', 'Facebook'
   domain?: string // Website domain
@@ -104,7 +105,7 @@ export interface Hotel {
 export interface CollaborationOffering {
   id: string
   listing_id: string
-  collaboration_type: 'Free Stay' | 'Paid' | 'Discount'
+  collaboration_type: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate'
   availability_months: string[]
   platforms: string[]
   free_stay_min_nights?: number | null
@@ -112,6 +113,7 @@ export interface CollaborationOffering {
   paid_max_amount?: number | null
   currency?: string | null
   discount_percentage?: number | null
+  commission_percentage?: number | null
   created_at: string
   updated_at: string
 }
@@ -341,7 +343,7 @@ export interface ListingFormData {
   accommodation_type: string
   images: string[]
   imageFiles: File[]
-  collaborationTypes: ('Free Stay' | 'Paid' | 'Discount')[]
+  collaborationTypes: ('Free Stay' | 'Paid' | 'Discount' | 'Affiliate')[]
   availability: string[]
   platforms: string[]
   freeStayMinNights?: number
@@ -349,6 +351,7 @@ export interface ListingFormData {
   paidMaxAmount?: number
   currency?: string
   discountPercentage?: number
+  commissionPercentage?: number
   lookingForPlatforms: string[]
   lookingForMinFollowers?: number
   targetGroupCountries: string[]

@@ -17,7 +17,11 @@ import {
   SparklesIcon,
   CheckCircleIcon,
   CurrencyDollarIcon,
+  GiftIcon,
+  TagIcon,
+  LinkIcon,
 } from '@heroicons/react/24/outline'
+import type { CollaborationOffering } from '@/lib/types'
 import { CollaborationApplicationModal, type CollaborationApplicationData } from './CollaborationApplicationModal'
 import { collaborationService, type CreateCreatorCollaborationRequest } from '@/services/api/collaborations'
 import { getCurrentUserInfo } from '@/lib/utils/accessControl'
@@ -126,6 +130,71 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
 
   const collaborationType = hotel.collaborationType === 'Kostenlos' ? 'Free Stay' : 'Paid'
 
+  const offerings: CollaborationOffering[] = hotel.collaborationOfferings && hotel.collaborationOfferings.length > 0
+    ? hotel.collaborationOfferings
+    : []
+
+  const offeringBadgeClass = (type: CollaborationOffering['collaboration_type']) => {
+    switch (type) {
+      case 'Free Stay':
+        return 'bg-green-500/90 text-white'
+      case 'Paid':
+        return 'bg-amber-500/90 text-white'
+      case 'Discount':
+        return 'bg-yellow-500/90 text-white'
+      case 'Affiliate':
+        return 'bg-purple-500/90 text-white'
+    }
+  }
+
+  const offeringIcon = (type: CollaborationOffering['collaboration_type']) => {
+    switch (type) {
+      case 'Free Stay':
+        return GiftIcon
+      case 'Paid':
+        return CurrencyDollarIcon
+      case 'Discount':
+        return TagIcon
+      case 'Affiliate':
+        return LinkIcon
+    }
+  }
+
+  const offeringTitle = (o: CollaborationOffering) => {
+    switch (o.collaboration_type) {
+      case 'Free Stay':
+        return 'Complimentary Stay'
+      case 'Paid':
+        return 'Paid Collaboration'
+      case 'Discount':
+        return 'Discounted Stay'
+      case 'Affiliate':
+        return 'Affiliate Partnership'
+    }
+  }
+
+  const offeringSubtitle = (o: CollaborationOffering) => {
+    switch (o.collaboration_type) {
+      case 'Free Stay':
+        if (o.free_stay_min_nights && o.free_stay_max_nights && o.free_stay_min_nights !== o.free_stay_max_nights) {
+          return `${o.free_stay_min_nights}–${o.free_stay_max_nights} nights`
+        }
+        if (o.free_stay_max_nights) {
+          return `Up to ${o.free_stay_max_nights} nights`
+        }
+        return 'Dates flexible'
+      case 'Paid':
+        if (o.paid_max_amount != null) {
+          return `Up to ${o.paid_max_amount}${o.currency ? ` ${o.currency}` : ''}`
+        }
+        return 'Amount on request'
+      case 'Discount':
+        return o.discount_percentage != null ? `${o.discount_percentage}% off` : 'Discount offered'
+      case 'Affiliate':
+        return o.commission_percentage != null ? `${o.commission_percentage}% commission` : 'Commission on bookings'
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div
@@ -196,19 +265,30 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
 
           {/* Hotel Info Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               {hotel.accommodationType && (
                 <span className="px-2.5 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium">
                   {hotel.accommodationType}
                 </span>
               )}
-              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                collaborationType === 'Free Stay'
-                  ? 'bg-green-500/90 text-white'
-                  : 'bg-amber-500/90 text-white'
-              }`}>
-                {collaborationType}
-              </span>
+              {offerings.length > 0 ? (
+                offerings.map((o) => (
+                  <span
+                    key={o.id}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${offeringBadgeClass(o.collaboration_type)}`}
+                  >
+                    {o.collaboration_type}
+                  </span>
+                ))
+              ) : (
+                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                  collaborationType === 'Free Stay'
+                    ? 'bg-green-500/90 text-white'
+                    : 'bg-amber-500/90 text-white'
+                }`}>
+                  {collaborationType}
+                </span>
+              )}
             </div>
             <h2 className="text-2xl md:text-3xl font-bold mb-1">{hotel.name}</h2>
             <div className="flex items-center gap-1 text-white/90">
@@ -265,14 +345,28 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
               </div>
             )}
 
-            {/* What's Included */}
+            {/* What's the offering */}
             <div className="bg-gradient-to-br from-primary-50 to-indigo-50 rounded-2xl p-5">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <CheckCircleIcon className="w-5 h-5 text-primary-600" />
-                What's Included
+                What's the offering
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {hotel.collaborationType && (
+                {offerings.map((o) => {
+                  const Icon = offeringIcon(o.collaboration_type)
+                  return (
+                    <div key={o.id} className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                        <Icon className="w-5 h-5 text-primary-600" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{offeringTitle(o)}</div>
+                        <div className="text-xs text-gray-500">{offeringSubtitle(o)}</div>
+                      </div>
+                    </div>
+                  )
+                })}
+                {offerings.length === 0 && hotel.collaborationType && (
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
                       <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
