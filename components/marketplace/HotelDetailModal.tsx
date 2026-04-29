@@ -202,7 +202,7 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
         onClick={(e) => e.stopPropagation()}
       >
         {/* Hero Image Section */}
-        <div className="relative h-72 md:h-80 flex-shrink-0">
+        <div className="relative h-56 md:h-64 flex-shrink-0">
           {images.length > 0 && !imageError ? (
             <>
               <Image
@@ -235,7 +235,7 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
 
               {/* Image Dots */}
               {hasMultipleImages && (
-                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-1.5">
+                <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-1.5">
                   {images.map((_, index) => (
                     <button
                       key={index}
