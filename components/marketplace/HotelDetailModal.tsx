@@ -32,13 +32,14 @@ interface HotelDetailModalProps {
   hotel: Hotel | null
   isOpen: boolean
   onClose: () => void
+  creatorPlatforms?: string[]
 }
 
 const formatNumber = (num: number): string => {
   return new Intl.NumberFormat('de-DE').format(num)
 }
 
-export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalProps) {
+export function HotelDetailModal({ hotel, isOpen, onClose, creatorPlatforms = [] }: HotelDetailModalProps) {
   const [showApplicationModal, setShowApplicationModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -556,6 +557,10 @@ export function HotelDetailModal({ hotel, isOpen, onClose }: HotelDetailModalPro
         onSubmit={handleApplicationSubmit}
         hotelName={hotel.name}
         availableMonths={hotel.availability}
+        requiredPlatforms={hotel.platforms}
+        creatorPlatforms={creatorPlatforms}
+        maxNights={hotel.numberOfNights}
+        minNights={hotel.minNumberOfNights}
       />
 
       {/* Success Modal */}
