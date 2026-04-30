@@ -230,18 +230,44 @@ export default function MarketplacePage() {
     const sorted = [...filteredHotels]
     switch (sortOption) {
       case 'name-asc':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name))
+        sorted.sort((a, b) => a.name.localeCompare(b.name))
+        break
       case 'name-desc':
-        return sorted.sort((a, b) => b.name.localeCompare(a.name))
+        sorted.sort((a, b) => b.name.localeCompare(a.name))
+        break
       case 'newest':
-        return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        break
       case 'oldest':
-        return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        break
       case 'relevance':
       default:
-        return sorted
+        break
     }
-  }, [filteredHotels, sortOption])
+
+    // Eligibility-aware grouping: possible hotels first, locked ones last (sorted
+    // by min-followers ascending so the next reachable milestone is on top).
+    const creatorFollowers = currentCreator
+      ? currentCreator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0)
+      : undefined
+    if (creatorFollowers === undefined) {
+      return sorted
+    }
+
+    const possible: Hotel[] = []
+    const notPossible: Hotel[] = []
+    for (const hotel of sorted) {
+      const minFollowers = hotel.minFollowers ?? 0
+      if (minFollowers > 0 && creatorFollowers < minFollowers) {
+        notPossible.push(hotel)
+      } else {
+        possible.push(hotel)
+      }
+    }
+    notPossible.sort((a, b) => (a.minFollowers ?? 0) - (b.minFollowers ?? 0))
+    return [...possible, ...notPossible]
+  }, [filteredHotels, sortOption, currentCreator])
 
   const sortedCreators = useMemo(() => {
     const sorted = [...filteredCreators]
