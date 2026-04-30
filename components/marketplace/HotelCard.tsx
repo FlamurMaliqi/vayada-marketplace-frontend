@@ -322,6 +322,7 @@ export function HotelCard({ hotel, creatorPlatforms = [], creatorFollowers, isPu
         hotel={hotel}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        creatorPlatforms={creatorPlatforms}
       />
       <CollaborationApplicationModal
         isOpen={showApplicationModal}
