@@ -7,63 +7,50 @@ import type {
   ProfileHotelProfile,
   ProfileHotelListing,
   ListingFormData,
+  ListingOffering,
 } from './types'
-import type { PlatformAgeGroup, PlatformGenderSplit, CreatorType } from '@/lib/types'
+import type { PlatformAgeGroup, PlatformGenderSplit, CreatorType, CollaborationOffering } from '@/lib/types'
 import type { HotelProfile as ApiHotelProfile } from '@/lib/types'
+
+type ApiOfferingPayload = {
+  collaboration_type: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate'
+  availability_months: string[]
+  platforms: string[]
+  min_followers?: number
+  free_stay_min_nights?: number
+  free_stay_max_nights?: number
+  paid_max_amount?: number
+  currency?: string
+  discount_percentage?: number
+  commission_percentage?: number
+}
+
+function offeringToApi(o: ListingOffering): ApiOfferingPayload {
+  const base: ApiOfferingPayload = {
+    collaboration_type: o.type,
+    availability_months: o.availabilityMonths,
+    platforms: o.platforms,
+  }
+  if (o.minFollowers !== undefined && o.minFollowers !== null) base.min_followers = o.minFollowers
+  if (o.type === 'Free Stay') {
+    base.free_stay_min_nights = o.freeStayMinNights
+    base.free_stay_max_nights = o.freeStayMaxNights
+  } else if (o.type === 'Paid') {
+    base.paid_max_amount = o.paidMaxAmount
+    base.currency = o.currency || 'USD'
+  } else if (o.type === 'Discount') {
+    base.discount_percentage = o.discountPercentage
+  } else if (o.type === 'Affiliate') {
+    base.commission_percentage = o.commissionPercentage
+  }
+  return base
+}
 
 /**
  * Transform frontend listing format to API format for create/update
  */
 export function transformListingToApi(listingData: ListingFormData) {
-  const offerings: Array<{
-    collaboration_type: 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate'
-    availability_months: string[]
-    platforms: string[]
-    free_stay_min_nights?: number
-    free_stay_max_nights?: number
-    paid_max_amount?: number
-    currency?: string
-    discount_percentage?: number
-    commission_percentage?: number
-  }> = []
-
-  if (listingData.collaborationTypes.includes('Free Stay')) {
-    offerings.push({
-      collaboration_type: 'Free Stay',
-      availability_months: listingData.availability,
-      platforms: listingData.platforms,
-      free_stay_min_nights: listingData.freeStayMinNights,
-      free_stay_max_nights: listingData.freeStayMaxNights,
-    })
-  }
-
-  if (listingData.collaborationTypes.includes('Paid')) {
-    offerings.push({
-      collaboration_type: 'Paid',
-      availability_months: listingData.availability,
-      platforms: listingData.platforms,
-      paid_max_amount: listingData.paidMaxAmount,
-      currency: listingData.currency || 'USD',
-    })
-  }
-
-  if (listingData.collaborationTypes.includes('Discount')) {
-    offerings.push({
-      collaboration_type: 'Discount',
-      availability_months: listingData.availability,
-      platforms: listingData.platforms,
-      discount_percentage: listingData.discountPercentage,
-    })
-  }
-
-  if (listingData.collaborationTypes.includes('Affiliate')) {
-    offerings.push({
-      collaboration_type: 'Affiliate',
-      availability_months: listingData.availability,
-      platforms: listingData.platforms,
-      commission_percentage: listingData.commissionPercentage,
-    })
-  }
+  const offerings = listingData.offerings.map(offeringToApi)
 
   const result = {
     name: listingData.name,
@@ -218,24 +205,35 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
     email: apiProfile.email,
     phone: apiProfile.phone || '',
     listings: listings.map((apiListing): ProfileHotelListing => {
-      const offerings = apiListing.collaboration_offerings || []
-      const collaborationTypes = offerings.map((offering) => offering.collaboration_type) as (
-        | 'Free Stay'
-        | 'Paid'
-        | 'Discount'
-        | 'Affiliate'
-      )[]
+      const apiOfferings = apiListing.collaboration_offerings || []
+
+      const offerings: ListingOffering[] = apiOfferings.map((o: CollaborationOffering) => ({
+        type: o.collaboration_type,
+        availabilityMonths: o.availability_months || [],
+        platforms: o.platforms || [],
+        minFollowers: o.min_followers ?? undefined,
+        freeStayMinNights: o.free_stay_min_nights ?? undefined,
+        freeStayMaxNights: o.free_stay_max_nights ?? undefined,
+        paidMaxAmount: o.paid_max_amount ?? undefined,
+        currency: o.currency ?? undefined,
+        discountPercentage: o.discount_percentage ?? undefined,
+        commissionPercentage: o.commission_percentage ?? undefined,
+      }))
+
+      // Aggregated/legacy fields kept so existing read-only views don't break.
+      const collaborationTypes = Array.from(
+        new Set(apiOfferings.map((o) => o.collaboration_type)),
+      ) as ProfileHotelListing['collaborationTypes']
 
       const availabilityMonths = Array.from(
-        new Set(offerings.flatMap((offering) => offering.availability_months || []))
+        new Set(apiOfferings.flatMap((o) => o.availability_months || []))
       )
+      const platforms = Array.from(new Set(apiOfferings.flatMap((o) => o.platforms || [])))
 
-      const platforms = Array.from(new Set(offerings.flatMap((offering) => offering.platforms || [])))
-
-      const freeStayOffering = offerings.find((o) => o.collaboration_type === 'Free Stay')
-      const paidOffering = offerings.find((o) => o.collaboration_type === 'Paid')
-      const discountOffering = offerings.find((o) => o.collaboration_type === 'Discount')
-      const affiliateOffering = offerings.find((o) => o.collaboration_type === 'Affiliate')
+      const freeStayOffering = apiOfferings.find((o) => o.collaboration_type === 'Free Stay')
+      const paidOffering = apiOfferings.find((o) => o.collaboration_type === 'Paid')
+      const discountOffering = apiOfferings.find((o) => o.collaboration_type === 'Discount')
+      const affiliateOffering = apiOfferings.find((o) => o.collaboration_type === 'Affiliate')
 
       const creatorReqs = apiListing.creator_requirements || {
         platforms: [],
@@ -253,6 +251,7 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
         description: apiListing.description,
         images: apiListing.images || [],
         accommodationType: apiListing.accommodation_type || undefined,
+        offerings,
         collaborationTypes,
         availability: availabilityMonths,
         platforms,

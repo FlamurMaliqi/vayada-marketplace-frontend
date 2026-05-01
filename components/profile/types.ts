@@ -113,6 +113,24 @@ export interface CreatorProfile {
   phone?: string
 }
 
+export type CollaborationKind = 'Free Stay' | 'Paid' | 'Discount' | 'Affiliate'
+
+// One configured offering on a listing — each carries its own availability,
+// platforms, and (optional) per-offering min-follower threshold so a property
+// can express e.g. "Free stay only Jan–May for 100k+ creators".
+export interface ListingOffering {
+  type: CollaborationKind
+  availabilityMonths: string[]
+  platforms: string[]
+  minFollowers?: number
+  freeStayMinNights?: number
+  freeStayMaxNights?: number
+  paidMaxAmount?: number
+  currency?: string
+  discountPercentage?: number
+  commissionPercentage?: number
+}
+
 // Hotel listing for profile management
 export interface ProfileHotelListing {
   id: string
@@ -121,7 +139,10 @@ export interface ProfileHotelListing {
   description: string
   images: string[]
   accommodationType?: string
-  collaborationTypes: ('Free Stay' | 'Paid' | 'Discount' | 'Affiliate')[]
+  offerings: ListingOffering[]
+  // Legacy aggregated fields, kept for read paths that haven't migrated yet
+  // (e.g. card chevrons that just check "is the listing complete?").
+  collaborationTypes: CollaborationKind[]
   availability: string[]
   platforms: string[]
   freeStayMinNights?: number
@@ -179,15 +200,8 @@ export interface ListingFormData {
   description: string
   images: string[]
   accommodationType: string
-  collaborationTypes: ('Free Stay' | 'Paid' | 'Discount' | 'Affiliate')[]
-  availability: string[]
-  platforms: string[]
-  freeStayMinNights?: number
-  freeStayMaxNights?: number
-  paidMaxAmount?: number
-  currency?: string
-  discountPercentage?: number
-  commissionPercentage?: number
+  // Authoritative editor model — array of independent offerings.
+  offerings: ListingOffering[]
   lookingForPlatforms: string[]
   lookingForMinFollowers?: number
   targetGroupCountries: string[]
@@ -221,15 +235,7 @@ export function createEmptyListingFormData(): ListingFormData {
     description: '',
     images: [],
     accommodationType: '',
-    collaborationTypes: [],
-    availability: [],
-    platforms: [],
-    freeStayMinNights: undefined,
-    freeStayMaxNights: undefined,
-    paidMaxAmount: undefined,
-    currency: undefined,
-    discountPercentage: undefined,
-    commissionPercentage: undefined,
+    offerings: [],
     lookingForPlatforms: [],
     lookingForMinFollowers: undefined,
     targetGroupCountries: [],
@@ -237,5 +243,20 @@ export function createEmptyListingFormData(): ListingFormData {
     targetGroupAgeMax: undefined,
     targetGroupAgeGroups: [],
     lookingForCreatorTypes: [],
+  }
+}
+
+export function createEmptyOffering(type: CollaborationKind = 'Free Stay'): ListingOffering {
+  return {
+    type,
+    availabilityMonths: [],
+    platforms: [],
+    minFollowers: undefined,
+    freeStayMinNights: undefined,
+    freeStayMaxNights: undefined,
+    paidMaxAmount: undefined,
+    currency: type === 'Paid' ? 'USD' : undefined,
+    discountPercentage: undefined,
+    commissionPercentage: undefined,
   }
 }

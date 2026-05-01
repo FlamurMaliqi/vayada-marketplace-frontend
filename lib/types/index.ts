@@ -114,6 +114,7 @@ export interface CollaborationOffering {
   currency?: string | null
   discount_percentage?: number | null
   commission_percentage?: number | null
+  min_followers?: number | null
   created_at: string
   updated_at: string
 }
