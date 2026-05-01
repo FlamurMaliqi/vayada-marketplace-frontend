@@ -42,20 +42,14 @@ export function useListingManagement(
       description: listing.description,
       images: listing.images || [],
       accommodationType: listing.accommodationType || '',
-      collaborationTypes: listing.collaborationTypes || [],
-      availability: listing.availability || [],
-      platforms: listing.platforms || [],
-      freeStayMinNights: listing.freeStayMinNights,
-      freeStayMaxNights: listing.freeStayMaxNights,
-      paidMaxAmount: listing.paidMaxAmount,
-      currency: listing.currency,
-      discountPercentage: listing.discountPercentage,
+      offerings: listing.offerings.map((o) => ({ ...o })),
       lookingForPlatforms: listing.lookingForPlatforms || [],
       lookingForMinFollowers: listing.lookingForMinFollowers,
       targetGroupCountries: listing.targetGroupCountries || [],
       targetGroupAgeMin: listing.targetGroupAgeMin,
       targetGroupAgeMax: listing.targetGroupAgeMax,
       targetGroupAgeGroups: listing.targetGroupAgeGroups || [],
+      lookingForCreatorTypes: listing.lookingForCreatorTypes || [],
     })
     setEditingListingId(listing.id)
     setListingImagePreview(null)
@@ -72,8 +66,19 @@ export function useListingManagement(
       return
     }
 
-    if (!listingFormData.collaborationTypes.length || !listingFormData.availability.length) {
-      showError('Validation Error', 'Please add at least one collaboration offering with availability months.')
+    if (listingFormData.offerings.length === 0) {
+      showError('Validation Error', 'Please add at least one collaboration offering.')
+      return
+    }
+
+    const incomplete = listingFormData.offerings.find(
+      (o) => o.availabilityMonths.length === 0 || o.platforms.length === 0,
+    )
+    if (incomplete) {
+      showError(
+        'Validation Error',
+        `Each offering needs at least one availability month and one platform (check the "${incomplete.type}" offering).`,
+      )
       return
     }
 

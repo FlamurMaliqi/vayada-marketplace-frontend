@@ -1,11 +1,40 @@
 'use client'
 
 import { PencilIcon, XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
-import { GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, CheckCircleIcon, LinkIcon } from '@heroicons/react/24/outline'
+import { GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, LinkIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import { HotelBadgeIcon } from '@/components/ui'
-import { MONTHS_FULL, PLATFORM_OPTIONS, COLLABORATION_TYPES, AGE_GROUP_OPTIONS } from '@/lib/constants'
+import { PLATFORM_OPTIONS, AGE_GROUP_OPTIONS } from '@/lib/constants'
 import { formatNumber, getCurrencySymbol } from '@/lib/utils'
-import type { ProfileHotelListing } from '../types'
+import type { ListingOffering, ProfileHotelListing } from '../types'
+
+const TYPE_ICONS: Record<ListingOffering['type'], typeof GiftIcon> = {
+  'Free Stay': GiftIcon,
+  Paid: CurrencyDollarIcon,
+  Discount: TagIcon,
+  Affiliate: LinkIcon,
+}
+
+function formatMonths(months: string[]): string {
+  if (months.length === 12) return 'Available all year'
+  if (months.length === 0) return 'No months selected'
+  return months.map((m) => m.substring(0, 3)).join(', ')
+}
+
+function describeOffering(o: ListingOffering): string {
+  if (o.type === 'Free Stay') {
+    if (o.freeStayMinNights && o.freeStayMaxNights && o.freeStayMinNights !== o.freeStayMaxNights) {
+      return `${o.freeStayMinNights}–${o.freeStayMaxNights} nights complimentary`
+    }
+    const n = o.freeStayMaxNights || o.freeStayMinNights
+    return n ? `Up to ${n} night${n === 1 ? '' : 's'} complimentary` : 'Complimentary stay'
+  }
+  if (o.type === 'Paid') {
+    const symbol = getCurrencySymbol(o.currency || 'USD')
+    return o.paidMaxAmount ? `Up to ${symbol}${o.paidMaxAmount.toLocaleString()}` : 'Paid collaboration'
+  }
+  if (o.type === 'Discount') return o.discountPercentage ? `${o.discountPercentage}% off` : 'Discount'
+  return o.commissionPercentage ? `${o.commissionPercentage}% commission` : 'Affiliate commission'
+}
 
 interface ListingViewCardProps {
   listing: ProfileHotelListing
@@ -31,8 +60,8 @@ export function ListingViewCard({
     listing.location.trim() &&
     listing.accommodationType &&
     listing.description.trim() &&
-    listing.collaborationTypes.length > 0 &&
-    listing.availability.length > 0
+    listing.offerings.length > 0 &&
+    listing.offerings.every((o) => o.availabilityMonths.length > 0)
   )
 
   return (
@@ -145,207 +174,61 @@ export function ListingViewCard({
               </div>
             </div>
 
-            {/* Offerings Section */}
+            {/* Offerings Section — one row per configured offering */}
             <div className="pt-4 border-t border-gray-100">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-1.5 h-5 bg-primary-600 rounded-full"></div>
                 <h5 className="text-lg font-semibold text-gray-900">Offerings</h5>
               </div>
-              <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-2xl p-4">
-                {/* Collaboration Types */}
-                <div>
-                  <label className="block text-base font-semibold text-gray-900 mb-3">Collaboration Types</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {COLLABORATION_TYPES.map((type) => {
-                      const isSelected = listing.collaborationTypes?.includes(type) || false
-                      const icons = {
-                        'Free Stay': GiftIcon,
-                        'Paid': CurrencyDollarIcon,
-                        'Discount': TagIcon,
-                        'Affiliate': LinkIcon,
-                      }
-                      const Icon = icons[type as keyof typeof icons]
-
-                      return (
-                        <div
-                          key={type}
-                          className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all text-center ${isSelected
-                            ? 'bg-purple-50 border-[#2F54EB] shadow-sm'
-                            : 'bg-[#F7F7FA] border-[#E5E7EB] text-gray-800'
-                            }`}
-                        >
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-[#2F54EB] text-white' : 'bg-white text-gray-700'
-                            }`}>
-                            <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-700'}`} />
+              {listing.offerings.length === 0 ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm text-gray-500">
+                  No offerings configured.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {listing.offerings.map((o, idx) => {
+                    const Icon = TYPE_ICONS[o.type]
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-5 h-5" />
                           </div>
-                          <div className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
-                            {type}
-                          </div>
-                          {isSelected && (
-                            <div className="flex items-center gap-1 text-xs font-medium text-[#2F54EB]">
-                              <CheckCircleIcon className="w-3.5 h-3.5" />
-                              <span>Selected</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline gap-2 flex-wrap">
+                              <h6 className="font-semibold text-gray-900 text-base">{o.type}</h6>
+                              <span className="text-sm text-gray-700">{describeOffering(o)}</span>
                             </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Free Stay Details */}
-                {listing.collaborationTypes?.includes('Free Stay') && (
-                  <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                        <GiftIcon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h6 className="font-semibold text-gray-900 text-base">Free Stay Details</h6>
-                        <p className="text-sm text-gray-600">Specify the night range for free stays</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-700 mb-1">Min. Nights</label>
-                        <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
-                          {listing.freeStayMinNights || '-'}
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-700 mb-1">Max. Nights</label>
-                        <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
-                          {listing.freeStayMaxNights || '-'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Paid Details */}
-                {listing.collaborationTypes?.includes('Paid') && (
-                  <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                        <CurrencyDollarIcon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h6 className="font-semibold text-gray-900 text-base">Paid Details</h6>
-                        <p className="text-sm text-gray-600">Set the maximum payment amount</p>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Max. Amount ({listing.currency || 'USD'})</label>
-                      <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
-                        {getCurrencySymbol(listing.currency || 'USD')}{(listing.paidMaxAmount || 0).toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Discount Details */}
-                {listing.collaborationTypes?.includes('Discount') && (
-                  <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                        <TagIcon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h6 className="font-semibold text-gray-900 text-base">Discount Details</h6>
-                        <p className="text-sm text-gray-600">Set the discount percentage</p>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Discount Percentage (%)</label>
-                      <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
-                        {listing.discountPercentage || '0'}%
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Affiliate Details */}
-                {listing.collaborationTypes?.includes('Affiliate') && (
-                  <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                        <LinkIcon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h6 className="font-semibold text-gray-900 text-base">Affiliate Details</h6>
-                        <p className="text-sm text-gray-600">Commission on bookings driven by the creator's link</p>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Commission Percentage (%)</label>
-                      <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-900">
-                        {listing.commissionPercentage || '0'}%
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Availability */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <CalendarDaysIcon className="w-5 h-5 text-primary-600" />
-                    <label className="block text-base font-semibold text-gray-900">Availability</label>
-                  </div>
-                  <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
-                    <div className="grid grid-cols-6 gap-2">
-                      {MONTHS_FULL.map((month) => {
-                        const isSelected = listing.availability?.includes(month) || false
-                        const monthAbbr = month.substring(0, 3)
-                        return (
-                          <div
-                            key={month}
-                            className={`relative flex flex-col items-center justify-center py-2 rounded-xl border transition-all text-xs ${isSelected
-                              ? 'bg-[#2F54EB] border-[#2F54EB] text-white'
-                              : 'bg-gray-100 border-gray-200 text-gray-700'
-                              }`}
-                          >
-                            <div className={`font-semibold ${isSelected ? 'text-white' : 'text-gray-700'}`}>{monthAbbr}</div>
+                            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-50 text-primary-700">
+                                <CalendarDaysIcon className="w-3.5 h-3.5" />
+                                {formatMonths(o.availabilityMonths)}
+                              </span>
+                              {o.minFollowers ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-50 text-orange-700">
+                                  <UserGroupIcon className="w-3.5 h-3.5" />
+                                  Min {formatNumber(o.minFollowers)} followers
+                                </span>
+                              ) : null}
+                              {o.platforms.map((p) => (
+                                <span
+                                  key={p}
+                                  className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700"
+                                >
+                                  {p}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Platforms */}
-                <div>
-                  <label className="block text-base font-semibold text-gray-900 mb-1">Property posting platforms</label>
-                  <p className="text-sm text-gray-600 mb-3">On which platforms is your property active?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {PLATFORM_OPTIONS.map((platform) => {
-                      const isSelected = listing.platforms?.includes(platform) || false
-                      return (
-                        <div
-                          key={platform}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all ${isSelected
-                            ? 'border-[#2F54EB] bg-blue-50 text-[#2F54EB]'
-                            : 'border-gray-200 bg-white text-gray-700'
-                            }`}
-                        >
-                          <span
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected
-                              ? 'border-[#2F54EB] bg-[#2F54EB]'
-                              : 'border-gray-300 bg-white'
-                              }`}
-                          >
-                            {isSelected && (
-                              <span className="w-2 h-2 rounded-full bg-white"></span>
-                            )}
-                          </span>
-                          <span className={isSelected ? 'text-[#2F54EB]' : 'text-gray-700'}>
-                            {platform}
-                          </span>
                         </div>
-                      )
-                    })}
-                  </div>
+                      </div>
+                    )
+                  })}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Looking For Section */}

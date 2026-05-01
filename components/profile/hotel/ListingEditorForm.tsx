@@ -1,17 +1,16 @@
 'use client'
 
-import { XMarkIcon, GiftIcon, CurrencyDollarIcon, TagIcon, CalendarDaysIcon, SparklesIcon, PaperAirplaneIcon, LinkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, SparklesIcon, PaperAirplaneIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { Input, Textarea, Button, HotelBadgeIcon } from '@/components/ui'
 import { HOTEL_TYPES, CREATOR_TYPE_OPTIONS } from '@/lib/constants'
-import { CURRENCY_OPTIONS } from '@/lib/utils/getCurrencySymbol'
 import type { CreatorType } from '@/lib/types'
-import { CollaborationTypeSelector } from './CollaborationTypeSelector'
-import { AvailabilityMonthSelector } from './AvailabilityMonthSelector'
+import { OfferingEditorCard } from './OfferingEditorCard'
 import { PlatformSelector } from './PlatformSelector'
 import { AgeGroupSelector } from './AgeGroupSelector'
 import { CountrySearchInput } from './CountrySearchInput'
 import { ListingImageGallery } from './ListingImageGallery'
-import type { ListingFormData } from '../types'
+import type { ListingFormData, ListingOffering } from '../types'
+import { createEmptyOffering } from '../types'
 
 const HOTEL_CATEGORIES = HOTEL_TYPES
 
@@ -48,6 +47,19 @@ export function ListingEditorForm({
 }: ListingEditorFormProps) {
   const updateField = <K extends keyof ListingFormData>(field: K, value: ListingFormData[K]) => {
     onChange({ ...formData, [field]: value })
+  }
+
+  const updateOffering = (idx: number, next: ListingOffering) => {
+    const offerings = formData.offerings.map((o, i) => (i === idx ? next : o))
+    updateField('offerings', offerings)
+  }
+
+  const removeOffering = (idx: number) => {
+    updateField('offerings', formData.offerings.filter((_, i) => i !== idx))
+  }
+
+  const addOffering = () => {
+    updateField('offerings', [...formData.offerings, createEmptyOffering()])
   }
 
   return (
@@ -136,190 +148,41 @@ export function ListingEditorForm({
         </div>
       </div>
 
-      {/* Offerings Section */}
+      {/* Offerings Section — one card per offering, each with its own months / followers */}
       <div className="pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1.5 h-5 bg-primary-600 rounded-full"></div>
-          <h5 className="text-lg font-semibold text-gray-900">Offerings</h5>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-5 bg-primary-600 rounded-full"></div>
+            <h5 className="text-lg font-semibold text-gray-900">Offerings</h5>
+          </div>
+          <p className="text-xs text-gray-500">
+            Add one offering per tier — months and follower thresholds are configured individually.
+          </p>
         </div>
         <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-2xl p-4">
-          {/* Collaboration Types */}
-          <div>
-            <label className="block text-base font-semibold text-gray-900 mb-3">
-              Collaboration Types <span className="text-red-500">*</span>
-            </label>
-            <CollaborationTypeSelector
-              selectedTypes={formData.collaborationTypes}
-              onChange={(types) => updateField('collaborationTypes', types as ('Free Stay' | 'Paid' | 'Discount' | 'Affiliate')[])}
+          {formData.offerings.length === 0 && (
+            <p className="text-sm text-gray-500">
+              No offerings yet — add one to describe what you give creators in exchange for content.
+            </p>
+          )}
+          {formData.offerings.map((offering, idx) => (
+            <OfferingEditorCard
+              key={idx}
+              offering={offering}
+              index={idx}
+              canRemove={formData.offerings.length > 1}
+              onChange={(next) => updateOffering(idx, next)}
+              onRemove={() => removeOffering(idx)}
             />
-          </div>
-
-          {/* Free Stay Details */}
-          {formData.collaborationTypes.includes('Free Stay') && (
-            <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                  <GiftIcon className="w-5 h-5" />
-                </div>
-                <div>
-                  <h6 className="font-semibold text-gray-900 text-base">Free Stay Details</h6>
-                  <p className="text-sm text-gray-600">Specify the night range for free stays</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Input
-                  label="Min. Nights"
-                  type="number"
-                  value={formData.freeStayMinNights || ''}
-                  min={1}
-                  onChange={(e) => {
-                    const { value } = e.target
-                    if (value === '') {
-                      updateField('freeStayMinNights', undefined)
-                      return
-                    }
-                    const parsed = parseInt(value)
-                    updateField('freeStayMinNights', Number.isNaN(parsed) ? undefined : Math.max(1, parsed))
-                  }}
-                  placeholder="1"
-                  required
-                  className="bg-gray-50 border-gray-200"
-                />
-                <Input
-                  label="Max. Nights"
-                  type="number"
-                  value={formData.freeStayMaxNights || ''}
-                  min={1}
-                  onChange={(e) => {
-                    const { value } = e.target
-                    if (value === '') {
-                      updateField('freeStayMaxNights', undefined)
-                      return
-                    }
-                    const parsed = parseInt(value)
-                    updateField('freeStayMaxNights', Number.isNaN(parsed) ? undefined : Math.max(1, parsed))
-                  }}
-                  placeholder="5"
-                  required
-                  className="bg-gray-50 border-gray-200"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Paid Details */}
-          {formData.collaborationTypes.includes('Paid') && (
-            <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                  <CurrencyDollarIcon className="w-5 h-5" />
-                </div>
-                <div>
-                  <h6 className="font-semibold text-gray-900 text-base">Paid Details</h6>
-                  <p className="text-sm text-gray-600">Set the maximum payment amount</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <div className="w-32">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Currency</label>
-                  <select
-                    value={formData.currency || 'USD'}
-                    onChange={(e) => updateField('currency', e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {CURRENCY_OPTIONS.map(c => (
-                      <option key={c.code} value={c.code}>{c.code}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex-1">
-                  <Input
-                    label="Max. Amount"
-                    type="number"
-                    value={formData.paidMaxAmount || ''}
-                    onChange={(e) => updateField('paidMaxAmount', parseInt(e.target.value) || undefined)}
-                    placeholder="5000"
-                    required
-                    className="bg-gray-50 border-gray-200"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Discount Details */}
-          {formData.collaborationTypes.includes('Discount') && (
-            <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                  <TagIcon className="w-5 h-5" />
-                </div>
-                <div>
-                  <h6 className="font-semibold text-gray-900 text-base">Discount Details</h6>
-                  <p className="text-sm text-gray-600">Set the discount percentage</p>
-                </div>
-              </div>
-              <Input
-                label="Discount Percentage (%)"
-                type="number"
-                value={formData.discountPercentage || ''}
-                onChange={(e) => updateField('discountPercentage', parseInt(e.target.value) || undefined)}
-                placeholder="20"
-                min={1}
-                max={100}
-                required
-                className="bg-gray-50 border-gray-200"
-              />
-            </div>
-          )}
-
-          {/* Affiliate Details */}
-          {formData.collaborationTypes.includes('Affiliate') && (
-            <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] text-[#2F54EB] flex items-center justify-center">
-                  <LinkIcon className="w-5 h-5" />
-                </div>
-                <div>
-                  <h6 className="font-semibold text-gray-900 text-base">Affiliate Details</h6>
-                  <p className="text-sm text-gray-600">Commission paid on bookings driven by the creator's link</p>
-                </div>
-              </div>
-              <Input
-                label="Commission Percentage (%)"
-                type="number"
-                value={formData.commissionPercentage || ''}
-                onChange={(e) => updateField('commissionPercentage', parseInt(e.target.value) || undefined)}
-                placeholder="10"
-                min={1}
-                max={100}
-                required
-                className="bg-gray-50 border-gray-200"
-              />
-            </div>
-          )}
-
-          {/* Availability */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <CalendarDaysIcon className="w-5 h-5 text-primary-600" />
-              <label className="block text-base font-semibold text-gray-900">
-                Availability <span className="text-red-500">*</span>
-              </label>
-            </div>
-            <AvailabilityMonthSelector
-              selectedMonths={formData.availability}
-              onChange={(months) => updateField('availability', months)}
-            />
-          </div>
-
-          {/* Platforms */}
-          <PlatformSelector
-            selectedPlatforms={formData.platforms}
-            onChange={(platforms) => updateField('platforms', platforms)}
-            label="Property posting platforms"
-            description="On which platforms is your property active?"
-          />
+          ))}
+          <button
+            type="button"
+            onClick={addOffering}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-primary-300 bg-white text-primary-700 font-semibold hover:bg-primary-50 transition-colors"
+          >
+            <PlusIcon className="w-4 h-4" />
+            Add another offering
+          </button>
         </div>
       </div>
 
@@ -390,9 +253,12 @@ export function ListingEditorForm({
             </div>
           </div>
 
-          {/* Min Followers */}
+          {/* Min Followers (listing-level fallback) */}
           <div>
             <label className="block text-base font-semibold text-gray-900 mb-2">Min. Followers (optional)</label>
+            <p className="text-sm text-gray-600 mb-2">
+              Listing-level minimum, applied when an offering doesn&apos;t override it.
+            </p>
             <Input
               type="number"
               value={formData.lookingForMinFollowers || ''}

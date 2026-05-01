@@ -346,81 +346,82 @@ export function HotelDetailModal({ hotel, isOpen, onClose, creatorPlatforms = []
               </div>
             )}
 
-            {/* What's the offering */}
+            {/* What's the offering — each offering carries its own months / follower minimum */}
             <div className="bg-gradient-to-br from-primary-50 to-indigo-50 rounded-2xl p-5">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <CheckCircleIcon className="w-5 h-5 text-primary-600" />
-                What's the offering
+                What&apos;s the offering
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {offerings.map((o) => {
-                  const Icon = offeringIcon(o.collaboration_type)
-                  return (
-                    <div key={o.id} className="flex items-center gap-3">
+              {offerings.length > 0 ? (
+                <div className="space-y-3">
+                  {offerings.map((o) => {
+                    const Icon = offeringIcon(o.collaboration_type)
+                    const months = o.availability_months || []
+                    return (
+                      <div key={o.id} className="bg-white/80 rounded-xl p-3 flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                          <Icon className="w-5 h-5 text-primary-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-2 flex-wrap">
+                            <div className="text-sm font-semibold text-gray-900">{offeringTitle(o)}</div>
+                            <div className="text-xs text-gray-600">{offeringSubtitle(o)}</div>
+                          </div>
+                          <div className="mt-1.5 flex flex-wrap gap-1.5 text-xs">
+                            {months.length === 12 ? (
+                              <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full font-medium inline-flex items-center gap-1">
+                                <CalendarDaysIcon className="w-3.5 h-3.5" />
+                                Available all year
+                              </span>
+                            ) : months.length > 0 ? (
+                              <span className="px-2.5 py-1 bg-primary-100 text-primary-700 rounded-full font-medium inline-flex items-center gap-1">
+                                <CalendarDaysIcon className="w-3.5 h-3.5" />
+                                {sortMonths(months).map(getMonthAbbr).join(', ')}
+                              </span>
+                            ) : null}
+                            {o.min_followers ? (
+                              <span className="px-2.5 py-1 bg-orange-100 text-orange-700 rounded-full font-medium inline-flex items-center gap-1">
+                                <UserGroupIcon className="w-3.5 h-3.5" />
+                                {formatNumber(o.min_followers)}+ followers
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {hotel.collaborationType && (
+                    <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                        <Icon className="w-5 h-5 text-primary-600" />
+                        <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{offeringTitle(o)}</div>
-                        <div className="text-xs text-gray-500">{offeringSubtitle(o)}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {collaborationType === 'Free Stay' ? 'Complimentary Stay' : 'Paid Collaboration'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {hotel.numberOfNights ? `Up to ${hotel.numberOfNights} nights` : 'Dates flexible'}
+                        </div>
                       </div>
                     </div>
-                  )
-                })}
-                {offerings.length === 0 && hotel.collaborationType && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                      <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {collaborationType === 'Free Stay' ? 'Complimentary Stay' : 'Paid Collaboration'}
+                  )}
+                  {hotel.boardType && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                        <BuildingOfficeIcon className="w-5 h-5 text-primary-600" />
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {hotel.numberOfNights ? `Up to ${hotel.numberOfNights} nights` : 'Dates flexible'}
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{hotel.boardType}</div>
+                        <div className="text-xs text-gray-500">Meal plan included</div>
                       </div>
                     </div>
-                  </div>
-                )}
-                {hotel.boardType && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                      <BuildingOfficeIcon className="w-5 h-5 text-primary-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{hotel.boardType}</div>
-                      <div className="text-xs text-gray-500">Meal plan included</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Availability */}
-            {hotel.availability && hotel.availability.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <CalendarDaysIcon className="w-5 h-5 text-primary-600" />
-                  Available Months
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {hotel.availability.length === 12 ? (
-                    <span className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                      Available All Year
-                    </span>
-                  ) : (
-                    sortMonths(hotel.availability).map((month, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1.5 bg-primary-100 text-primary-700 rounded-full text-sm font-medium"
-                      >
-                        {getMonthAbbr(month)}
-                      </span>
-                    ))
                   )}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Requirements */}
             <div>
