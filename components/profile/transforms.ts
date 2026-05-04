@@ -61,7 +61,6 @@ export function transformListingToApi(listingData: ListingFormData) {
     collaboration_offerings: offerings,
     creator_requirements: {
       platforms: listingData.lookingForPlatforms,
-      min_followers: listingData.lookingForMinFollowers || undefined,
       target_countries: listingData.targetGroupCountries,
       target_age_min: undefined as number | null | undefined,
       target_age_max: undefined as number | null | undefined,
@@ -237,7 +236,6 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
 
       const creatorReqs = apiListing.creator_requirements || {
         platforms: [],
-        min_followers: undefined,
         target_countries: [],
         target_age_min: undefined,
         target_age_max: undefined,
@@ -262,7 +260,6 @@ export function transformHotelProfile(apiProfile: ApiHotelProfile): ProfileHotel
         discountPercentage: discountOffering?.discount_percentage ?? undefined,
         commissionPercentage: affiliateOffering?.commission_percentage ?? undefined,
         lookingForPlatforms: creatorReqs.platforms || [],
-        lookingForMinFollowers: creatorReqs.min_followers ?? undefined,
         targetGroupCountries: creatorReqs.target_countries || [],
         targetGroupAgeMin: creatorReqs.target_age_min ?? undefined,
         targetGroupAgeMax: creatorReqs.target_age_max ?? undefined,

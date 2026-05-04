@@ -44,7 +44,6 @@ export function useListingManagement(
       accommodationType: listing.accommodationType || '',
       offerings: listing.offerings.map((o) => ({ ...o })),
       lookingForPlatforms: listing.lookingForPlatforms || [],
-      lookingForMinFollowers: listing.lookingForMinFollowers,
       targetGroupCountries: listing.targetGroupCountries || [],
       targetGroupAgeMin: listing.targetGroupAgeMin,
       targetGroupAgeMax: listing.targetGroupAgeMax,

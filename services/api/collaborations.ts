@@ -173,7 +173,6 @@ export interface CollaborationResponse {
   listing_images?: string[]
   creatorRequirements?: {
     platforms: string[]
-    minFollowers: number
     targetCountries: string[]
     targetAgeMin: number
     targetAgeMax: number
@@ -183,7 +182,6 @@ export interface CollaborationResponse {
   responded_at?: string
   creator_requirements?: {
     platforms: string[]
-    min_followers: number
     target_countries: string[]
     target_age_min: number
     target_age_max: number
@@ -223,7 +221,6 @@ export type DetailedCollaboration = Collaboration & {
   listingImages?: string[]
   creatorRequirements?: {
     platforms: string[]
-    minFollowers: number
     targetCountries: string[]
     targetAgeMin: number
     targetAgeMax: number
@@ -562,7 +559,6 @@ export function transformCollaborationResponse(
     listingImages: response.listingImages || response.listing_images || [],
     creatorRequirements: response.creatorRequirements || (response.creator_requirements ? {
       platforms: response.creator_requirements.platforms,
-      minFollowers: response.creator_requirements.min_followers,
       targetCountries: response.creator_requirements.target_countries,
       targetAgeMin: response.creator_requirements.target_age_min,
       targetAgeMax: response.creator_requirements.target_age_max,

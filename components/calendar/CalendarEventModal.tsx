@@ -50,7 +50,6 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
     // Normalize creator requirements from either camelCase or snake_case API response
     const creatorReqs = collaboration.creatorRequirements || collaboration.creator_requirements
     const getCreatorReqPlatforms = () => creatorReqs?.platforms || []
-    const getMinFollowers = () => collaboration.creatorRequirements?.minFollowers || collaboration.creator_requirements?.min_followers || 0
     const getTargetCountries = () => collaboration.creatorRequirements?.targetCountries || collaboration.creator_requirements?.target_countries || []
     const getTargetAgeMin = () => collaboration.creatorRequirements?.targetAgeMin || collaboration.creator_requirements?.target_age_min
     const getTargetAgeMax = () => collaboration.creatorRequirements?.targetAgeMax || collaboration.creator_requirements?.target_age_max
@@ -193,13 +192,6 @@ export function CalendarEventModal({ isOpen, onClose, collaboration, onViewDetai
                                                                 </div>
                                                             </div>
                                                         )}
-
-                                                    {getMinFollowers() > 0 && (
-                                                        <div>
-                                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Min. Followers</p>
-                                                            <p className="text-sm font-medium text-gray-900">{formatNumber(getMinFollowers())}</p>
-                                                        </div>
-                                                    )}
 
                                                     {getTargetCountries().length > 0 && (
                                                             <div>

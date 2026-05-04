@@ -152,7 +152,6 @@ export interface ProfileHotelListing {
   discountPercentage?: number
   commissionPercentage?: number
   lookingForPlatforms: string[]
-  lookingForMinFollowers?: number
   targetGroupCountries: string[]
   targetGroupAgeMin?: number
   targetGroupAgeMax?: number
@@ -203,7 +202,6 @@ export interface ListingFormData {
   // Authoritative editor model — array of independent offerings.
   offerings: ListingOffering[]
   lookingForPlatforms: string[]
-  lookingForMinFollowers?: number
   targetGroupCountries: string[]
   targetGroupAgeMin?: number
   targetGroupAgeMax?: number
@@ -237,7 +235,6 @@ export function createEmptyListingFormData(): ListingFormData {
     accommodationType: '',
     offerings: [],
     lookingForPlatforms: [],
-    lookingForMinFollowers: undefined,
     targetGroupCountries: [],
     targetGroupAgeMin: undefined,
     targetGroupAgeMax: undefined,

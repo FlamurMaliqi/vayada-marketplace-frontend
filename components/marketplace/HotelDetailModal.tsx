@@ -316,12 +316,6 @@ export function HotelDetailModal({ hotel, isOpen, onClose, creatorPlatforms = []
                   <div className="text-xs text-gray-500 mt-1">Board Type</div>
                 </div>
               )}
-              {hotel.minFollowers && (
-                <div className="bg-gray-50 rounded-xl p-4 text-center">
-                  <div className="text-lg font-bold text-gray-900">{formatNumber(hotel.minFollowers)}+</div>
-                  <div className="text-xs text-gray-500 mt-1">Min. Followers</div>
-                </div>
-              )}
               {hotel.domain && (
                 <a
                   href={`https://${hotel.domain}`}
