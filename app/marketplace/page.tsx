@@ -246,28 +246,8 @@ export default function MarketplacePage() {
         break
     }
 
-    // Eligibility-aware grouping: possible hotels first, locked ones last (sorted
-    // by min-followers ascending so the next reachable milestone is on top).
-    const creatorFollowers = currentCreator
-      ? currentCreator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0)
-      : undefined
-    if (creatorFollowers === undefined) {
-      return sorted
-    }
-
-    const possible: Hotel[] = []
-    const notPossible: Hotel[] = []
-    for (const hotel of sorted) {
-      const minFollowers = hotel.minFollowers ?? 0
-      if (minFollowers > 0 && creatorFollowers < minFollowers) {
-        notPossible.push(hotel)
-      } else {
-        possible.push(hotel)
-      }
-    }
-    notPossible.sort((a, b) => (a.minFollowers ?? 0) - (b.minFollowers ?? 0))
-    return [...possible, ...notPossible]
-  }, [filteredHotels, sortOption, currentCreator])
+    return sorted
+  }, [filteredHotels, sortOption])
 
   const sortedCreators = useMemo(() => {
     const sorted = [...filteredCreators]
@@ -353,9 +333,6 @@ export default function MarketplacePage() {
                           key={hotel.id}
                           hotel={hotel}
                           creatorPlatforms={currentCreator?.platforms.map(p => p.name)}
-                          creatorFollowers={currentCreator
-                            ? currentCreator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0)
-                            : undefined}
                         />
                       ))}
                     </div>

@@ -392,7 +392,6 @@ export default function ProfileCompletePage() {
 
     return {
       platforms: listing.lookingForPlatforms,
-      min_followers: listing.lookingForMinFollowers || undefined,
       target_countries: listing.targetGroupCountries,
       target_age_min: targetAgeMin,
       target_age_max: targetAgeMax,

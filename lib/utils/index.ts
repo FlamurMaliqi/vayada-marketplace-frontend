@@ -264,7 +264,6 @@ interface ListingMarketplaceResponse {
     id: string
     listing_id: string
     platforms: ("Instagram" | "TikTok" | "YouTube" | "Facebook")[]
-    min_followers: number | null
     target_countries: string[]
     target_age_min: number | null
     target_age_max: number | null
@@ -365,7 +364,6 @@ export function transformListingMarketplaceResponse(apiListing: ListingMarketpla
   // Extract creator requirements
   const creatorRequirements = apiListing.creator_requirements
   const targetAudience = creatorRequirements?.target_countries || []
-  const minFollowers = creatorRequirements?.min_followers || undefined
   const targetAgeMin = creatorRequirements?.target_age_min || undefined
   const targetAgeMax = creatorRequirements?.target_age_max || undefined
 
@@ -393,7 +391,6 @@ export function transformListingMarketplaceResponse(apiListing: ListingMarketpla
     numberOfNights,
     minNumberOfNights,
     targetAudience: targetAudience.length > 0 ? targetAudience : undefined,
-    minFollowers,
     targetAgeMin,
     targetAgeMax,
     socialLinks: undefined, // Not provided in listing response
@@ -461,7 +458,6 @@ export function transformHotelListingToHotel(listing: HotelListing): Hotel {
     numberOfNights: freeStayOffering?.free_stay_max_nights || undefined,
     minNumberOfNights: freeStayOffering?.free_stay_min_nights || undefined,
     targetAudience: targetAudience.length > 0 ? targetAudience : undefined,
-    minFollowers: listing.creator_requirements?.min_followers || undefined,
     status: listing.status,
     createdAt: new Date(listing.created_at),
     updatedAt: new Date(listing.updated_at),

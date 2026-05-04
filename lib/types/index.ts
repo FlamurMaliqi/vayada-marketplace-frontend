@@ -87,7 +87,6 @@ export interface Hotel {
   numberOfNights?: number // Maximum number of nights for free collaboration
   minNumberOfNights?: number // Minimum number of nights for free collaboration
   targetAudience?: string[] // Target audience regions: 'Asia', 'Africa', 'Middle East', 'Australia', 'North America', 'South America'
-  minFollowers?: number // Minimum number of followers required (e.g., 10000)
   targetAgeMin?: number // Minimum target age
   targetAgeMax?: number // Maximum target age
   socialLinks?: {
@@ -124,7 +123,6 @@ export interface CreatorRequirements {
   id: string
   listing_id: string
   platforms: string[]
-  min_followers?: number | null
   target_countries: string[]
   target_age_min?: number | null
   target_age_max?: number | null
@@ -354,7 +352,6 @@ export interface ListingFormData {
   discountPercentage?: number
   commissionPercentage?: number
   lookingForPlatforms: string[]
-  lookingForMinFollowers?: number
   targetGroupCountries: string[]
   targetGroupAgeMin?: number
   targetGroupAgeMax?: number

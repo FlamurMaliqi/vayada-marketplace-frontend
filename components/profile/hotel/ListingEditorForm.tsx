@@ -253,21 +253,6 @@ export function ListingEditorForm({
             </div>
           </div>
 
-          {/* Min Followers (listing-level fallback) */}
-          <div>
-            <label className="block text-base font-semibold text-gray-900 mb-2">Min. Followers (optional)</label>
-            <p className="text-sm text-gray-600 mb-2">
-              Listing-level minimum, applied when an offering doesn&apos;t override it.
-            </p>
-            <Input
-              type="number"
-              value={formData.lookingForMinFollowers || ''}
-              onChange={(e) => updateField('lookingForMinFollowers', parseInt(e.target.value) || undefined)}
-              placeholder="e.g., 50000"
-              className="bg-gray-50"
-            />
-          </div>
-
           {/* Top Countries */}
           <CountrySearchInput
             selectedCountries={formData.targetGroupCountries}

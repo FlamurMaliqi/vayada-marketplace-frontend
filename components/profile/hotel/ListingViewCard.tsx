@@ -272,14 +272,6 @@ export function ListingViewCard({
                   </div>
                 </div>
 
-                {/* Min Followers */}
-                <div>
-                  <label className="block text-base font-semibold text-gray-900 mb-2">Min. Followers (optional)</label>
-                  <div className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base text-gray-900">
-                    {listing.lookingForMinFollowers ? formatNumber(listing.lookingForMinFollowers) : '-'}
-                  </div>
-                </div>
-
                 {/* Top Countries */}
                 <div>
                   <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries (optional)</label>

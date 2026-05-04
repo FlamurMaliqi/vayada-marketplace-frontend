@@ -134,18 +134,6 @@ export function ListingRequirements({
           </div>
         </div>
 
-        {/* Min Followers */}
-        <div>
-          <label className="block text-base font-semibold text-gray-900 mb-2">Min. Followers (optional)</label>
-          <Input
-            type="number"
-            value={listing.lookingForMinFollowers || ''}
-            onChange={(e) => onUpdateListing(index, 'lookingForMinFollowers', parseInt(e.target.value) || undefined)}
-            placeholder="e.g., 50000"
-            className="bg-gray-50"
-          />
-        </div>
-
         {/* Top Countries */}
         <div>
           <label className="block text-base font-semibold text-gray-900 mb-1">Top Countries (optional)</label>
