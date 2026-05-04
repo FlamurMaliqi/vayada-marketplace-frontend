@@ -13,6 +13,7 @@ import { ApiErrorResponse } from '@/services/api/client'
 import { UserIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { useCreatorProfileForm } from '@/hooks/useCreatorProfileForm'
 import { useHotelProfileForm } from '@/hooks/useHotelProfileForm'
+import { formatErrorDetail } from '@/hooks/useErrorModal'
 import {
   LoadingScreen,
   ProfileCompletionScreen,
@@ -38,18 +39,6 @@ export default function ProfileCompletePage() {
   // Initialize hooks with error handler
   const creatorForm = useCreatorProfileForm({ onError: setError })
   const hotelForm = useHotelProfileForm({ onError: setError })
-
-  const formatErrorDetail = (detail: unknown): string => {
-    if (typeof detail === 'string') return detail
-    if (Array.isArray(detail)) {
-      return detail.map((err: { loc?: (string | number)[]; msg?: string }) => {
-        const field = Array.isArray(err.loc) ? err.loc.slice(1).join('.') : 'field'
-        return `${field}: ${err.msg || 'Validation error'}`
-      }).join('; ')
-    }
-    if (detail && typeof detail === 'object') return JSON.stringify(detail)
-    return 'An error occurred'
-  }
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
