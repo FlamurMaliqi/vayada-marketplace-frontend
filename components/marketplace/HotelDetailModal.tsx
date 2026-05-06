@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Hotel } from '@/lib/types'
 import { Button, PlatformIcon } from '@/components/ui'
 import { getMonthAbbr, sortMonths } from '@/lib/utils/months'
+import { formatFollowersCompact } from '@/lib/utils'
 import {
   MapPinIcon,
   GlobeAltIcon,
@@ -376,7 +377,7 @@ export function HotelDetailModal({ hotel, isOpen, onClose, creatorPlatforms = []
                             {o.min_followers ? (
                               <span className="px-2.5 py-1 bg-orange-100 text-orange-700 rounded-full font-medium inline-flex items-center gap-1">
                                 <UserGroupIcon className="w-3.5 h-3.5" />
-                                {formatNumber(o.min_followers)}+ followers
+                                Minimum {formatFollowersCompact(o.min_followers)} followers
                               </span>
                             ) : null}
                           </div>

@@ -42,6 +42,21 @@ export function formatFollowers(value: number): string {
 }
 
 /**
+ * Compact follower count with lowercase suffix (e.g., 500000 -> "500k", 1500000 -> "1.5m").
+ * Drops trailing ".0" so 20,000 renders as "20k", not "20.0k".
+ */
+export function formatFollowersCompact(value: number): string {
+  const trimZero = (n: number) => n.toFixed(1).replace(/\.0$/, '')
+  if (value >= 1_000_000) {
+    return `${trimZero(value / 1_000_000)}m`
+  }
+  if (value >= 1_000) {
+    return `${trimZero(value / 1_000)}k`
+  }
+  return value.toString()
+}
+
+/**
  * Format engagement rate as percentage
  */
 export function formatEngagementRate(value: number): string {
@@ -257,6 +272,7 @@ interface ListingMarketplaceResponse {
     currency: string | null
     discount_percentage: number | null
     commission_percentage: number | null
+    min_followers: number | null
     created_at: string
     updated_at: string
   }>
@@ -357,6 +373,7 @@ export function transformListingMarketplaceResponse(apiListing: ListingMarketpla
     currency: o.currency,
     discount_percentage: o.discount_percentage,
     commission_percentage: o.commission_percentage,
+    min_followers: o.min_followers ?? null,
     created_at: o.created_at,
     updated_at: o.updated_at,
   }))
