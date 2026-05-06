@@ -67,7 +67,7 @@ export function CreatorCard({ creator, isPublic = false }: CreatorCardProps) {
               <span className="truncate">{creator.location}</span>
             </div>
             {/* Rating */}
-            {creator.rating && (
+            {creator.rating && creator.rating.totalReviews > 0 && (
               <div className="flex items-center justify-center">
                 <StarRating
                   rating={creator.rating.averageRating}
