@@ -277,7 +277,7 @@ export function CreatorDetailModal({ creator, isOpen, onClose, isPublic = false 
               </div>
 
               {/* Rating */}
-              {creator.rating && (
+              {creator.rating && creator.rating.totalReviews > 0 && (
                 <div>
                   <StarRating
                     rating={creator.rating.averageRating}
