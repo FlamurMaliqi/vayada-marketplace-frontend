@@ -42,8 +42,13 @@ export function OfferingEditorCard({
   }
 
   // When the type changes we wipe inapplicable type-specific fields so the
-  // backend validator doesn't reject the request.
+  // backend validator doesn't reject the request. For Affiliate we prefill the
+  // commission to 5% only when the field is still empty/untouched, so a
+  // user-entered or already-stored value is never overwritten.
   const setType = (next: CollaborationKind) => {
+    const nextCommission = next === 'Affiliate'
+      ? (offering.commissionPercentage ?? 5)
+      : undefined
     onChange({
       ...offering,
       type: next,
@@ -52,7 +57,7 @@ export function OfferingEditorCard({
       paidMaxAmount: next === 'Paid' ? offering.paidMaxAmount : undefined,
       currency: next === 'Paid' ? offering.currency || 'USD' : undefined,
       discountPercentage: next === 'Discount' ? offering.discountPercentage : undefined,
-      commissionPercentage: next === 'Affiliate' ? offering.commissionPercentage : undefined,
+      commissionPercentage: nextCommission,
     })
   }
 
@@ -182,7 +187,7 @@ export function OfferingEditorCard({
           value={offering.commissionPercentage ?? ''}
           onChange={(e) => update('commissionPercentage', parseOptionalInt(e.target.value))}
           required
-          placeholder="10"
+          placeholder="5"
           className="bg-gray-50 border-gray-200"
         />
       )}

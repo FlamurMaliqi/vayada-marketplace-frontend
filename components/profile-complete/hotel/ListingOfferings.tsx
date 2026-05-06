@@ -57,6 +57,12 @@ export function ListingOfferings({ listing, index, onUpdateListing }: ListingOff
                     onChange={(e) => {
                       if (e.target.checked) {
                         onUpdateListing(index, 'collaborationTypes', [...listing.collaborationTypes, type])
+                        // Prefill the Affiliate commission to 5% only when the
+                        // field is still empty/untouched, so user input or a
+                        // stored value is never overwritten.
+                        if (type === 'Affiliate' && listing.commissionPercentage == null) {
+                          onUpdateListing(index, 'commissionPercentage', 5)
+                        }
                       } else {
                         onUpdateListing(index, 'collaborationTypes', listing.collaborationTypes.filter((t) => t !== type))
                       }
@@ -218,7 +224,7 @@ export function ListingOfferings({ listing, index, onUpdateListing }: ListingOff
               type="number"
               value={listing.commissionPercentage || ''}
               onChange={(e) => onUpdateListing(index, 'commissionPercentage', parseInt(e.target.value) || undefined)}
-              placeholder="10"
+              placeholder="5"
               min={1}
               max={100}
               required
