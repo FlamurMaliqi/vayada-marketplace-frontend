@@ -27,6 +27,7 @@ export function CreatorBasicInfoStep({
   imageInputRef,
   onImageChange,
 }: CreatorBasicInfoStepProps) {
+  const profilePictureError = !!error && error.toLowerCase().includes('profile picture') && !form.profile_image
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between border-b border-gray-100 pb-2">
@@ -64,9 +65,15 @@ export function CreatorBasicInfoStep({
 
         {/* Right Column: Profile Picture */}
         <div className="w-full md:w-auto flex flex-col items-center gap-2">
-          <span className="text-xs font-semibold text-gray-700">Profile Picture</span>
+          <span className="text-xs font-semibold text-gray-700">
+            Profile Picture <span className="text-red-500">*</span>
+          </span>
           <div
-            className="relative w-40 h-40 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-gray-50 transition-all overflow-hidden bg-gray-50 group"
+            className={`relative w-40 h-40 rounded-full border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 transition-all overflow-hidden group ${
+              profilePictureError
+                ? 'border-red-500 bg-red-50 hover:bg-red-50'
+                : 'border-gray-300 bg-gray-50 hover:bg-gray-50'
+            }`}
             onClick={() => imageInputRef.current?.click()}
           >
             {form.profile_image ? (
@@ -99,6 +106,9 @@ export function CreatorBasicInfoStep({
             accept="image/jpeg,image/png,image/webp"
             className="hidden"
           />
+          {profilePictureError && (
+            <p className="text-xs text-red-500 font-medium">Profile picture is required</p>
+          )}
         </div>
       </div>
 

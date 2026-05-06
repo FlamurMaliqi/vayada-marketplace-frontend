@@ -275,6 +275,10 @@ export function useCreatorProfileForm(options: UseCreatorProfileFormOptions = {}
       onError?.('Short description must be at most 500 characters')
       return false
     }
+    if (!form.profile_image) {
+      onError?.('Profile picture is required')
+      return false
+    }
     if (platforms.length === 0) {
       onError?.('At least one platform is required')
       return false
@@ -350,7 +354,8 @@ export function useCreatorProfileForm(options: UseCreatorProfileFormOptions = {}
       form.name.trim() &&
       form.location.trim() &&
       form.short_description.trim() &&
-      form.short_description.trim().length >= 10
+      form.short_description.trim().length >= 10 &&
+      form.profile_image
     )
   }, [form])
 
