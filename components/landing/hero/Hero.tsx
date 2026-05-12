@@ -1,187 +1,60 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Squares2X2Icon, CheckIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
-import { Button } from '@/components/ui'
-import { ROUTES } from '@/lib/constants/routes'
+import Image from 'next/image'
+import { ArrowRightIcon } from '@heroicons/react/24/outline'
 
 export default function Hero() {
-  const [hoveredSection, setHoveredSection] = useState<string | null>(null)
-
   return (
-    <div className="relative">
-      <div className="flex flex-col lg:flex-row min-h-screen">
-        {/* Properties Section */}
-        <section 
-          className="relative min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-48 md:pt-56 lg:pt-72 transition-all duration-500 ease-in-out"
-          style={{
-            flex: hoveredSection === 'properties' ? '0.8' : hoveredSection === 'creators' ? '0.2' : '1'
-          }}
-          onMouseEnter={() => setHoveredSection('properties')}
-          onMouseLeave={() => setHoveredSection(null)}
-        >
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: 'url(/hotel-hero.JPG)'
-            }}
-          >
-            <div className="absolute inset-0 bg-black/70"></div>
+    <section className="relative bg-gradient-to-b from-white via-white to-[#f4f5fb] pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-4xl mx-auto">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white border border-gray-200 px-4 py-1.5 text-xs font-medium text-gray-700 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+            For independent properties
+          </span>
+
+          <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-[64px] xl:text-[72px] font-bold tracking-tight text-gray-900 leading-[1.05]">
+            Hotels are losing control over their demand.{' '}
+            <span className="text-primary-500">vayada</span> takes it back.
+          </h1>
+
+          <p className="mt-8 text-base md:text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
+            vayada offers an AI &amp; trust-based distribution stack for
+            independent hotels to end your OTA dependency with a Booking
+            Engine, PMS, Channel Manager &amp; Hotel-Creator-Network.
+          </p>
+
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href="#cta"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium px-6 py-3 transition-colors"
+            >
+              Book a demo
+              <ArrowRightIcon className="w-4 h-4" />
+            </a>
+            <a
+              href="#product"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-300 hover:border-gray-400 bg-white text-gray-900 text-sm font-medium px-6 py-3 transition-colors"
+            >
+              Explore the product
+            </a>
           </div>
-          <div className="relative z-10 w-full text-center">
-            <div className="max-w-2xl mx-auto">
-              <div className="mb-4">
-                <span className="inline-block px-4 py-2 border border-white text-white rounded-full text-sm font-medium">
-                  For Properties
-                </span>
-              </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-loose">
-                <span className="text-white block mb-3">Less OTAs.</span>
-                <span style={{ color: '#2e51f4' }} className="block mb-3">More Direct</span>
-                <span style={{ color: '#2e51f4' }} className="block">Bookings.</span>
-              </h1>
-              <p className="text-lg md:text-xl text-white/60 leading-relaxed">
-                Streamline your workflow. Convert influencer reach to direct bookings.
-              </p>
+        </div>
 
-              {/* Info Box - Appears on hover */}
-              <div className={`mt-8 w-full max-w-xl mx-auto transition-all duration-500 ease-in-out ${
-                hoveredSection === 'properties' 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-4 pointer-events-none'
-              }`}>
-                <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6">
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Icon */}
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-primary-100 rounded-xl flex items-center justify-center">
-                      <Squares2X2Icon className="w-8 h-8 text-primary-600" />
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 flex flex-col items-center text-center">
-                    <p className="text-gray-900 font-medium text-sm md:text-base mb-4">
-                      Win back bookings from OTAs while boosting direct<br />reservations with creators.
-                    </p>
-
-                    {/* Features */}
-                    <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-6">
-                      <div className="flex items-center gap-2">
-                        <CheckIcon className="w-4 h-4 text-primary-600 flex-shrink-0" />
-                        <span className="text-gray-700 text-xs md:text-sm">Save Manual Work</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CheckIcon className="w-4 h-4 text-primary-600 flex-shrink-0" />
-                        <span className="text-gray-700 text-xs md:text-sm">Find the Right Creators</span>
-                      </div>
-                    </div>
-
-                    {/* CTA Button */}
-                    <Link href={ROUTES.HOTEL_BENEFITS}>
-                      <Button 
-                        variant="primary" 
-                        size="sm" 
-                        className="flex items-center justify-center gap-2 rounded-3xl"
-                      >
-                        Learn More
-                        <ArrowRightIcon className="w-4 h-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                </div>
-              </div>
-            </div>
+        {/* Hero product mockup */}
+        <div className="mt-16 md:mt-20 relative max-w-5xl mx-auto">
+          <div className="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gray-200/60 bg-white">
+            <Image
+              src="/hero-booking.png"
+              alt="Vayada-powered booking page for Green Poya Resort in Lombok"
+              width={1600}
+              height={1000}
+              className="w-full h-auto"
+              priority
+            />
           </div>
-        </section>
-
-        {/* Creators Section */}
-        <section 
-          className="relative min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-48 md:pt-56 lg:pt-72 transition-all duration-500 ease-in-out"
-          style={{
-            flex: hoveredSection === 'creators' ? '0.8' : hoveredSection === 'properties' ? '0.2' : '1'
-          }}
-          onMouseEnter={() => setHoveredSection('creators')}
-          onMouseLeave={() => setHoveredSection(null)}
-        >
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: 'url(/creator-hero.jpg)'
-            }}
-          >
-            <div className="absolute inset-0 bg-black/70"></div>
-          </div>
-          <div className="relative z-10 w-full text-center">
-            <div className="max-w-2xl mx-auto">
-              <div className="mb-4">
-                <span className="inline-block px-4 py-2 border border-white text-white rounded-full text-sm font-medium">
-                  For Creators
-                </span>
-              </div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-loose">
-                <span className="text-white block mb-3">Your Reach.</span>
-                <span style={{ color: '#2e51f4' }} className="block">Turned into partnerships.</span>
-              </h2>
-              <p className="text-lg md:text-xl text-white/60 leading-relaxed">
-                Trade your travel influence for partnerships with curated & high-quality hotels worldwide.
-              </p>
-
-              {/* Info Box - Appears on hover */}
-              <div className={`mt-8 w-full max-w-xl mx-auto transition-all duration-500 ease-in-out ${
-                hoveredSection === 'creators' 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-4 pointer-events-none'
-              }`}>
-                <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6">
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Icon */}
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-primary-100 rounded-xl flex items-center justify-center">
-                      <Squares2X2Icon className="w-8 h-8 text-primary-600" />
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 flex flex-col items-center text-center">
-                    <p className="text-gray-900 font-medium text-sm md:text-base mb-4">
-                      Stop chasing DMs. Start securing professional<br />hotel & villa collaborations worldwide.
-                    </p>
-
-                    {/* Features */}
-                    <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-6">
-                      <div className="flex items-center gap-2">
-                        <CheckIcon className="w-4 h-4 text-primary-600 flex-shrink-0" />
-                        <span className="text-gray-700 text-xs md:text-sm">Save Hours of Outreach</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CheckIcon className="w-4 h-4 text-primary-600 flex-shrink-0" />
-                        <span className="text-gray-700 text-xs md:text-sm">Build Credibility</span>
-                      </div>
-                    </div>
-
-                    {/* CTA Button */}
-                    <Link href={ROUTES.CREATOR_BENEFITS}>
-                      <Button 
-                        variant="primary" 
-                        size="sm" 
-                        className="flex items-center justify-center gap-2 rounded-3xl"
-                      >
-                        Learn More
-                        <ArrowRightIcon className="w-4 h-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
-    </div>
+    </section>
   )
 }
-

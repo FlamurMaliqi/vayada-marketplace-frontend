@@ -3,7 +3,10 @@
  */
 
 export { Hero } from './hero'
-export { HotelsSection } from './hotels'
-export { CreatorsSection } from './creators'
-export { HowItWorks } from './how-it-works'
-
+export { TrustedBy } from './trusted-by'
+export { ProblemSection } from './problem'
+export { SolutionSection } from './solution'
+export { PlatformSection } from './platform'
+export { PricingSection } from './pricing'
+export { PartnerProgram } from './partner'
+export { FinalCTA } from './final-cta'
