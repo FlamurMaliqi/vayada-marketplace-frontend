@@ -1,4 +1,4 @@
-import { Navigation, Footer } from '@/components/layout'
+import { Navigation } from '@/components/layout'
 import {
   Hero,
   TrustedBy,
@@ -8,11 +8,12 @@ import {
   PricingSection,
   PartnerProgram,
   FinalCTA,
+  LandingFooter,
 } from '@/components/landing'
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white text-ink">
       <Navigation />
       <Hero />
       <TrustedBy />
@@ -22,7 +23,7 @@ export default function Home() {
       <PricingSection />
       <PartnerProgram />
       <FinalCTA />
-      <Footer />
+      <LandingFooter />
     </main>
   )
 }

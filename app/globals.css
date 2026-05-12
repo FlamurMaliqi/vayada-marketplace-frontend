@@ -5,11 +5,24 @@
 :root {
   --foreground-rgb: 17, 24, 39;
   --background-rgb: 255, 255, 255;
+  --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(47, 82, 245, 0.1), transparent 70%);
+  --gradient-radial: radial-gradient(circle at 50% 50%, rgba(47, 82, 245, 0.08), transparent 70%);
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "cv11";
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: 0;
 }
 
 @layer utilities {
@@ -83,3 +96,12 @@ body {
   }
 }
 
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}

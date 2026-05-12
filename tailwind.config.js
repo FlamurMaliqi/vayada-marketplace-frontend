@@ -7,7 +7,17 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       colors: {
+        ink: '#151621',
+        border: {
+          DEFAULT: 'rgba(21, 22, 33, 0.08)',
+          strong: 'rgba(21, 22, 33, 0.14)',
+        },
+        'surface-elevated': '#f6f7fb',
         // Brand - Primary
         primary: {
           50: '#EFF2FF',
@@ -72,9 +82,25 @@ module.exports = {
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
+        marquee: 'marquee 40s linear infinite',
+        'glow-pulse': 'glow-pulse 4s ease-in-out infinite',
+      },
+      boxShadow: {
+        glow: '0 10px 40px -10px rgba(47, 82, 245, 0.35)',
+        elevated: '0 30px 80px -30px rgba(21, 22, 33, 0.25), 0 0 0 1px rgba(21, 22, 33, 0.04)',
+        soft: '0 1px 2px rgba(21, 22, 33, 0.04), 0 8px 24px -12px rgba(21, 22, 33, 0.08)',
+      },
+      keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        'glow-pulse': {
+          '0%, 100%': { opacity: '0.5' },
+          '50%': { opacity: '1' },
+        },
       }
     },
   },
   plugins: [],
 }
-
