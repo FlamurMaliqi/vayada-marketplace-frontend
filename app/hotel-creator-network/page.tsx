@@ -6,12 +6,17 @@ import {
   ArrowRightIcon,
   ChartBarIcon,
   CheckIcon,
+  CheckBadgeIcon,
   LinkIcon,
+  MapPinIcon,
+  PaperAirplaneIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline'
 import { LandingFooter } from '@/components/landing'
 import { Navigation } from '@/components/layout'
+import { PlatformIcon } from '@/components/ui/icons/SocialIcons'
 import { ROUTES } from '@/lib/constants/routes'
 import { creatorService } from '@/services/api/creators'
 import { hotelService } from '@/services/api/hotels'
@@ -220,14 +225,7 @@ export default async function HotelCreatorNetworkPage() {
                 </div>
               </div>
               <ProductFrame>
-                <Image
-                  src="/hcn-creator-card-detail.png"
-                  alt="Vayada creator card with verified audience data"
-                  width={900}
-                  height={700}
-                  className="h-full w-full object-cover"
-                  priority
-                />
+                <CreatorMarketplacePreview />
               </ProductFrame>
             </div>
           </div>
@@ -437,6 +435,126 @@ function ProductFrame({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-border-strong bg-white shadow-elevated">
       {children}
+    </div>
+  )
+}
+
+function CreatorMarketplacePreview() {
+  return (
+    <div className="bg-white p-4 sm:p-6">
+      <div className="overflow-hidden rounded-2xl bg-white">
+        <div className="relative h-72 overflow-hidden bg-gray-950">
+          <Image
+            src="/creator-hero.jpg"
+            alt=""
+            fill
+            className="scale-110 object-cover opacity-75 blur-sm"
+            sizes="(min-width: 768px) 440px, 90vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,32,0.18)_0%,rgba(8,17,32,0.44)_45%,rgba(8,17,32,0.90)_100%)]" />
+          <div className="absolute inset-x-0 top-0 flex items-start justify-between p-5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/70 bg-white/90 px-3 py-1.5 text-xs font-bold text-amber-700 shadow-sm backdrop-blur-md">
+              <PaperAirplaneIcon className="h-3.5 w-3.5" />
+              Travel
+            </span>
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/90 text-gray-800 shadow-sm backdrop-blur-md">
+              <PlatformIcon platform="Instagram" className="h-[18px] w-[18px]" />
+            </span>
+          </div>
+
+          <div className="absolute inset-x-0 bottom-0 p-5">
+            <div className="flex items-end gap-4">
+              <div className="relative flex-shrink-0">
+                <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-white shadow-xl ring-1 ring-white/40">
+                  <Image
+                    src="/creator-hero.jpg"
+                    alt="Dario Explore"
+                    width={96}
+                    height={96}
+                    className="h-full w-full object-cover"
+                    priority
+                  />
+                </div>
+                <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 shadow-md ring-4 ring-white">
+                  <CheckBadgeIcon className="h-5 w-5 text-white" />
+                </div>
+              </div>
+
+              <div className="min-w-0 pb-1 text-white">
+                <h3 className="truncate text-2xl font-extrabold tracking-tight">
+                  Dario Explore
+                </h3>
+                <div className="mt-1 flex items-center text-sm font-semibold text-white/80">
+                  <MapPinIcon className="mr-1.5 h-4 w-4 flex-shrink-0 text-white/65" />
+                  <span className="truncate">Osaka, Japan</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-5">
+          <div className="grid grid-cols-2 rounded-lg border border-gray-200 bg-gray-50">
+            <div className="min-w-0 p-4">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-gray-500">
+                <UserGroupIcon className="h-4 w-4 text-primary-500" />
+                <span>Reach</span>
+              </div>
+              <p className="truncate text-2xl font-extrabold tracking-tight text-gray-950">
+                190,000
+              </p>
+            </div>
+            <div className="min-w-0 border-l border-gray-200 p-4">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-gray-500">
+                <ChartBarIcon className="h-4 w-4 text-primary-500" />
+                <span>Engagement</span>
+              </div>
+              <p className="truncate text-2xl font-extrabold tracking-tight text-gray-950">
+                4.9%
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
+              Audience
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {['Japan', 'USA', 'UK'].map((country) => (
+                <span
+                  key={country}
+                  className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700 ring-1 ring-gray-200"
+                >
+                  {country}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">
+              Platforms
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {['Instagram', 'TikTok'].map((platform) => (
+                <span
+                  key={platform}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-gray-700 shadow-sm ring-1 ring-gray-200"
+                >
+                  <PlatformIcon platform={platform} className="h-3.5 w-3.5 text-gray-500" />
+                  {platform}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-glow">
+            View Profile
+            <ArrowRightIcon className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
