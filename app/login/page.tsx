@@ -101,7 +101,16 @@ export default function LoginPage() {
 
           {/* Title */}
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Sign in</h1>
-          <p className="text-gray-600 mb-8">Enter your credentials to access your account</p>
+          <p className="text-gray-600 mb-2">Enter your credentials to access your account</p>
+          <p className="text-sm text-gray-500 mb-8">
+            Looking for the PMS & Booking Engine?{' '}
+            <Link
+              href={`${ROUTES.CHOOSE_PRODUCT}?choose=1`}
+              className="font-medium text-primary-600 hover:text-primary-700"
+            >
+              Choose a different product
+            </Link>
+          </p>
 
           <LoginForm
             onSubmit={handleLogin}

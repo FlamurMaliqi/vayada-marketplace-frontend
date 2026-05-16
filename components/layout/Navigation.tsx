@@ -42,7 +42,7 @@ export default function Navigation() {
           {/* Right Side */}
           <div className="hidden md:flex items-center gap-3">
             <a
-              href={ROUTES.LOGIN}
+              href={ROUTES.CHOOSE_PRODUCT}
               className="px-3 py-2 text-sm text-gray-500 transition-colors hover:text-ink"
             >
               Log in
@@ -81,7 +81,7 @@ export default function Navigation() {
               </a>
             ))}
             <a
-              href={ROUTES.LOGIN}
+              href={ROUTES.CHOOSE_PRODUCT}
               className="block px-2 py-2 text-sm text-gray-700 hover:text-ink"
               onClick={() => setIsMenuOpen(false)}
             >
