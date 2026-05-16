@@ -1,13 +1,9 @@
 /**
  * Landing page components barrel export
+ *
+ * The marketing landing pages now live in the `vayada-landing` repo. Only
+ * LandingFooter remains here — it's still used by app pages that keep the
+ * public chrome (e.g. /choose-product).
  */
 
-export { Hero } from './hero'
-export { TrustedBy } from './trusted-by'
-export { ProblemSection } from './problem'
-export { SolutionSection } from './solution'
-export { PlatformSection } from './platform'
-export { PricingSection } from './pricing'
-export { PartnerProgram } from './partner'
-export { FinalCTA } from './final-cta'
 export { LandingFooter } from './footer'
