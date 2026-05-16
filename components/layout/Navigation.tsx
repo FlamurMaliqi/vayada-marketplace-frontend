@@ -1,15 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES, MARKETING_BASE_URL } from '@/lib/constants/routes'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
 
+// These pages live on the marketing site (vayada.com), not in this app.
 const NAV_LINKS = [
-  { label: 'Booking Engine', href: '/booking-engine' },
-  { label: 'PMS', href: '/pms' },
-  { label: 'Hotel-Creator-Network', href: '/hotel-creator-network' },
-  { label: 'Pricing', href: '/pricing' },
-  { label: 'Partner Program', href: '/partner-program' },
+  { label: 'Booking Engine', href: `${MARKETING_BASE_URL}/booking-engine` },
+  { label: 'PMS', href: `${MARKETING_BASE_URL}/pms` },
+  { label: 'Hotel-Creator-Network', href: `${MARKETING_BASE_URL}/hotel-creator-network` },
+  { label: 'Pricing', href: `${MARKETING_BASE_URL}/pricing` },
+  { label: 'Partner Program', href: `${MARKETING_BASE_URL}/partner-program` },
 ]
 
 export default function Navigation() {
@@ -20,7 +21,7 @@ export default function Navigation() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href={ROUTES.HOME} className="flex items-center">
+          <a href={MARKETING_BASE_URL} className="flex items-center">
             <span className="font-display text-lg font-semibold text-primary-500 lowercase">
               vayada
             </span>
@@ -48,7 +49,7 @@ export default function Navigation() {
               Log in
             </a>
             <a
-              href="/#cta"
+              href={`${MARKETING_BASE_URL}/#cta`}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-glow transition-all hover:bg-primary-600"
             >
               Book a demo
@@ -88,7 +89,7 @@ export default function Navigation() {
               Log in
             </a>
             <a
-              href="/#cta"
+              href={`${MARKETING_BASE_URL}/#cta`}
               className="mx-2 mt-2 flex items-center justify-center gap-2 rounded-full bg-primary-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600"
               onClick={() => setIsMenuOpen(false)}
             >

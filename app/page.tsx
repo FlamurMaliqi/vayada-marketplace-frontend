@@ -1,11 +1,9 @@
 import { redirect } from 'next/navigation'
 
-// The public marketing/landing site now lives in the `vayada-landing` repo.
-// This app is the authenticated creator marketplace, so its root just sends
-// visitors to sign in.
-//
-// Phase 3 / domain cutover: once the marketing site has its own host, point
-// this redirect at the marketing domain instead of `/login`.
+// This app is the authenticated creator marketplace, served at app.vayada.com.
+// The public marketing site is a separate deployment at vayada.com
+// (the `vayada-landing` repo). Hitting the bare app domain just sends
+// visitors to sign in; marketing lives on its own host.
 export default function Home() {
   redirect('/login')
 }

@@ -62,6 +62,15 @@ export const ROUTES = {
 } as const
 
 /**
+ * The public marketing site (home, product pages, pricing, about, contact,
+ * legal) is a separate deployment on its own domain. This app links out to
+ * it for marketing pages. Configurable per environment; defaults to the
+ * production host. In local dev set NEXT_PUBLIC_MARKETING_URL=http://localhost:3006
+ */
+export const MARKETING_BASE_URL =
+  process.env.NEXT_PUBLIC_MARKETING_URL || 'https://vayada.com'
+
+/**
  * PMS & Booking Engine is a separate product deployed on its own domain.
  * Base URL is configurable per environment; defaults to the production host.
  */

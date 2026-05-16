@@ -1,7 +1,12 @@
+import { MARKETING_BASE_URL } from '@/lib/constants/routes'
+
+// This is the authenticated app (app.vayada.com). Signup lives here; the
+// "How It Works" / Benefits / About / Contact destinations are marketing
+// pages on the marketing site (vayada.com).
 export const siteConfig = {
   name: 'vayada',
   description: 'A transparent marketplace connecting hotels with verified travel influencers for authentic collaborations.',
-  url: 'https://vayada.com',
+  url: 'https://app.vayada.com',
   ogImage: '/og-image.jpg',
   links: {
     twitter: 'https://twitter.com/vayada',
@@ -30,20 +35,19 @@ export const siteConfig = {
     description: 'Connecting hotels with travel creators for authentic collaborations.',
     links: {
       hotels: [
-        { label: 'How It Works', href: '#hotels' },
+        { label: 'How It Works', href: `${MARKETING_BASE_URL}/#hotels` },
         { label: 'Sign Up', href: '/signup?type=hotel' },
-        { label: 'Benefits', href: '/pricing' },
+        { label: 'Benefits', href: `${MARKETING_BASE_URL}/pricing` },
       ],
       creators: [
-        { label: 'How It Works', href: '#creators' },
+        { label: 'How It Works', href: `${MARKETING_BASE_URL}/#creators` },
         { label: 'Sign Up', href: '/signup?type=creator' },
-        { label: 'Benefits', href: '/creators/benefits' },
+        { label: 'Benefits', href: `${MARKETING_BASE_URL}/creator-benefits` },
       ],
       company: [
-        { label: 'About', href: '/about' },
-        { label: 'Contact', href: '/contact' }
+        { label: 'About', href: `${MARKETING_BASE_URL}/about` },
+        { label: 'Contact', href: `${MARKETING_BASE_URL}/contact` }
       ],
     },
   },
 } as const
-
