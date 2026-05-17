@@ -9,7 +9,7 @@ import type {
   ListingFormData,
   ListingOffering,
 } from './types'
-import type { PlatformAgeGroup, PlatformGenderSplit, CreatorType, CollaborationOffering } from '@/lib/types'
+import type { PlatformCountry, PlatformAgeGroup, PlatformGenderSplit, CreatorType, CollaborationOffering } from '@/lib/types'
 import type { HotelProfile as ApiHotelProfile } from '@/lib/types'
 
 type ApiOfferingPayload = {
@@ -108,16 +108,29 @@ export function transformCreatorProfile(apiCreator: ApiCreatorResponse): Creator
   const phone = apiCreator.phone || ''
 
   const platforms = (apiCreator.platforms || []).map((platform: ApiPlatformResponse) => {
-    let genderSplit: PlatformGenderSplit = { male: 0, female: 0 }
+    // Gender split: parse, then treat an all-zero (or absent) split as "no data".
+    // An audience cannot be 0% male AND 0% female — that is a placeholder, not a
+    // real calculated value, so we surface it as missing (undefined). A genuine
+    // one-sided split (e.g. 0% male / 100% female) is real and still kept.
+    let genderSplit: PlatformGenderSplit | undefined
     const rawGenderSplit = platform.genderSplit || platform.gender_split
+    let parsedGenderSplit: PlatformGenderSplit | undefined
     if (typeof rawGenderSplit === 'string') {
       try {
-        genderSplit = JSON.parse(rawGenderSplit)
+        parsedGenderSplit = JSON.parse(rawGenderSplit)
       } catch {
-        genderSplit = { male: 0, female: 0 }
+        parsedGenderSplit = undefined
       }
     } else if (rawGenderSplit && typeof rawGenderSplit === 'object') {
-      genderSplit = rawGenderSplit
+      parsedGenderSplit = rawGenderSplit
+    }
+    if (parsedGenderSplit) {
+      const male = Number(parsedGenderSplit.male) || 0
+      const female = Number(parsedGenderSplit.female) || 0
+      const other = Number(parsedGenderSplit.other) || 0
+      if (male > 0 || female > 0 || other > 0) {
+        genderSplit = other > 0 ? { male, female, other } : { male, female }
+      }
     }
 
     const rawAgeGroups: ApiAgeGroup[] = platform.topAgeGroups || platform.top_age_groups || []
@@ -137,13 +150,24 @@ export function transformCreatorProfile(apiCreator: ApiCreatorResponse): Creator
         return ag !== null && ag.ageRange !== '' && ag.ageRange !== 'null'
       })
 
+    // Top countries: drop entries with no country name or no real share. A
+    // "top country" at 0% is a placeholder/missing row — hiding it stops the
+    // misleading "Germany: 0%" while keeping partial data (e.g. just DE 60%).
+    const rawCountries = platform.topCountries || platform.top_countries || []
+    const topCountries: PlatformCountry[] = rawCountries
+      .map((c) => ({
+        country: typeof c?.country === 'string' ? c.country.trim() : '',
+        percentage: Number(c?.percentage) || 0,
+      }))
+      .filter((c) => c.country !== '' && c.percentage > 0)
+
     return {
       id: platform.id,
       name: platform.name,
       handle: platform.handle || '',
       followers: platform.followers ?? 0,
       engagementRate: (platform.engagementRate || platform.engagement_rate) ?? 0,
-      topCountries: platform.topCountries || platform.top_countries || [],
+      topCountries: topCountries,
       topAgeGroups: topAgeGroups,
       genderSplit: genderSplit,
     }
