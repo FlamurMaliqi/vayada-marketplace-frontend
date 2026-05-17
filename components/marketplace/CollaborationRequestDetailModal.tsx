@@ -449,9 +449,9 @@ export function CollaborationRequestDetailModal({
                                   {/* Simple flag mapping could go here, for now just text or emoji if possible */}
                                   <span className="text-sm font-medium text-gray-900">{country.country}</span>
                                 </div>
-                                <span className="text-sm font-bold text-gray-900">
-                                  {country.percentage && `${country.percentage}%`}
-                                </span>
+                                {typeof country.percentage === 'number' && country.percentage > 0 && (
+                                  <span className="text-sm font-bold text-gray-900">{country.percentage}%</span>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -466,9 +466,9 @@ export function CollaborationRequestDetailModal({
                             {platform.topAgeGroups.slice(0, 3).map((ageGroup, idx) => (
                               <div key={idx} className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-gray-900">{ageGroup.ageRange}</span>
-                                <span className="text-sm font-bold text-gray-900">
-                                  {ageGroup.percentage && `${ageGroup.percentage}%`}
-                                </span>
+                                {typeof ageGroup.percentage === 'number' && ageGroup.percentage > 0 && (
+                                  <span className="text-sm font-bold text-gray-900">{ageGroup.percentage}%</span>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -482,15 +482,24 @@ export function CollaborationRequestDetailModal({
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-gray-900">Male</span>
-                              <span className="text-sm font-bold text-gray-900">{platform.genderSplit.male && `${platform.genderSplit.male}%`}</span>
+                              <span className="text-sm font-bold text-gray-900">{platform.genderSplit.male}%</span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-gray-900">Female</span>
-                              <span className="text-sm font-bold text-gray-900">{platform.genderSplit.female && `${platform.genderSplit.female}%`}</span>
+                              <span className="text-sm font-bold text-gray-900">{platform.genderSplit.female}%</span>
                             </div>
                           </div>
                         </div>
                       )}
+
+                      {/* No audience insights for this platform */}
+                      {!(platform.topCountries && platform.topCountries.length > 0) &&
+                        !(platform.topAgeGroups && platform.topAgeGroups.length > 0) &&
+                        !platform.genderSplit && (
+                          <p className="text-sm text-gray-500 italic">
+                            No audience insights available yet.
+                          </p>
+                        )}
                     </div>
                   ))}
                 </div>

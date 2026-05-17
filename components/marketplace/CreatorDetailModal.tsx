@@ -401,7 +401,11 @@ export function CreatorDetailModal({ creator, isOpen, onClose, isPublic = false 
                         {platform.topCountries.map((country, idx) => (
                           <li key={idx} className="flex items-center gap-2">
                             <span className="text-lg">{getCountryFlag(country.country)}</span>
-                            <span className="text-sm text-gray-700">{country.country}: <span className="font-semibold text-gray-900">{country.percentage}%</span></span>
+                            <span className="text-sm text-gray-700">{country.country}:{' '}
+                              {typeof country.percentage === 'number' && country.percentage > 0 && (
+                                <span className="font-semibold text-gray-900">{country.percentage}%</span>
+                              )}
+                            </span>
                           </li>
                         ))}
                       </ul>
@@ -415,7 +419,10 @@ export function CreatorDetailModal({ creator, isOpen, onClose, isPublic = false 
                       <ul className="space-y-2">
                         {platform.topAgeGroups.map((ageGroup, idx) => (
                           <li key={idx} className="text-sm text-gray-700">
-                            {ageGroup.ageRange}: <span className="font-semibold text-gray-900">{ageGroup.percentage}%</span>
+                            {ageGroup.ageRange}
+                            {typeof ageGroup.percentage === 'number' && ageGroup.percentage > 0 && (
+                              <>: <span className="font-semibold text-gray-900">{ageGroup.percentage}%</span></>
+                            )}
                           </li>
                         ))}
                       </ul>
@@ -432,6 +439,15 @@ export function CreatorDetailModal({ creator, isOpen, onClose, isPublic = false 
                       </div>
                     </div>
                   )}
+
+                  {/* No audience insights for this platform */}
+                  {!(platform.topCountries && platform.topCountries.length > 0) &&
+                    !(platform.topAgeGroups && platform.topAgeGroups.length > 0) &&
+                    !platform.genderSplit && (
+                      <div className="text-sm text-gray-500 italic">
+                        No audience insights available yet.
+                      </div>
+                    )}
                 </div>
               ))}
             </div>

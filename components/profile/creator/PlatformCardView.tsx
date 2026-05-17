@@ -86,7 +86,7 @@ export function PlatformCardView({ platform }: PlatformCardViewProps) {
         </div>
       ) : (
         <div className="text-sm text-gray-500 italic">
-          No additional metrics available. Edit your profile to add platform metrics.
+          No audience insights available yet.
         </div>
       )}
     </div>
